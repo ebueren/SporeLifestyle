@@ -1,0 +1,300 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(here)
+library(tidyverse)
+library(ggpubr)
+library(epitools)
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+here::here()
+
+
+
+box <- read.delim2(here("data/gpd_gvd/gpdgvd_0A_v3.txt" ))
+box <- subset(box, box$Context!="Context")
+box <- box %>% rename(product = Sequence, phage = Contig)
+box[,c(2)] <- "0A_box"
+#box <- box[,c(3,2,1)]
+box$count <- 1
+
+
+
+gc_content <- function(seq) {
+  seq <- toupper(seq)
+  bases <- strsplit(seq, "")[[1]]
+  gc_count <- sum(bases %in% c("G", "C"))
+  total <- length(bases)
+  return(gc_count / total)
+}
+
+# Vectorized version for multiple sequences
+gc_content_vec <- function(seqs) {
+  sapply(seqs, gc_content)
+}
+
+
+box$GC.flanks <- gc_content_vec(box$Context_no_motif)
+
+
+box <- subset(box, box$GC.flanks<0.35)
+
+
+
+
+
+box.all <- box
+
+
+
+
+
+
+box <-  box.all %>% group_by(phage, product) %>% summarise(sum=sum(count)) 
+
+phage <- read.csv(here("data/gpd_gvd/gpd_gvd_sporstatus.csv"), row.names=1)
+
+
+
+
+all <- merge(box, phage, by.x="phage", by.y="ID", all.x=TRUE, all.y=TRUE) 
+
+
+all$product[is.na(all$product)] <- "0A_box"
+
+
+all$sum[is.na(all$sum)] <- 0
+
+all[is.na(all)] <- "currently_missing"
+all <- subset(all, all$newgtdb_Phylum!="currently_missing")
+
+all$HostPhyla <- "OtherPhyla"
+all$HostPhyla <- ifelse(all$newgtdb_Phylum=="Bacillota", "Bacillota", "OtherPhyla")
+
+all$sporulation <- "unknown"
+all$sporulation <- ifelse(all$f_spor=="TRUE", "Spor", all$sporulation)
+all$sporulation <- ifelse(all$f_spor=="FALSE", "Nonspor", all$sporulation)
+
+all <- subset(all, all$sporulation!="unknown" )
+all <- subset(all, all$predicted_label!="missing")
+
+all <- unite(all, "phyla_spor_type", c("HostPhyla", "sporulation", "predicted_label"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+all <- unite(all, "spor_type", c("sporulation", "predicted_label"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+all <- unite(all, "specphyla_spor_type", c("newgtdb_Phylum", "sporulation", "predicted_label"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+#all$genome <- log10(all$Genome.Length..bp.)
+
+
+
+```
+
+
+
+```{r}
+all$tally <- 1
+all$hit <- ifelse(all$sum!=0, 1, 0)
+
+counts <- all %>% group_by(phyla_spor_type) %>% summarise(num.phage=sum(tally), total.0A=sum(sum), mean.0A=mean(sum), hits.0A=sum(hit)) 
+
+
+### only accounting for sporulation and lifestyle
+ggplot(all, aes(x = factor(spor_type), fill = factor(spor_type), y = sum )) +
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2) + ylab("Number of 0A boxes")
+
+
+## accounting for bacilliota vs. other phyla
+ggplot(all, aes(x = factor(phyla_spor_type), fill = factor(phyla_spor_type), y = sum )) +
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2) + ylab("Number of 0A boxes")
+
+
+## accounting for bacilliota vs. other phyla
+ggplot(all, aes(x = factor(newgtdb_Phylum), fill = factor(predicted_label), y = sum )) +
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2) + ylab("Number of 0A boxes")
+
+ggplot(all, aes(x = factor(specphyla_spor_type), fill = factor(predicted_label), y = sum )) +
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2) + ylab("Number of 0A boxes")
+
+
+
+
+library(ggpubr)
+ggplot(all, aes(genome,sum, fill=phyla_spor_type, colour = phyla_spor_type)) +
+  geom_point() +
+   geom_smooth(method="lm")+ # Add regression line
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "left", label.y.npc = "top" )# Add equation#+ ylim(0, 25) #+ xlim(0,
+
+
+
+```
+
+ggplot(all, aes(x = factor(specphyla_spor_type), fill = factor(specphyla_spor_type), y = sum )) +
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2) + ylab("Number of 0A boxes")
+
+
+
+ggplot(all, aes(Genome.Length..bp.,sum, fill=specphyla_spor_type, colour = specphyla_spor_type)) +
+  geom_point() +
+   geom_smooth(method="lm")+ # Add regression line
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "middle", label.y.npc = "top" )# Add equation#+ ylim(0, 25) #+ xlim(0,
+
+
+
+
+```{r}
+a1 <- aov(sum ~ phyla_spor_type, data = all)
+summary(a1)
+
+TukeyHSD(a1)
+```
+
+```{r}
+all.spor.counts  <- all %>% group_by(sporulation) %>% summarise(num.phage=sum(tally), total.0A=sum(sum), mean.0A=mean(sum), hits.0A=sum(hit)) 
+
+all.spor.counts$perc.hit <- all.spor.counts$hits.0A/all.spor.counts$num.phage
+
+all.spor.counts
+```
+
+```{r}
+spor.stat <- c('Spore', 'Non-spore')
+outcome <- c('Hits', 'None')
+all.hits <- matrix(c(736, 75, 18825, 887), nrow=2, ncol=2, byrow=TRUE)
+dimnames(all.hits) <- list('Spore'=spor.stat, 'Outcome'=outcome)
+all.hits
+
+
+fisher.test(all.hits)  
+
+oddsratio(all.hits)
+
+```
+
+other phyla lifestyle 
+```{r}
+
+phyla <- subset(all, all$HostPhyla=="OtherPhyla")
+
+
+phyla.life <- phyla %>% group_by(predicted_label) %>% summarise(num.phage=sum(tally), total.0A=sum(sum), mean.0A=mean(sum), hits.0A=sum(hit)) 
+
+phyla.life
+
+```
+
+```{r}
+phyla.stat <- c('Lytic', 'Temp')
+outcome <- c('Hits', 'None')
+phyla.hits <- matrix(c(7047, 239, 9544, 350), nrow=2, ncol=2, byrow=TRUE)
+dimnames(phyla.hits) <- list('Lifestyle'=phyla.stat, 'Outcome'=outcome)
+phyla.hits
+
+
+fisher.test(phyla.hits)  
+
+oddsratio(phyla.hits)
+
+```
+
+##### BACILLIOTA ONLY 
+
+```{r}
+
+baci <- subset(all, all$HostPhyla=="Bacillota")
+
+ggplot(baci, aes(x = factor(spor_type), fill = factor(spor_type), y = sum )) +
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2) + ylab("Number of 0A boxes")
+
+
+
+ggplot(baci, aes(genome, sum, fill=spor_type, colour = spor_type)) +
+  geom_point() +
+   geom_smooth(method="lm")+ # Add regression line
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "middle", label.y.npc = "top" )# Add equation#+ ylim(0, 25) #+ xlim(0,
+
+```
+
+
+```{r}
+spor.counts <- baci %>% group_by(sporulation) %>% summarise(num.phage=sum(tally), total.0A=sum(sum), mean.0A=mean(sum), hits.0A=sum(hit)) 
+
+spor.counts$perc.hit <- spor.counts$hits.0A/spor.counts$num.phage
+
+spor.counts
+
+```
+
+```{r}
+spor.stat <- c('Spore', 'Non-spore')
+outcome <- c('Hits', 'None')
+bacil.hits <- matrix(c(736, 75, 2234, 298), nrow=2, ncol=2, byrow=TRUE)
+dimnames(bacil.hits) <- list('Spore'=spor.stat, 'Outcome'=outcome)
+bacil.hits
+library(epitools)
+
+fisher.test(bacil.hits)  
+oddsratio(bacil.hits)
+
+```
+
+
+```{r}
+
+virbac <- subset(baci, baci$predicted_label=="virulent")
+
+life.counts <- virbac %>% group_by(sporulation) %>% summarise(num.phage=sum(tally), total.0A=sum(sum), mean.0A=mean(sum), hits.0A=sum(hit)) 
+
+life.counts$perc.hit <- life.counts$hits.0A/life.counts$num.phage
+
+life.counts
+```
+
+
+```{r}
+spor.stat <- c('Spore', 'Non-spore')
+outcome <- c('Hits', 'None')
+vir.hits <- matrix(c(338, 19, 1097, 246), nrow=2, ncol=2, byrow=TRUE)
+dimnames(vir.hits) <- list('Spore'=spor.stat, 'Outcome'=outcome)
+
+vir.hits
+
+library(epitools)
+fisher.test(vir.hits)  
+oddsratio(vir.hits)
+
+```
+
+
+
+```{r}
+
+tempbac <- subset(baci, baci$predicted_label=="temperate")
+
+tlife.counts <- tempbac %>% group_by(sporulation) %>% summarise(num.phage=sum(tally), total.0A=sum(sum), mean.0A=mean(sum), hits.0A=sum(hit)) 
+
+tlife.counts$perc.hit <- tlife.counts$hits.0A/tlife.counts$num.phage
+
+tlife.counts
+```
+
+
+```{r}
+spor.stat <- c('Spore', 'Non-spore')
+outcome <- c('Hits', 'None')
+temp.hits <- matrix(c(398, 56, 1383, 52), nrow=2, ncol=2, byrow=TRUE)
+dimnames(temp.hits) <- list('Spore'=spor.stat, 'Outcome'=outcome)
+
+temp.hits
+
+library(epitools)
+fisher.test(temp.hits)  
+oddsratio(temp.hits)
+
+```

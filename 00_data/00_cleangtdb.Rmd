@@ -1,0 +1,72 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+### load libraries, set wd
+```{r}
+library(tidyverse)
+library(here)
+here()
+
+dr_here()
+```
+## GTDB Taxa
+### update Daniel's sporulation table with updated GTDB taxa
+
+```{r}
+
+
+#### load data of known sporulation phenotype for all for all bacilliota (firmicutes) by gtdb family, based on Schwartz 2023
+
+dan.tax <- read.csv(here("00_data/gtdb/original_metadata/gtdb_families_sporulation.csv" ))
+dan.tax$gtdb_f<- gsub('f__', '', dan.tax$gtdb_f) 
+
+### load recent gtdb tax table
+gtdb.tax <- read.csv(here("00_data/gtdb/original_metadata/gtdb-taxonomy-table.csv" ))
+gtdb.tax <- subset(gtdb.tax, gtdb.tax$Domain=="Bacteria")
+colnames(gtdb.tax) <- paste0("newgtdb_", colnames(gtdb.tax))
+
+## merge known spore data with updated gtdb tax info
+tax <- merge(dan.tax, gtdb.tax, by.x="gtdb_f", by.y="newgtdb_Family", all.x=TRUE, all.y=TRUE)
+
+
+### taxa from Schwartz 2023 that no longer match to any known families in GTDB, mostly spelling errors/mild inconsitencies. Needs manual fixing. 
+weird <- subset(tax, is.na(tax$newgtdb_Domain))
+
+### weird taxa removed for now.
+tax <- subset(tax, !is.na(tax$newgtdb_Class))
+
+tax <- unique(tax[,c(1,6:11)])
+
+
+## make f_spor sporulation status as unknown if NA
+tax$f_spor[is.na(tax$f_spor)] <- "unknown"
+
+tax$f_spor <- ifelse(tax$newgtdb_Phylum!="Bacillota", FALSE, tax$f_spor)
+
+### to pull out new bacilliota that have not had spor data updated:
+#tax$f_spor <- ifelse(tax$newgtdb_Phylum=="Bacillota" & tax$f_spor=="unknown", "WEIRD", tax$f_spor)
+
+replacements <- c(
+  "Desulfobacterota_I" = "Desulfobacterota",
+  "Bacteroidota_A"     = "Bacteroidota",
+  "Bacillaceae_C"      = "Bacillaceae",
+  "Bacillales_D"       = "Bacillales",
+  "Bacillales_A"       = "Bacillales",
+  "Bacillales_B"       = "Bacillales"
+)
+
+
+
+# Apply all replacements to character columns
+tax[] <- lapply(tax, function(x) {
+  if (is.character(x)) {
+    for (pattern in names(replacements)) {
+      x <- gsub(pattern, replacements[[pattern]], x)
+    }
+  }
+  x
+})
+
+write.csv(tax, here("00_data/gtdb/updated_fam_spor.csv"))
+```

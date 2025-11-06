@@ -1,0 +1,272 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+### load libraries, set wd
+```{r}
+library(tidyverse)
+library(here)
+here()
+
+dr_here()
+```
+## GPD/GVD database, add sporulation status to gvd/gpd contigs -- UPDATED: 
+
+```{r}
+
+## load gtdb tax list with sporulation phenotype for bacilliota and non-bacilliota
+tax <- read.csv(here("00_data/gtdb/updated_fam_spor.csv"),row.name=1)
+
+
+search_terms <- unique(tax[,c(1)])
+search_terms.order <- unique(tax[,c(6)])
+
+# Function to find first matching family in the host column from tax list and make a new column with just that family
+extract_match <- function(text, terms) {
+  match <- str_extract(text, str_c("(?i)", str_c(terms, collapse = "|"))) 
+  ifelse(is.na(match), NA, match)
+}
+
+
+## load gpd and gvd datasets 
+
+gpd <- read.delim2(here("00_data/gpd_gvd/original_metadata/GPD_metadata.tsv" )) 
+gvd <- read.csv(here("00_data/gpd_gvd/original_metadata/gvd_all_hosts.csv" )) 
+
+gpgv.style <- read.delim2(here("00_data/gpd_gvd/dan_phastyle_predictions.tsv"))
+
+
+
+
+gpd.tax <- gpd[,c(1,7)]
+gvd.tax <- gvd[,c(1,5)]
+## can use this to match to daniel's GTDB spore/nonspore and phagescope output
+
+colnames(gpd.tax) <- c("ID", "GTDB_tax")
+colnames(gvd.tax)<- c("ID", "GTDB_tax")
+
+dan.tax <- rbind(gpd.tax, gvd.tax)
+
+dan.tax <- unique(dan.tax)
+
+
+```
+
+```{r}
+
+dan.tax <- merge(dan.tax, gpgv.style, by.x="ID", by.y="fasta_id", all.x=FALSE, all.y=TRUE)
+
+dan.tax$GTDB_tax[is.na(dan.tax$GTDB_tax)] <- "Host Not Assigned or not a prokaryotic virus"
+```
+
+
+```{r}
+dan.tax2 <- dan.tax %>%
+  mutate(matched_word = sapply(GTDB_tax, extract_match, terms = search_terms))
+
+
+
+dan.tax2$matched_word[is.na(dan.tax2$matched_word)] <- "Unknown"
+
+
+##remove genus to prevent duplicates
+tax_f <- tax[,c(1:6)]
+tax_f <- unique(tax_f)
+dan.tax2 <- unique(dan.tax2)
+
+dan.tax3 <- merge(tax_f, dan.tax2, by.x="gtdb_f", by.y="matched_word", all.x =FALSE, all.y=TRUE)
+
+dan.tax3$predicted_label[is.na(dan.tax3$predicted_label)] <- "missing"
+
+missingpred <- subset(dan.tax3, dan.tax3$predicted_label=="missing")
+
+
+
+
+checkv <- read.delim2(here("00_data/gpd_gvd/gpdgvd_checkvqualsum.tsv"))
+checkv <- subset(checkv, checkv$completeness!="completeness")
+checkv$contamination <- as.numeric(checkv$contamination)
+checkv$completeness <- as.numeric(checkv$completeness)
+
+dan.tax <- merge(dan.tax3, checkv, by.x="ID", by.y="contig_id", all.x=TRUE, all.y=FALSE)
+
+dan.tax.c <- subset(dan.tax, dan.tax$checkv_quality=="Complete")
+dan.tax.chc <-subset(dan.tax, dan.tax$checkv_quality=="Complete" | dan.tax$checkv_quality=="High-quality")
+
+#dan.tax.chcm <-subset(dan.tax, dan.tax$checkv_quality=="Complete" | dan.tax$checkv_quality=="High-quality" |dan.tax$checkv_quality=="Medium-quality" )
+
+
+#dan.tax4 <- unique(dan.tax3)
+
+#write.csv(dan.tax3, here("00_data/gpd_gvd/gpd_gvd_sporstatus_checkv.csv"))
+
+```
+
+
+```{r}
+gpdgvd <- read.csv(here("00_data/gpd_gvd/gpd_gvd_sporstatus_checkv.csv"), row.names=1)
+
+search_terms.order <- unique(tax[,c(6)])
+search_terms.genus <- unique(tax[,c(7)])
+# Function to find first matching family in the host column from tax list and make a new column with just that family
+extract_match <- function(text, terms) {
+  match <- str_extract(text, str_c("(?i)", str_c(terms, collapse = "|"))) 
+  ifelse(is.na(match), NA, match)
+}
+
+
+dan.tax.unknown <- subset(gpdgvd, gpdgvd$gtdb_f=="Unknown" & gpdgvd$GTDB_tax!="Host Not Assigned or not a prokaryotic virus")
+
+
+dan.tax.unknown <- dan.tax.unknown[,c(1, 7:12)]
+
+dan.tax.unknown2 <- dan.tax.unknown %>%
+  mutate(matched_word = sapply(GTDB_tax, extract_match, terms = search_terms.genus))
+
+
+
+dan.tax.unknown2$matched_word[is.na(dan.tax.unknown2$matched_word)] <- "Unknown"
+
+
+dan.tax.genus.unknowns <- subset(dan.tax.unknown2, dan.tax.unknown2$matched_word=="Unknown")
+dan.tax.unknonwn2<- subset(dan.tax.unknown2, dan.tax.unknown2$matched_word!="Unknown")
+
+##remove genus to prevent duplicates
+dan.tax.unknown2 <- dan.tax.unknown2[,c(2:8)]
+
+tax <- unique(tax)
+
+dan.tax.unknown3 <- merge(tax, dan.tax.unknown2, by.x="newgtdb_Genus", by.y="matched_word", all.x =FALSE, all.y=TRUE)
+
+```
+
+
+
+
+### Group GPD/GVD contigs by host/lifestyle
+```{r}
+library(here)
+gpdgvd <- read.csv(here("00_data/gpd_gvd/gpd_gvd_sporstatus_checkv.csv"), row.names=1)
+
+### re-add in checkv bc i accidentally removed it oops
+
+checkv <- read.delim2(here("00_data/gpd_gvd/gpdgvd_checkvqualsum.tsv"))
+checkv <- subset(checkv, checkv$completeness!="completeness")
+checkv$contamination <- as.numeric(checkv$contamination)
+checkv$completeness <- as.numeric(checkv$completeness)
+
+gpdgvd <- merge(gpdgvd, checkv, by.x="ID", by.y="contig_id", all.x=TRUE, all.y=FALSE)
+
+
+replacements <- c(
+  "Desulfobacterota_I" = "Desulfobacterota",
+  "Bacteroidota_A"     = "Bacteroidota",
+  "Bacillaceae_C"      = "Bacillaceae",
+  "Bacillales_D"       = "Bacillales",
+  "Bacillales_A"       = "Bacillales",
+  "Bacillales_B"       = "Bacillales"
+)
+
+
+
+# Apply all replacements to character columns
+gpdgvd[] <- lapply(gpdgvd, function(x) {
+  if (is.character(x)) {
+    for (pattern in names(replacements)) {
+      x <- gsub(pattern, replacements[[pattern]], x)
+    }
+  }
+  x
+})
+
+```
+
+### create helpful labels
+```{r}
+
+
+## make f_spor sporulation status as unknown if NA
+gpdgvd$f_spor[is.na(gpdgvd$f_spor)] <- "unknown"
+gpdgvd$newgtdb_Phylum[is.na(gpdgvd$newgtdb_Phylum)] <- "unknown"
+
+
+
+
+## create helpful labels
+gpdgvd$sporulation <- "T"
+gpdgvd$sporulation <- ifelse(gpdgvd$f_spor==TRUE, "Spor", "NonSpor")
+
+gpdgvd$lifestyle <- "T"
+gpdgvd$lifestyle <- ifelse(gpdgvd$predicted_label=="temperate", "Temp", "Lytic")
+
+gpdgvd$host_phyla <- "T"
+gpdgvd$host_phyla <- ifelse(gpdgvd$newgtdb_Phylum=="Bacillota", "Bacillota", "OtherPhyla")
+
+gpdgvd <- unite(gpdgvd, "host_phage_spor", c("host_phyla", "lifestyle", "sporulation"), sep = "_", remove = FALSE, na.rm = FALSE)
+gpdgvd <- unite(gpdgvd, "hostspec_phage_spor", c("newgtdb_Phylum", "lifestyle", "sporulation"), sep = "_", remove = FALSE, na.rm = FALSE)
+gpdgvd <- unite(gpdgvd, "phage_type", c("lifestyle", "sporulation"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+
+write.csv(gpdgvd, here("00_data/gpd_gvd/gpd_gvd_sporstatus_checkv.csv"))
+
+
+```
+
+
+
+```{r}
+#gpdgvd <- read.csv(here("00_data/gpd_gvd/gpd_gvd_sporstatus_checkv.csv"), row.names=1)
+
+
+gpdgvd.phyla <- select(gpdgvd, ID, newgtdb_Phylum)
+
+#write.table(gpdgvd.phyla, here("00_data/gpd_gvd/GPDGVD_knownspore_phylalist.txt"), col.names = FALSE, row.names = FALSE, quote=FALSE, sep = "\t")
+
+
+
+
+
+
+ps.1 <- read.delim2(here("00_data/gpd_gvd/original_metadata/phagescope_gpd_phage_meta_data.tsv"))
+ps.2 <- read.delim2(here("00_data/gpd_gvd/original_metadata/phagescope_gvd_phage_meta_data.tsv"))
+
+ps <- rbind(ps.1, ps.2)
+
+ps.checkv <- ps[,c(1:6)]
+
+gpdgvd2 <- merge(gpdgvd, ps.checkv, by.x="ID", by.y="Phage_ID", all.x=TRUE, all.y=FALSE)
+```
+
+
+```{r}
+### create useful lists for splitting multifasta files
+gpdgvd <- read.csv(here("00_data/gpd_gvd/gpd_gvd_sporstatus_checkv.csv"))
+
+
+
+#writeLines(as.character(gpdgvd$ID), here("00_data/gpd_gvd/GPDGVD_Phage_qual.txt"))
+
+### list of all bacilliota sporulating (TRUE) hosts
+writeLines(as.character(gpdgvd$ID[gpdgvd$f_spor==TRUE]), here("00_data/gpd_gvd/GPDGVD_BacilliotaSporeTRUEphage_qual.txt"))
+
+## list of all bacilliota non-sporulating (FALSE) hosts
+writeLines(as.character(gpdgvd$ID[gpdgvd$f_spor==FALSE & gpdgvd$newgtdb_Phylum=="Bacillota"]), here("00_data/gpd_gvd/GPDGVD_BacilliotaSporeFALSEphage_qual.txt"))
+
+### list of all bacilliota sporulating (TRUE) hosts + Lytic phage
+writeLines(as.character(gpdgvd$ID[gpdgvd$f_spor==TRUE & gpdgvd$predicted_label=="virulent"]), here("00_data/gpd_gvd/GPDGVD_BacilliotaSporeTRUELytic_qual.txt"))
+
+### list of all bacilliota non sporulating (FALSE) hosts + Lytic phage
+writeLines(as.character(gpdgvd$ID[gpdgvd$f_spor==FALSE & gpdgvd$predicted_label=="virulent"]), here("00_data/gpd_gvd/GPDGVD_BacilliotaSporeFALSELytic_qual.txt"))
+
+### list of all bacilliota sporulating (TRUE) hosts + Temp phage
+writeLines(as.character(gpdgvd$ID[gpdgvd$f_spor==TRUE & gpdgvd$predicted_label=="temperate"]), here("00_data/gpd_gvd/GPDGVD_BacilliotaSporeTRUETemperate_qual.txt"))
+
+### list of all bacilliota sporulating (FALSE) hosts + Temp phage
+writeLines(as.character(gpdgvd$ID[gpdgvd$f_spor==TRUE & gpdgvd$predicted_label=="temperate"]), here("00_data/gpd_gvd/GPDGVD_BacilliotaSporeFALSETemperate_qual.txt"))
+
+## list of all bacilliota non-sporulating (FALSE) hosts
+writeLines(as.character(gpdgvd$ID[gpdgvd$f_spor==FALSE]), here("00_data/gpd_gvd/GPDGVD_NonBacilliotaPhage_qual.txt"))
+
+```
+
+

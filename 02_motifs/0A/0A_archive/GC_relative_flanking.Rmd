@@ -1,0 +1,160 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(here)
+library(tidyverse)
+library(ggpubr)
+library(epitools)
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+here::here()
+
+
+
+box <- read.delim2(here("data/inphared_db/14Apr2025inph_0A_v3.txt" ))
+box <- subset(box, box$Header!="Header")
+box <- subset(box, box$Partial=="None")
+box <- box %>% rename(product = Sequence, phage = Contig)
+box[,c(2)] <- "0A_box"
+#box <- box[,c(3,2,1)]
+
+
+
+gc_content <- function(seq) {
+  seq <- toupper(seq)
+  bases <- strsplit(seq, "")[[1]]
+  gc_count <- sum(bases %in% c("G", "C"))
+  total <- length(bases)
+  return(gc_count / total * 100)
+}
+
+# Vectorized version for multiple sequences
+gc_content_vec <- function(seqs) {
+  sapply(seqs, gc_content)
+}
+
+
+
+box$GC.flanks <- gc_content_vec(box$Context_no_motif)
+box$GC.Up <- gc_content_vec(box$Upstream)
+box$GC.Down <- gc_content_vec(box$Downstream)
+
+
+phage <- read.csv(here("data/inphared_db/14Apr2025_knownsporestatus.csv"), row.names=1)
+
+all <- merge(box, phage, by.x="phage", by.y="Accession", all.x=TRUE, all.y=TRUE) 
+
+all$product[is.na(all$product)] <- "No_0A"
+```
+
+
+```{r}
+all$phageGC <- as.numeric(all$molGC...)
+
+all$count <- 0
+all[is.na(all)] <- 0
+
+all$count <- ifelse(all$product=="0A_box", 1, 0)
+
+all$GC.UDiff <- all$GC.Up - all$phageGC ## phage should have higher GC than flanking region, so number should be negative if 0A
+all$GC.DDiff <- all$GC.Down - all$phageGC
+
+all$GC.FDiff <- all$GC.flanks - all$phageGC 
+
+
+all$count <- ifelse(all$GC.UDiff < -5 , 1, 0) 
+#all$count <- ifelse(all$GC.UDiff <= -5 | all$GC.DDiff <= -10 , 1, 0) 
+# #  all$GC.DDiff <= -10 ,1 ,0 ) #| all$GC.DDiff <= -5, 1, 0)
+
+#gc.check <- select(all, phage, product, host_phage_spor, count, GC.UDiff, GC.DDiff, GC.FDiff, GC.Up, GC.flanks,GC.Down, Context_no_motif, gtdb_f, f_spor, newgtdb_Phylum, predicted_label )
+
+
+#all$product <- ifelse(all$count==0, "No_0A", "0A_box")
+
+box <-  all %>% group_by(phage, product) %>% summarise(sum=sum(count)) 
+
+
+```
+
+```{r}
+
+phage <- read.csv(here("data/inphared_db/14Apr2025_knownsporestatus.csv"), row.names=1)
+
+
+
+
+all <- merge(box, phage, by.x="phage", by.y="Accession", all.x=TRUE, all.y=TRUE) 
+
+
+all$product[is.na(all$product)] <- "0A_box"
+all$sum[is.na(all$sum)] <- 0
+
+all[is.na(all)] <- "currently_missing"
+all <- subset(all, all$newgtdb_Phylum!="currently_missing")
+
+all$HostPhyla <- "OtherPhyla"
+all$HostPhyla <- ifelse(all$newgtdb_Phylum=="Bacillota", "Bacillota", "OtherPhyla")
+
+all$sporulation <- "unknown"
+all$sporulation <- ifelse(all$f_spor=="TRUE", "Spor", all$sporulation)
+all$sporulation <- ifelse(all$f_spor=="FALSE", "Nonspor", all$sporulation)
+
+all <- subset(all, all$sporulation!="unknown" )
+all <- subset(all, all$predicted_label!="missing")
+
+all <- unite(all, "phyla_spor_type", c("HostPhyla", "sporulation", "predicted_label"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+all <- unite(all, "spor_type", c("sporulation", "predicted_label"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+all <- unite(all, "specphyla_spor_type", c("newgtdb_Phylum", "sporulation", "predicted_label"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+#all$genome <- log10(all$Genome.Length..bp.)
+
+all$genome <- as.numeric(all$Genome.Length..bp)
+all$phageGC <- as.numeric(all$molGC...)
+
+
+all$genome <- log10(all$genome)
+
+```
+
+
+```{r}
+
+
+
+
+
+ ggplot(all, aes(x = factor(host_phage_spor), y = phageGC)) +
+  geom_boxplot(outlier.shape = NA) +  # Remove default outliers so jitter isn't obscured
+  geom_jitter(aes(color = sum), width = 0.2, size = 2, alpha = 0.5) +
+  scale_color_gradient(low = "lightblue", high = "darkred") +  # Customize gradient as needed
+  ylab("GC % of Phage Genome") +
+  xlab("Host sporulation") + ggtitle("At least 65%  AT Upstream")
+  theme_minimal()
+
+```
+
+
+```{r}
+all$tally <- 1
+all$hit <- ifelse(all$sum!=0, 1, 0)
+
+counts <- all %>% group_by(phyla_spor_type) %>% summarise(num.phage=sum(tally), total.0A=sum(sum), mean.0A=mean(sum), hits.0A=sum(hit)) 
+
+
+### only accounting for sporulation and lifestyle
+ggplot(all, aes(x = factor(spor_type), fill = factor(spor_type), y = sum )) +
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2) + ylab("Number of 0A boxes")
+
+
+## accounting for bacilliota vs. other phyla
+ggplot(all, aes(x = factor(phyla_spor_type), fill = factor(phyla_spor_type), y = sum )) +
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2) + ylab("Number of 0A boxes") + ggtitle("# of 0A boxes with upstream flanking with 5% less GC%")+theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1)) + theme(legend.position = "right", legend.title = element_blank()) + xlab("Host + Sporulation Phenotype + Phage Lifestyle") 
+
+ggsave(here("lab_pres/Inph0A_5PercRel.png"))
+```
+

@@ -1,0 +1,313 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+### load libraries, set wd
+```{r}
+library(tidyverse)
+library(here)
+here()
+
+dr_here()
+```
+## GPD/GVD database, add sporulation status to gvd/gpd contigs -- UPDATED: 
+
+```{r}
+
+## load gtdb tax list with sporulation phenotype for bacilliota and non-bacilliota
+tax <- read.csv(here("00_data/gtdb/updated_fam_spor.csv"),row.name=1)
+
+
+search_terms.family <- unique(tax[,c(1)])
+search_terms.order <- unique(tax[,c(6)])
+search_terms.genus <- unique(tax[,c(7)])
+search_terms.class <- unique(tax[,c(5)])
+search_terms.phylum <- unique(tax[,c(4)])
+
+
+# Function to find first matching family in the host column from tax list and make a new column with just that family
+library(stringr)
+
+
+extract_last_match <- function(text, terms) {
+  pattern <- str_c("\\b(", str_c(terms, collapse = "|"), ")\\b")
+  
+  hits <- str_extract_all(text, regex(pattern, ignore_case = TRUE))
+  
+  vapply(
+    hits,
+    function(h) if (length(h) == 0) NA_character_ else tail(h, 1),
+    character(1)
+  )
+}
+
+
+## load gpd and gvd datasets 
+
+gpd <- read.delim2(here("00_data/gpd_gvd/original_metadata/GPD_metadata.tsv" )) 
+gpd$Host_range_taxon<- gsub('/', ';', gpd$Host_range_taxon)
+
+
+gvd <- read.csv(here("00_data/gpd_gvd/original_metadata/gvd_all_hosts.csv" )) 
+gvd$GTDB_Host<- gsub('p__', '', gvd$GTDB_Host)
+gvd$GTDB_Host<- gsub('f__', '', gvd$GTDB_Host)
+
+
+gpgv.style <- read.delim2(here("00_data/gpd_gvd/dan_phastyle_predictions.tsv"))
+
+
+
+
+gpd.tax <- gpd[,c(1,7)]
+gvd.tax <- gvd[,c(1,5)]
+## can use this to match to daniel's GTDB spore/nonspore and phagescope output
+
+colnames(gpd.tax) <- c("ID", "GTDB_tax")
+colnames(gvd.tax)<- c("ID", "GTDB_tax")
+
+og_tax <- rbind(gpd.tax, gvd.tax)
+
+og_tax <- unique(og_tax)
+
+og_tax <- merge(og_tax, gpgv.style, by.x="ID", by.y="fasta_id", all.x=FALSE, all.y=TRUE)
+
+og_tax$GTDB_tax[is.na(og_tax$GTDB_tax)] <- "Host Not Assigned or not a prokaryotic virus"
+
+og_tax.hits <- subset(og_tax, og_tax$GTDB_tax!="Host Not Assigned or not a prokaryotic virus")
+
+og_unknowns <- subset(og_tax, og_tax$GTDB_tax=="Host Not Assigned or not a prokaryotic virus")
+
+```
+
+
+```{r}
+
+###match to phyla, class, order, family, genus
+
+tax1 <- og_tax.hits %>%
+  mutate(matched_phyla = sapply(GTDB_tax, extract_match, terms = search_terms.phylum))
+
+tax2 <- tax1 %>%
+  mutate(matched_class= sapply(GTDB_tax, extract_match, terms = search_terms.class))
+
+tax3 <- tax2 %>%
+  mutate(matched_order= sapply(GTDB_tax, extract_match, terms = search_terms.order))
+
+
+tax4 <- tax3 %>%
+  mutate(matched_family= sapply(GTDB_tax, extract_match, terms = search_terms.family))
+
+
+tax5 <- tax4 %>%
+  mutate(matched_word = sapply(GTDB_tax, extract_match, terms = search_terms.genus))
+
+#write.csv(tax5, here("00_data/gpd_gvd/gpd_gvd_sporstatus_checkv_patternmatch.csv"))
+```
+
+
+```{r}
+tax6 <- read.csv(here("00_data/gpd_gvd/gpd_gvd_sporstatus_checkv_patternmatch.csv"), row.names=1)
+
+
+tax6[is.na(tax6)] <- "Unknown"
+
+
+### merge by genus match
+tax6 <- merge(tax, tax6, by.x="newgtdb_Genus", by.y="matched_word", all.x=FALSE, all.y=TRUE)
+
+
+genhits <- subset(tax6, tax6$newgtdb_Genus!="Unknown")
+genhits <- genhits[,-c(14:17)]
+
+### subset out genus hits, keep only no hits and merge now with family
+unknown <- subset(tax6, tax6$newgtdb_Genus=="Unknown")
+unknown <- unknown[,-c(2:7)]
+
+tax.fam <- unique(tax[,c(1:6)])
+
+unknown <-  merge(tax.fam, unknown, by.x="gtdb_f", by.y="matched_family", all.y =TRUE, all.x=FALSE)
+
+unknown[is.na(unknown)] <- "Unknown"
+
+famhits <- subset(unknown, unknown$gtdb_f!="Unknown")
+famhits <- famhits[,-c(14:16)]
+
+### subset out family hits, keep only no hits and merge now with order
+unknown <- subset(unknown, unknown$gtdb_f=="Unknown")
+unknown <- unknown[,-c(2:7)]
+
+
+tax.ord <- unique(tax[,-c(1,2,7)])
+
+unknown <-  merge(tax.ord, unknown, by.x="newgtdb_Order", by.y="matched_order", all.x =FALSE, all.y=TRUE)
+
+unknown[is.na(unknown)] <- "Unknown"
+
+ordhits <- subset(unknown, unknown$newgtdb_Order!="Unknown")
+
+ordhits <- ordhits[,-c(12:23)]
+
+
+
+
+### subset out order hits, keep only no hits and merge now with class
+unknown <- subset(unknown, unknown$newgtdb_Order=="Unknown")
+unknown <- unknown[,-c(2:5)]
+
+tax.class <- unique(tax[,-c(1,2,6,7)])
+
+unknown <-  merge(tax.class, unknown, by.x="newgtdb_Class", by.y="matched_class", all.x =FALSE, all.y=TRUE)
+
+
+unknown[is.na(unknown)] <- "Unknown"
+
+classhits <- subset(unknown, unknown$newgtdb_Class!="Unknown")
+classhits <- classhits[,-c(11)]
+
+### subset out class hits, keep only no hits and merge now with phyla
+unknown <- subset(unknown, unknown$newgtdb_Class=="Unknown")
+unknown <- unknown[,-c(2:4)]
+
+
+tax.phy <- unique(tax[,-c(1,2,5,6,7)])
+
+unknown <- merge(tax.phy, unknown, by.y="matched_phyla", by.x="newgtdb_Phylum", all.y=TRUE, all.x=FALSE)
+
+
+###fix firmicutes to Bacillota
+unknown$newgtdb_Phylum <- ifelse(grepl("Firmicutes", unknown$GTDB_tax), "Bacillota", unknown$newgtdb_Phylum)
+
+unknown$newgtdb_Domain[is.na(unknown$newgtdb_Domain)] <- "Bacteria"
+
+
+phylahits <- unknown
+
+og_unknowns$p_temperate <- as.numeric(og_unknowns$p_temperate)
+og_unknowns$p_virulent <- as.numeric(og_unknowns$p_virulent)
+
+hits <- bind_rows(genhits, famhits, ordhits, classhits, phylahits, og_unknowns)
+
+hits[is.na(hits)] <- "Unknown"
+
+hits$f_spor <- ifelse(hits$f_spor=="Unknown" & hits$newgtdb_Phylum!= "Bacillota", FALSE, hits$f_spor)
+
+
+#write.csv(hits, here("00_data/gpd_gvd/gpd_gvd_sporstatus_TAX.csv"))
+```
+
+
+
+
+### Group GPD/GVD contigs by host/lifestyle
+```{r}
+library(here)
+
+gpdgvd <- read.csv(here("00_data/gpd_gvd/gpd_gvd_sporstatus_TAX.csv"), row.names=1)
+
+
+
+#og_tax_ge
+replacements <- c(
+  "Desulfobacterota_I" = "Desulfobacterota",
+  "Bacteroidota_A"     = "Bacteroidota",
+  "Bacillaceae_C"      = "Bacillaceae",
+  "Bacillales_D"       = "Bacillales",
+  "Bacillales_A"       = "Bacillales",
+  "Bacillales_B"       = "Bacillales"
+)
+
+
+
+# Apply all replacements to character columns
+gpdgvd[] <- lapply(gpdgvd, function(x) {
+  if (is.character(x)) {
+    for (pattern in names(replacements)) {
+      x <- gsub(pattern, replacements[[pattern]], x)
+    }
+  }
+  x
+})
+
+checkv <- read.delim2(here("00_data/gpd_gvd/gpdgvd_checkvqualsum.tsv"))
+checkv <- subset(checkv, checkv$contig_id!="contig_id")
+
+gpdgvd <- merge(gpdgvd, checkv, by.x="ID", by.y="contig_id", all.x=TRUE, all.y=TRUE)
+
+```
+
+
+```{r}
+
+gpdgvd.phyla <- gpdgvd[,c(1,6)]
+write.table(gpdgvd.phyla, here("00_data/gpd_gvd/GPDGVD_knownspore_phylalist.txt"), col.names = FALSE, row.names = FALSE, quote=FALSE, sep = "\t")
+
+
+gpdgvd.qc <- subset(gpdgvd, gpdgvd$checkv_quality=="Complete" | gpdgvd$checkv_quality=="High-quality")
+
+gpdgvd.qc <- subset(gpdgvd.qc, gpdgvd.qc$newgtdb_Phylum!="Unknown")
+gpdgvd.qc <- gpdgvd.qc[,c(1,6)]
+gpdgvd.qc$newgtdb_Phylum <- "Highqual_combined"
+write.table(gpdgvd.qc, here("00_data/gpd_gvd/GPDGVD_knownPHYLA_highqual.txt"), col.names = FALSE, row.names = FALSE, quote=FALSE, sep = "\t")
+
+
+
+gpdgvd.values <- select(gpdgvd, ID, newgtdb_Phylum, contamination, completeness, checkv_quality)
+
+gpdgvd.values[is.na(gpdgvd.values)] <- 0
+
+gpdgvd.values$contamination <- as.numeric(gpdgvd.values$contamination)
+gpdgvd.values$completeness <- as.numeric(gpdgvd.values$completeness)
+
+
+gpdgvd.values$genome <- gpdgvd.values$ID
+
+gpdgvd.values$genome <- paste0(gpdgvd.values$ID, ".fasta")
+
+genome.info <- select(gpdgvd.values, genome, completeness, contamination)
+
+write.csv(genome.info, here("00_data/gpd_gvd/GPDGVD_genomeinfo.csv"))
+```
+
+
+ps.1 <- read.delim2(here("00_data/gpd_gvd/original_metadata/phagescope_gpd_phage_meta_data.tsv"))
+ps.2 <- read.delim2(here("00_data/gpd_gvd/original_metadata/phagescope_gvd_phage_meta_data.tsv"))
+
+ps <- rbind(ps.1, ps.2)
+
+ps.checkv <- ps[,c(1:6)]
+
+gpdgvd2 <- merge(gpdgvd, ps.checkv, by.x="ID", by.y="Phage_ID", all.x=TRUE, all.y=FALSE)
+
+
+```{r}
+### create useful lists for splitting multifasta files
+gpdgvd <- read.csv(here("00_data/gpd_gvd/gpd_gvd_sporstatus_checkv.csv"))
+
+
+
+writeLines(as.character(gpdgvd$ID), here("00_data/gpd_gvd/GPDGVD_Phage_qual.txt"))
+
+### list of all bacilliota sporulating (TRUE) hosts
+writeLines(as.character(gpdgvd$ID[gpdgvd$f_spor==TRUE]), here("00_data/gpd_gvd/GPDGVD_BacilliotaSporeTRUEphage_qual.txt"))
+
+## list of all bacilliota non-sporulating (FALSE) hosts
+writeLines(as.character(gpdgvd$ID[gpdgvd$f_spor==FALSE & gpdgvd$newgtdb_Phylum=="Bacillota"]), here("00_data/gpd_gvd/GPDGVD_BacilliotaSporeFALSEphage_qual.txt"))
+
+### list of all bacilliota sporulating (TRUE) hosts + Lytic phage
+writeLines(as.character(gpdgvd$ID[gpdgvd$f_spor==TRUE & gpdgvd$predicted_label=="virulent"]), here("00_data/gpd_gvd/GPDGVD_BacilliotaSporeTRUELytic_qual.txt"))
+
+### list of all bacilliota non sporulating (FALSE) hosts + Lytic phage
+writeLines(as.character(gpdgvd$ID[gpdgvd$f_spor==FALSE & gpdgvd$predicted_label=="virulent"]), here("00_data/gpd_gvd/GPDGVD_BacilliotaSporeFALSELytic_qual.txt"))
+
+### list of all bacilliota sporulating (TRUE) hosts + Temp phage
+writeLines(as.character(gpdgvd$ID[gpdgvd$f_spor==TRUE & gpdgvd$predicted_label=="temperate"]), here("00_data/gpd_gvd/GPDGVD_BacilliotaSporeTRUETemperate_qual.txt"))
+
+### list of all bacilliota sporulating (FALSE) hosts + Temp phage
+writeLines(as.character(gpdgvd$ID[gpdgvd$f_spor==TRUE & gpdgvd$predicted_label=="temperate"]), here("00_data/gpd_gvd/GPDGVD_BacilliotaSporeFALSETemperate_qual.txt"))
+
+## list of all bacilliota non-sporulating (FALSE) hosts
+writeLines(as.character(gpdgvd$ID[gpdgvd$f_spor==FALSE]), here("00_data/gpd_gvd/GPDGVD_NonBacilliotaPhage_qual.txt"))
+
+```
+
+

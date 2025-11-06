@@ -1,0 +1,474 @@
+---
+title: "JaySubset_Phyloseq"
+output: html_document
+date: "2025-08-15"
+---
+
+
+```{r}
+library(here)
+library(tidyverse)
+library(ggpubr)
+library(epitools)
+library(seqinr)
+library(dplyr)
+library(DECIPHER)
+
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+here::here()
+set.seed(123)
+
+#source(here("utility-scripts/cd-hit-cluster.R"))
+```
+
+
+###  clean up phage metadata
+```{r}
+
+
+phage <- read.csv(here("data/inphared_db/14Apr2025_knownsporestatus.csv"), row.names=1)
+phage$phage.GC <- as.numeric(phage$molGC....)
+phage$phage.length <- as.numeric(phage$Genome.Length..bp.)
+
+phage <- select(phage, Accession, sporulation, lifestyle, host_phyla, newgtdb_Phylum, newgtdb_Class, newgtdb_Order, gtdb_f, Host, Description, host_phage_spor, phage_type, phage.length, phage.GC)
+
+
+
+## FJ230960 spo1
+## EU771092 phi29
+## EU622808 nf
+## KY030782 phi3t
+## AF020713
+
+```
+
+
+## clean up some metadata taxa text naming errors in phage metadata:
+```{r}
+# Define all your pattern-replacement pairs
+replacements <- c(
+  "Desulfobacterota_I" = "Desulfobacterota",
+  "Bacteroidota_A"     = "Bacteroidota",
+  "Bacillaceae_C"      = "Bacillaceae",
+  "Bacillales_D"       = "Bacillales",
+  "Bacillales_A"       = "Bacillales",
+  "Bacillales_B"       = "Bacillales"
+)
+
+# Apply all replacements to character columns
+phage[] <- lapply(phage, function(x) {
+  if (is.character(x)) {
+    for (pattern in names(replacements)) {
+      x <- gsub(pattern, replacements[[pattern]], x)
+    }
+  }
+  x
+})
+
+
+```
+
+
+
+
+### clean up 0A box hits
+```{r}
+box <- read.delim2(here("data/inphared_db/14Apr2025inph_0A_v3.txt" ))
+box <- as.data.frame(box)
+head(box)
+## remove extra .txt headers from catting files
+box <- subset(box, box$Context!="Context")
+### remove incomplete flanking regions
+box <- subset(box, box$Partial=="None")
+
+colnames(box)
+box <- dplyr::rename(box, product = Sequence, phage = Contig)
+
+box[,c(2)] <- "0A"
+
+#box <- box[,c(3,2,1)]
+box$is.0A <- 1
+
+
+box$strand2 <- ifelse(box$Strand=="+", "Fwd", "Rev")
+
+box <- unite(box, "Box_Contig", c("phage", "product", "strand2", "Position"), sep = "_", remove = FALSE, na.rm = FALSE)
+```
+
+
+
+## identify unique 0A hits
+```{r}
+box.uni <- as.data.frame(unique(box$Context_no_motif)) ### 234,022 total hits to 84,088
+#box.uni <- as.data.frame(unique(box$Upstream)) ### 234,022 total hits to 73,993
+
+
+
+box.uni$boxID <- row.names(box.uni)
+#colnames(box.uni) <- c("Upstream", "boxID")
+colnames(box.uni) <- c("Context_no_motif", "boxID")
+box.uni$boxCluster <- paste0("Box_", box.uni$boxID)
+
+
+### THIS IS WHERE THE ERROR IS !! IT IS BC OF THE UPSTREAM SWITCH THANK YOU. 
+all.hits <- merge(box, box.uni, by="Context_no_motif", all.x=TRUE, all.y=TRUE) 
+#all.hits <- merge(box, box.uni, by="Upstream", all.x=TRUE, all.y=TRUE)
+```
+
+```{r}  
+# Construct FASTA-formatted lines
+fasta_lines <- paste0(">", all.hits$Box_Contig, "\n", all.hits$Context_no_motif)
+#fasta_lines <- paste0(">", all.hits$Box_Contig, "\n", all.hits$Upstream)
+#fasta_lines
+# Write to file
+writeLines(fasta_lines, here("data/inphared_db/14Apr2025_0Ahits_nopartials.fna"))
+
+set.seed(123)
+fas <- here("data/inphared_db/14Apr2025_0Ahits_nopartials.fna")
+
+```
+
+
+## add in GC content of flanking regions
+```{r}
+
+gc_content <- function(seq) {
+  seq <- toupper(seq)
+  bases <- strsplit(seq, "")[[1]]
+  gc_count <- sum(bases %in% c("G", "C"))
+  total <- length(bases)
+  return(gc_count / total)
+}
+
+# Vectorized version for multiple sequences
+gc_content_vec <- function(seqs) {
+  sapply(seqs, gc_content)
+}
+
+all.hits$GC.flanks <- gc_content_vec(all.hits$Context_no_motif)
+#all.hits$GC.flanks <- gc_content_vec(all.hits$Upstream)
+
+all.hits <- select(all.hits, Box_Contig, phage, boxID, boxCluster, GC.flanks, Context_no_motif, Upstream, Downstream, Position,product,  is.0A)
+```
+
+## Filter GC here, if desired
+```{r}
+all.hits.gc <- subset(all.hits, all.hits$GC.flanks<=0.35)
+all.hits <- all.hits.gc
+```
+
+
+
+
+library(DECIPHER)
+set.seed(123)
+# specify the path to the FASTA file (in quotes)
+#fas <- here("data/inphared_db/0a_clusters/nested/14Apr2025_0A_80sim.out")
+
+# load the sequences from the file
+# change "DNA" to "RNA" or "AA" as needed
+seqs <- readDNAStringSet(fas)
+
+
+
+clust.80 <- Clusterize(seqs,
+cutoff=0.8, # > 50% similar
+minCoverage=1, # > 50% coverage
+processors=NULL) # use all CPUs
+
+clust80 <- clust.80
+clust80$Sequence_ID <- row.names(clust80)
+clust80$cluster<- paste0("C80_", clust80$cluster)
+
+
+```{r}
+
+cd.clust <- read.csv(here("data/inphared_db/0a_clusters/nested/14Apr2025_0A_nested.csv"), row.names = 1)
+
+### NEED TO MERGE IN CLUSTERS IF YOU WANT TO USE THEM!!! DUMMY!
+cd.clust.key <- merge(all.hits, cd.clust, by.x="Box_Contig", by.y="Sequence_ID", all.x=TRUE, all.y=FALSE)
+
+cd.clust.key <- na.omit(cd.clust.key)
+cd.clust.key <- select(cd.clust.key, boxCluster, Cluster99, Cluster95, Cluster90, Cluster85, Cluster80)
+cd.clust.key <- unique(cd.clust.key)
+
+#duplicate_rows <- cd.clust.key[duplicated(cd.clust.key$boxCluster), ]
+
+
+#unique(all.hits)
+all.hits <- merge(all.hits, cd.clust.key, by="boxCluster", all.x=TRUE, all.y=FALSE)
+#duplicate_rows <- all.hits2[duplicated(all.hits2$Box_Contig), ]
+```
+
+
+
+### merge box hits & phage metadata
+```{r}
+
+all <- merge(all.hits, phage, by.x="phage", by.y="Accession", all.x=TRUE, all.y=TRUE) 
+
+
+## set phages without 0A boxes to 0 so they remain in metadata but aren't counted as hits
+all[is.na(all)] <- "No_0A"
+all$is.0A <- ifelse(all$product=="No_0A", 0, 1)
+
+
+phage.0Acounts <- all %>% group_by(phage) %>% summarise(total.0A=sum(is.0A))
+phage.0Acounts <- merge(phage.0Acounts, phage, by.x="phage", by.y="Accession", all.x=FALSE, all.y=TRUE)
+
+
+all.hits <- merge(all.hits, phage.0Acounts, by.x="phage", by.y="phage", all.x=TRUE, all.y=TRUE)
+
+## set phages without 0A boxes to 0 so they remain in metadata but aren't counted as hits
+all.hits[is.na(all.hits)] <- "No_0A"
+all.hits$is.0A <- ifelse(all.hits$product=="No_0A", 0, 1)
+
+all.hits.withno <- all.hits
+
+
+all.hits <- subset(all.hits, all.hits$product!="No_0A")
+
+
+
+
+```
+
+
+### create 0A "species matrix" for bacillota
+
+```{r}
+all.hits.bacil <- subset(all.hits, all.hits$newgtdb_Phylum=="Bacillota") #15,911 0A boxes, 2,970 phages
+bacil.host.select <- subset(all.hits.bacil, all.hits.bacil$Host=="Staphylococcus" | all.hits.bacil$Host=="Streptococcus" | all.hits.bacil$Host=="Bacillus" | all.hits.bacil$Host=="Lactococcus" |all.hits.bacil$Host=="Enterococcus" | all.hits.bacil$Host=="Paenibacillus" |  all.hits.bacil$Host=="Lactobacillus" | all.hits.bacil$Host=="Clostridium" | all.hits.bacil$Host=="Listeria" ) ## 6553 0A boxes (total) & 3366 unique 0A, #827 phages,  ##445 phages are bacillus (~4766 0A box, 2456 unique )
+host.list <-  unique(bacil.host.select$Host) ###56 genera
+host.list 
+
+all.hits.bacil <- bacil.host.select
+
+
+all.hits.perc <- select(all.hits.bacil, phage, Cluster80, Host)
+t <- unique(all.hits.bacil$Cluster80)
+all.hits.perc$tally <- 1
+
+all.hits.perc <- all.hits.perc %>% group_by(Cluster80, Host) %>% summarise(sum.host=sum(tally)) 
+all.hits.total <- all.hits.perc %>% group_by(Cluster80) %>% summarise(sum.total=sum(sum.host)) 
+all.hits.perc <- merge(all.hits.perc, all.hits.total, by="Cluster80", all=TRUE)
+all.hits.perc$perc <- all.hits.perc$sum.host/all.hits.perc$sum.total
+
+not.perf.host <- subset(all.hits.perc, all.hits.perc$perc!=1)
+
+
+```
+
+
+```{r}
+library(phyloseq)
+
+otu <- all.hits.bacil %>%
+  group_by(phage, Cluster80) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = phage, values_from = count, values_fill = 0) %>%
+  column_to_rownames("Cluster80") %>%
+  as.matrix()
+
+
+
+
+```
+
+
+###SANITY CHECK FOR OTUS
+
+
+o <- as.data.frame(otu)
+#otu_check2$ID <- row.names(otu_check2)
+#o <- unique(otu_check2)
+
+dup_cols <- duplicated(as.data.frame(t(otu_check2)))
+
+library(purrr)
+library(digest)
+
+# Hash each column's values
+col_hashes <- map_chr(o, ~ digest(.x))
+
+# Make a long data frame
+hash_df <- data.frame(
+  hash = col_hashes,
+  site = names(col_hashes),
+  stringsAsFactors = FALSE
+)
+
+# Keep only hashes that occur more than once
+hash_df <- hash_df %>%
+  group_by(hash) %>%
+  filter(n() > 1) %>%
+  arrange(hash)
+
+hash_df
+k <- as.data.frame(unique(hash_df$hash))
+k$ID <- rownames(k)
+colnames(k) <- c("hash", "hash_id")
+hash_df <- merge(hash_df, k, by="hash", all=TRUE)
+
+hash_df.meta <- merge(hash_df, phage, by.x="site", by.y="Accession", all.x=TRUE, all.y=FALSE)
+
+p <- unique(hash_df.meta$site)
+
+hash_df.min <- unique(select(hash_df.meta, hash_id, Host))
+
+
+t <- as.data.frame(hash_df.min$hash_id)
+
+
+dup_cols <- duplicated(as.data.frame(t))
+
+# Which columns are duplicates
+which(dup_cols)
+t <- hash_df.min$hash_id  # make it a vector, not a data frame
+
+# Find duplicates
+dup_cols <- duplicated(t)
+
+# Get the duplicated values
+t[dup_cols]
+# Get groups of identical columns
+dup_groups <- split(names(df), as.list(data.frame(t(df))))
+
+
+
+
+###phyloseq
+
+```{r}
+
+library(phyloseq)
+
+otu <- all.hits.bacil %>%
+  group_by(phage, Cluster80) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = phage, values_from = count, values_fill = 0) %>%
+  column_to_rownames("Cluster80") %>%
+  as.matrix()
+
+OTU <- otu_table(otu, taxa_are_rows = TRUE)
+
+#cluster.bacil.all <- t(cluster.bacil.all)
+
+
+phage <- phage
+rownames(phage) <- phage$Accession
+
+phage.bacill <- subset(phage, phage$Host=="Staphylococcus" | phage$Host=="Streptococcus" | phage$Host=="Bacillus" | phage$Host=="Lactococcus" |phage$Host=="Enterococcus" | phage$Host=="Paenibacillus" |  phage$Host=="Lactobacillus" | phage$Host=="Clostridium" | phage$Host=="Listeria" )
+sample = sample_data(phage.bacill)
+
+
+
+bacilli.80 <- phyloseq(OTU, sample)
+
+```
+```{r}
+
+library(phyloseq)
+
+otu <- all.hits.bacil %>%
+  group_by(phage, boxCluster) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = phage, values_from = count, values_fill = 0) %>%
+  column_to_rownames("boxCluster") %>%
+  as.matrix()
+
+OTU <- otu_table(otu, taxa_are_rows = TRUE)
+
+#cluster.bacil.all <- t(cluster.bacil.all)
+
+
+phage <- phage
+rownames(phage) <- phage$Accession
+
+phage.bacill <- subset(phage, phage$Host=="Staphylococcus" | phage$Host=="Streptococcus" | phage$Host=="Bacillus" | phage$Host=="Lactococcus" |phage$Host=="Enterococcus" | phage$Host=="Paenibacillus" |  phage$Host=="Lactobacillus" | phage$Host=="Clostridium" | phage$Host=="Listeria" )
+sample = sample_data(phage.bacill)
+
+
+
+bacilli.100 <- phyloseq(OTU, sample)
+
+
+```
+
+
+```{r}
+bacilli.ord100b <- ordinate(bacilli.100, "PCoA", "bray")
+bacilli.ord100j <- ordinate(bacilli.100, "PCoA", "jaccard")
+bacilli.ord80b <- ordinate(bacilli.80, "PCoA", "bray")
+bacilli.ord80j <- ordinate(bacilli.80, "PCoA", "jaccard")
+
+```
+
+```{r}
+all.together.b <- plot_ordination(bacilli.100, bacilli.ord100b, type="samples", color="Host", shape = "lifestyle",
+                  title="OTUs Bray")
+
+
+all.together.j <- plot_ordination(bacilli.100, bacilli.ord100j, type="samples", color="Host", shape = "lifestyle",
+                  title="OTUs Jaccard")
+
+
+cluster80.b <- plot_ordination(bacilli.80, bacilli.ord80b, type="samples", color="Host", shape = "lifestyle",
+                  title="Cluster80% Bray")
+
+cluster80.j <- plot_ordination(bacilli.80, bacilli.ord80j, type="samples", color="Host", shape = "lifestyle",
+                  title="Cluster80% Jaccard")
+
+
+all.together.b
+all.together.j
+cluster80.b
+cluster80.j
+
+
+ split.host <- plot_ordination(bacilli.80, bacilli.ord80b, type="samples", color="lifestyle", 
+                  title="Cluster80% Bray", shape="lifestyle") + 
+                  facet_wrap(~Host, 3)
+ split.host
+```
+
+
+
+```{r}
+
+
+ plot_net(baci.80, distance = "jaccard", type = "samples", 
+           maxdist = 0.7, color="Host")
+
+
+p <- plot_heatmap(baci.80, method = "PCoA", distance = "bray")
+p + facet_wrap(~ Host, scales = "free_x")
+
+rank_names(phylo_bacilli)
+
+bacilli.ord <- ordinate(phylo_bacilli, "PCoA", "bray")
+bacilli.ord80 <- ordinate(baci.80, "PCoA", "bray")
+
+
+all.together <- plot_ordination(phylo_bacilli, bacilli.ord, type="samples", color="Host", shape = "lifestyle",
+                  title="OTUs")
+plot_ordination(phylo_bacilli, bacilli.ord, type="taxa", color="Cluster80", shape = "lifestyle",
+                  title="OTUs")
+
+
+plot_ordination(baci.80, bacilli.ord80, type="samples", color="Host", shape = "lifestyle",
+                  title="OTUs")
+
+  plot_richness(phylo_bacilli, measures=c("Chao1", "Shannon"), x="Host", color="lifestyle")
+
+ split.host <- plot_ordination(phylo_bacilli, bacilli.ord, type="samples", color="lifestyle", 
+                  title="OTUs", shape="lifestyle") + 
+                  facet_wrap(~Host, 3)
+ 
+  plot_ordination(baci.80, bacilli.ord80, type="samples", color="lifestyle", 
+                  title="OTUs", shape="lifestyle") + 
+                  facet_wrap(~Host, 3)
+all.together
+split.host
+```

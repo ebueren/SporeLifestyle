@@ -1,0 +1,502 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(here)
+library(tidyverse)
+library(ggpubr)
+library(epitools)
+library(seqinr)
+library(dplyr)
+library(DECIPHER)
+
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+here::here()
+set.seed(123)
+
+#source(here("utility-scripts/cd-hit-cluster.R"))
+```
+
+
+###  clean up phage metadata
+```{r}
+
+
+phage <- read.csv(here("data/inphared_db/14Apr2025_knownsporestatus.csv"), row.names=1)
+phage$phage.GC <- as.numeric(phage$molGC....)
+phage$phage.length <- as.numeric(phage$Genome.Length..bp.)
+
+phage <- select(phage, Accession, sporulation, lifestyle, host_phyla, newgtdb_Phylum, newgtdb_Class, newgtdb_Order, gtdb_f, Host, Description, host_phage_spor, phage_type, phage.length, phage.GC)
+
+
+
+## FJ230960 spo1
+## EU771092 phi29
+## EU622808 nf
+## KY030782 phi3t
+## AF020713
+
+```
+
+
+## clean up some metadata taxa text naming errors in phage metadata:
+```{r}
+# Define all your pattern-replacement pairs
+replacements <- c(
+  "Desulfobacterota_I" = "Desulfobacterota",
+  "Bacteroidota_A"     = "Bacteroidota",
+  "Bacillaceae_C"      = "Bacillaceae",
+  "Bacillales_D"       = "Bacillales",
+  "Bacillales_A"       = "Bacillales",
+  "Bacillales_B"       = "Bacillales"
+)
+
+# Apply all replacements to character columns
+phage[] <- lapply(phage, function(x) {
+  if (is.character(x)) {
+    for (pattern in names(replacements)) {
+      x <- gsub(pattern, replacements[[pattern]], x)
+    }
+  }
+  x
+})
+
+
+```
+
+
+
+
+### clean up 0A box hits
+```{r}
+box <- read.delim2(here("data/inphared_db/14Apr2025inph_0A_v3.txt" ))
+box <- as.data.frame(box)
+head(box)
+## remove extra .txt headers from catting files
+box <- subset(box, box$Context!="Context")
+### remove incomplete flanking regions
+box <- subset(box, box$Partial=="None")
+
+colnames(box)
+box <- dplyr::rename(box, product = Sequence, phage = Contig)
+
+box[,c(2)] <- "0A"
+
+#box <- box[,c(3,2,1)]
+box$is.0A <- 1
+
+
+box$strand2 <- ifelse(box$Strand=="+", "Fwd", "Rev")
+
+box <- unite(box, "Box_Contig", c("phage", "product", "strand2", "Position"), sep = "_", remove = FALSE, na.rm = FALSE)
+```
+
+
+## identify unique 0A hits
+```{r}
+#box.uni <- as.data.frame(unique(box$Context_no_motif)) ### 234,022 total hits to 84,088
+box.uni <- as.data.frame(unique(box$Upstream)) ### 234,022 total hits to 73,993
+
+
+
+box.uni$boxID <- row.names(box.uni)
+colnames(box.uni) <- c("Upstream", "boxID")
+box.uni$boxCluster <- paste0("Box_", box.uni$boxID)
+
+
+### THIS IS WHERE THE ERROR IS !! IT IS BC OF THE UPSTREAM SWITCH THANK YOU. 
+ 
+all.hits <- merge(box, box.uni, by="Upstream", all.x=TRUE, all.y=TRUE)
+```
+
+```{r}  
+# Construct FASTA-formatted lines
+fasta_lines <- paste0(">", all.hits$Box_Contig, "\n", all.hits$Upstream)
+#fasta_lines
+# Write to file
+writeLines(fasta_lines, here("data/inphared_db/14Apr2025_0Ahits_nopartials.fna"))
+
+set.seed(123)
+fas <- here("data/inphared_db/14Apr2025_0Ahits_nopartials.fna")
+
+```
+
+
+## add in GC content of flanking regions
+```{r}
+
+gc_content <- function(seq) {
+  seq <- toupper(seq)
+  bases <- strsplit(seq, "")[[1]]
+  gc_count <- sum(bases %in% c("G", "C"))
+  total <- length(bases)
+  return(gc_count / total)
+}
+
+# Vectorized version for multiple sequences
+gc_content_vec <- function(seqs) {
+  sapply(seqs, gc_content)
+}
+
+
+all.hits$GC.flanks <- gc_content_vec(all.hits$Upstream)
+
+all.hits <- select(all.hits, Box_Contig, phage, boxID, boxCluster, GC.flanks, Context_no_motif, Upstream, Downstream, Position,product,  is.0A)
+```
+
+## Filter GC here, if desired
+```{r}
+all.hits.gc <- subset(all.hits, all.hits$GC.flanks<=0.35)
+all.hits <- all.hits.gc
+```
+
+
+```{r}
+
+
+library(DECIPHER)
+set.seed(123)
+# specify the path to the FASTA file (in quotes)
+#fas <- here("data/inphared_db/0a_clusters/nested/14Apr2025_0A_80sim.out")
+
+# load the sequences from the file
+# change "DNA" to "RNA" or "AA" as needed
+seqs <- readDNAStringSet(fas)
+
+
+
+clust.90 <- Clusterize(seqs,
+cutoff=0.5, # > 50% similar
+minCoverage=1, # > 50% coverage
+processors=NULL) # use all CPUs
+
+clust90 <- clust.90
+clust90$Sequence_ID <- row.names(clust90)
+clust90$cluster<- paste0("C90_", clust90$cluster)
+
+```
+
+### merge box hits & phage metadata
+```{r}
+
+all <- merge(all.hits, phage, by.x="phage", by.y="Accession", all.x=TRUE, all.y=TRUE) 
+
+
+## set phages without 0A boxes to 0 so they remain in metadata but aren't counted as hits
+all[is.na(all)] <- "No_0A"
+all$is.0A <- ifelse(all$product=="No_0A", 0, 1)
+
+
+phage.0Acounts <- all %>% group_by(phage) %>% summarise(total.0A=sum(is.0A))
+phage.0Acounts <- merge(phage.0Acounts, phage, by.x="phage", by.y="Accession", all.x=FALSE, all.y=TRUE)
+
+
+all.hits <- merge(all.hits, phage.0Acounts, by.x="phage", by.y="phage", all.x=TRUE, all.y=TRUE)
+
+## set phages without 0A boxes to 0 so they remain in metadata but aren't counted as hits
+all.hits[is.na(all.hits)] <- "No_0A"
+all.hits$is.0A <- ifelse(all.hits$product=="No_0A", 0, 1)
+
+all.hits.withno <- all.hits
+
+
+all.hits <- subset(all.hits, all.hits$product!="No_0A")
+```
+
+
+### create 0A "species matrix" for bacillota
+
+```{r}
+all.hits.bacil <- subset(all.hits, all.hits$newgtdb_Phylum=="Bacillota") #15,911 0A boxes, 2,970 phages
+host.list <-  unique(all.hits.bacil$Host) ###56 genera
+host.list 
+```
+
+## random subsampling + bacillus, staphylococcus, clostridium, listeria 
+
+```{r}
+
+bacil.host.select <- subset(all.hits.bacil, all.hits.bacil$Host=="Staphylococcus" | all.hits.bacil$Host=="Streptococcus" | all.hits.bacil$Host=="Bacillus" | all.hits.bacil$Host=="Lactococcus" |all.hits.bacil$Host=="Enterococcus" | all.hits.bacil$Host=="Paenibacillus" |  all.hits.bacil$Host=="Lactobacillus" | all.hits.bacil$Host=="Clostridium" | all.hits.bacil$Host=="Listeria" ) ## 6553 0A boxes (total) & 3366 unique 0A, #827 phages,  ##445 phages are bacillus (~4766 0A box, 2456 unique )
+
+
+fixed_genera <- c("Bacillus", "Staphylococcus", "Listeria", "Clostridium", "Streptococcus", "Lactococcus", "Enterococcus", "Lactobacillus", "Paenibacillus") #Paenibacillus
+
+# Remove fixed genera from the pool of options
+other_genera <- setdiff(unique(all.hits.bacil$Host), fixed_genera)
+
+# Sample remaining genera 
+random_genera <- sample(other_genera, 0)
+
+# Combine fixed and random
+selected_genera <- c(fixed_genera, random_genera)
+
+# Subset dataframe
+subsampled.target.genera <- all.hits.bacil %>%
+  filter(Host %in% selected_genera)
+
+
+selected_phage <- subsampled.target.genera %>%
+  group_by(Host) %>%
+  slice_sample(n = 70) %>%    # Sample 20 per Host
+  ungroup()
+
+subsampled.target.0A <- subsampled.target.genera %>%
+  filter(phage %in% selected_phage$phage)
+
+cluster.bacil.target <- subsampled.target.0A %>%
+  group_by(boxCluster, phage) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = phage, values_from = count, values_fill = 0) %>%
+  column_to_rownames("boxCluster") %>%
+  as.matrix()
+
+
+
+cluster.bacil.target <- t(cluster.bacil.target)
+
+```
+
+```{r}
+library(vegan)
+library(pheatmap)
+
+
+
+# 1. Compute Bray-Curtis distance
+#bray_dist.phy <- vegdist(cluster.bacil.target, method = "jaccard")
+bray_dist.phy <- vegdist(cluster.bacil.target, method = "jaccard")
+# 2. Run NMDS
+nmds_result <- metaMDS(bray_dist.phy, k = 2, trymax = 100)
+
+# 3. Extract NMDS coordinates
+nmds_points <- as.data.frame(nmds_result$points)
+nmds_points$SampleID <- rownames(nmds_points)
+
+
+meta <- select(subsampled.target.0A, phage, sporulation, lifestyle, Host, phage_type,newgtdb_Phylum, gtdb_f, phage_type, newgtdb_Order, newgtdb_Class)
+
+meta <- subset(meta, meta$newgtdb_Phylum=="Bacillota")
+meta <- unique(meta)
+
+# 4. If you have metadata (e.g., groupings), merge it here
+# Assuming `meta` is a data.frame with sample metadata and matching rownames
+ nmds_points <- merge(nmds_points, meta, by.x = "SampleID", by.y = "phage")
+
+# 5. Plot
+ggplot(nmds_points, aes(x = MDS1, y = MDS2, color= Host, shape=sporulation)) +
+  geom_point(size = 3) +
+  theme_minimal() +
+  labs(title = "NMDS of Jaccard Distances", x = "NMDS1", y = "NMDS2") 
+ 
+
+#ggsave(here("lab_pres/Jaccard_0ABacilliota_NMDS.png"), height = 9, width=9)
+
+
+
+
+```
+
+
+```{r}
+
+library(ape)
+# 1. Compute Bray-Curtis distance (same as before)
+bray_dist.phy <- vegdist(cluster.bacil.target, method = "jaccard")
+
+pcoa_result <- pcoa(as.dist(bray_dist.phy))
+pcoa_points <- as.data.frame(pcoa_result$vectors[, 1:2])
+pcoa_points$SampleID <- rownames(pcoa_points)
+
+eig_vals <- pcoa_result$values$Relative_eig[1:2]
+# Use in axis labels
+xlab <- paste0("PCoA1 (", round(eig_vals[1] * 100, 1), "%)")
+ylab <- paste0("PCoA2 (", round(eig_vals[2] * 100, 1), "%)")
+
+
+
+
+
+meta <- select(subsampled.target.0A, phage, sporulation, lifestyle, Host, phage_type, newgtdb_Phylum, gtdb_f, newgtdb_Order, newgtdb_Class)
+meta <- subset(meta, newgtdb_Phylum == "Bacillota")
+meta <- unique(meta)
+
+# Merge
+pcoa_points <- merge(pcoa_points, meta, by.x = "SampleID", by.y = "phage")
+
+
+ggplot(pcoa_points, aes(x = Axis.1, y = Axis.2, color = Host, shape = sporulation)) +
+  geom_point(size = 1.5) +
+  labs(title = "PCoA of Jaccard Distances", x = xlab, y = ylab)
+
+ggsave("PCOAJacc_BaciliotaPhage_0A_Host.png")
+
+## not sure if this is trustworthy sub sampling
+ggplot(pcoa_points, aes(x = Axis.1, y = Axis.2, color = lifestyle, shape = sporulation)) +
+  geom_point(size = 1.5) +
+  labs(title = "PCoA of Jaccard Distances", x = xlab, y = ylab)
+
+ggsave("PCOAJacc_BaciliotaPhage_0A_Lifestyle.png")
+
+
+
+
+```
+
+```{r}
+library(dendextend)
+library(viridis)
+library(dplyr)
+
+# 1. Compute Jaccard distance and hierarchical clustering
+jaccard_dist.fam <- vegdist(cluster.bacil.target, method = "jaccard")
+hc.dist.phy <- hclust(jaccard_dist.fam, method = "ward.D")
+
+# 2. Convert to dendrogram object
+dend <- as.dendrogram(hc.dist.phy)
+
+# 3. Prepare metadata
+meta <- subsampled.target.0A %>%
+  select(phage, sporulation, lifestyle, Host, phage_type, newgtdb_Phylum, gtdb_f, newgtdb_Order, newgtdb_Class) %>%
+  filter(newgtdb_Phylum == "Bacillota") %>%
+  distinct() %>%
+  column_to_rownames("phage")  # Make 'phage' rownames
+
+# 4. Extract group vector ordered as dendrogram labels
+label_order <- labels(dend)
+group_vector <- meta[label_order, "Host", drop = TRUE]
+
+# 5. Create a factor and palette for groups
+group_vector <- factor(group_vector)
+group_levels <- levels(group_vector)
+palette_colors <- turbo(length(group_levels))
+names(palette_colors) <- group_levels
+
+# 6. Map colors to tip labels according to group
+tip_colors <- palette_colors[as.character(group_vector)]
+
+# 7. Set tip label colors on dendrogram
+dend_colored <- dend %>%
+  set("labels_colors", value = tip_colors)
+
+# 8. Plot dendrogram with adjusted margins
+par(mar = c(5, 8, 4, 15))
+plot(dend_colored,
+     main = "Ward.D Clustering of 0A Flanks in Phages by Host",
+     xlab = "Height", ylab = "Cluster",
+     sub = "", horiz = TRUE)
+
+# 9. Add legend for groups
+legend("topleft",
+       legend = group_levels,
+       fill = palette_colors,
+       border = NA,
+       bty = "n",
+       title = "Phage Host Genus",
+       cex = 0.8,
+       inset = c(-0.15, 0),
+       xpd = TRUE)
+
+# Replace labels with group names (already ordered)
+labels(dend_colored) <- as.character(group_vector)
+
+dend_colored <- dend_colored %>%
+  set("labels_colors", value = tip_colors) %>%
+  set("labels_cex", value = 0.6)  # <-- controls font size
+
+
+# Plot dendrogram with colored labels and new names
+par(mar = c(10, 8, 10, 15))
+plot(dend_colored,
+     main = "Ward.D Clustering of 0A Flanks in Phages by Host",
+     xlab = "Height", ylab = "Cluster",
+     sub = "", horiz = TRUE) 
+     #ylim = c(0, length(labels(dend_colored)) * 0.5),  # increase vertical space
+    #cex = 1)  # <-- smaller font size for tip labels)
+
+# 9. Add legend for groups
+legend("topleft",
+       legend = group_levels,
+       fill = palette_colors,
+       border = NA,
+       bty = "n",
+       title = "Phage Host Genus",
+       cex = 0.8,
+       inset = c(-0.15, 0),
+       xpd = TRUE)
+
+```
+
+#### other methods of subsampling
+
+```{r}
+library(dplyr)
+colnames(all.hits.bacil)
+sort <- all.hits.bacil %>%
+  distinct(phage, Host, .keep_all = TRUE) %>%
+  group_by(Host) %>%
+  summarise(phage_count = n()) %>%
+  arrange(desc(phage_count))
+
+### Hosts w/ high phage count
+bacil.host.select <- subset(all.hits.bacil, all.hits.bacil$Host=="Staphylococcus" | all.hits.bacil$Host=="Streptococcus" | all.hits.bacil$Host=="Bacillus" | all.hits.bacil$Host=="Lactococcus" |all.hits.bacil$Host=="Enterococcus" | all.hits.bacil$Host=="Paenibacillus" |  all.hits.bacil$Host=="Lactobacillus" | all.hits.bacil$Host=="Clostridium" | all.hits.bacil$Host=="Listeria" ) ## 6553 0A boxes (total) & 3366 unique 0A, #827 phages,  ##445 phages are bacillus (~4766 0A box, 2456 unique )
+
+
+
+
+selected_phage <- bacil.host.select %>%
+  group_by(Host) %>%
+  slice_sample(n = 50) %>%    # Sample 20 per Host
+  ungroup()
+
+selected.host.0a <- bacil.host.select %>%
+  filter(phage %in% selected_phage)
+
+
+cluster.bacil.select <- selected.host.0a %>%
+  group_by(boxCluster, phage) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = phage, values_from = count, values_fill = 0) %>%
+  column_to_rownames("boxCluster") %>%
+  as.matrix()
+
+cluster.bacil.select <- t(cluster.bacil.select)
+
+library(dplyr)
+
+
+```
+
+
+## fully random subsampling
+```{r}
+
+selected_genera <- sample(unique(all.hits.bacil$Host), 8)
+
+subsampled.genera <- all.hits.bacil %>%
+  filter(Host %in% selected_genera)
+
+
+selected_phage <- subsampled.target.genera %>%
+  group_by(Host) %>%
+  filter(n() >= 10) %>%       # Keep only Hosts with at least 10 samples
+  slice_sample(n = 30) %>%    # Sample 20 per Host
+  ungroup()
+
+subsampled.0A <- subsampled.genera %>%
+  filter(phage %in% selected_phage)
+
+
+cluster.bacil.random <- subsampled.0A %>%
+  group_by(boxCluster, phage) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = phage, values_from = count, values_fill = 0) %>%
+  column_to_rownames("boxCluster") %>%
+  as.matrix()
+
+cluster.bacil.random <- t(cluster.bacil.random)
+```
+

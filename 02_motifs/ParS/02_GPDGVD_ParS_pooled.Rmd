@@ -1,0 +1,1115 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(emmeans)
+library(ggsignif)
+library(here)
+library(tidyverse)
+library(grid)
+library(PNWColors)
+library(MoMAColors)
+theme_eb <- theme_classic(base_size = 16) +
+  theme(
+    plot.title = element_text(size = 20),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 14)
+  )
+
+
+
+
+theme_set(theme_eb)
+pal.sunset <- pnw_palette("Sunset", 4, type=c("discrete"))
+pal.shuk <- pnw_palette("Shuksan2", 4, type=c("discrete"))
+pal.star <- pnw_palette("Starfish", 4, type=c("discrete"))
+pal.bay <-  pnw_palette("Bay", 4, type=c("discrete"))
+
+
+
+here::here()
+
+### note the quartz script needs to be fixed, the headers are janky and wrong (had to be manually fixed)
+
+
+ParS <- read.delim2(here("02_motifs/ParS/data/GPDGVD_02_out_00_indiv_hmm0_ParS.tsv"))
+
+
+
+ParS$q.value<- as.numeric(ParS$q.value)
+ParS$p.value<- as.numeric(ParS$p.value)
+ParS$score<- as.numeric(ParS$score)
+
+
+
+### remove any duplicate motifs (occasionally a motif will be a palindromic and hit both + and - strands) 
+ParS <- ParS %>%
+  group_by(sequence_name, start, stop) %>%  # group by coordinates
+  slice_max(order_by = score, n = 1) %>%    # keep only the row with highest score
+  ungroup()
+
+### phi3T KY030782, spbeta AF020713
+## redrock (actino phage with ParABS) GU339467, uses parS sites but of a different type than sporulation ParS
+
+## combine phage metadata with ParS hits. Label any phage that had no ParS hits with "no_hit" in metadata
+gpdgvd <- read.csv(here("00_data/gpd_gvd/gpd_gvd_sporstatus_checkv.csv"), row.names=1)
+gpdgvd$lifestyle <- ifelse(gpdgvd$lifestyle=="Temp", "Temperate", gpdgvd$lifestyle)
+
+
+gpdgvd$bac.host <- ifelse(gpdgvd$sporulation=="Spor", "Sporulating Bacillota", "Nonsporulating Bacillota")  #"Asporogenous Bacillota")
+gpdgvd$bac.host <- ifelse(gpdgvd$newgtdb_Phylum=="Bacillota", gpdgvd$bac.host, "Non-Bacillota")
+
+gpdgvd <- unite(gpdgvd, nice, c("lifestyle", "bac.host"), sep=" Phages of ", remove = FALSE )
+
+gpdgvd$nice <- ifelse(gpdgvd$sporulation=="Spor", "Sporulating Host", "Nonsporulating Host")
+
+meta.cats <- unique(select(gpdgvd, host_phage_spor, bac.host, lifestyle, nice, sporulation))
+
+
+
+#gpdgvd <- select(gpdgvd, ID, Host, contig_length, gtdb_f, f_spor, newgtdb_Phylum,  host_phage_spor, phage_type, sporulation, lifestyle, nice)
+all <- merge(gpdgvd, ParS, by.x="ID", by.y="sequence_name", all.x=TRUE, all.y=FALSE)
+all$motif_id[is.na(all$motif_id)] <- "no_hit"
+
+### create binary hit column of 1 for ParS hit, 0 if no hit
+all$hit <- ifelse(all$motif_id=="ParS_BSub", 1, 0)
+all$q.value[is.na(all$q.value)] <- 1
+
+
+### remove bacillus duplicates (drep)
+
+#all <- subset(all, all$ref)
+
+## subset for JUST BACILLUS since i used just a bacillus parS gene
+#all <- subset(all, all$Host=="Bacillus")
+#all <- subset(all, all$newgtdb_Phylum =="Bacillota")
+
+all <- subset(all, all$newgtdb_Phylum!="unknown")
+
+#all <- subset(all, all$checkv_quality=="Complete" | all$checkv_quality=="High-quality")
+
+all <- subset(all, all$checkv_quality!="Low-quality")
+```
+
+### threshold testing
+```{r}
+
+
+### threshold testing
+
+library(dplyr)
+library(ggplot2)
+
+# Define thresholds
+thresholds <- 10^seq(-6, -1, by = 1)   # from 1e-6 to 1e-1
+thresholds <- c(thresholds, 0.05, 1)      # add 0.05 explicitly if desired
+results <- lapply(thresholds, function(th) {
+  all %>%
+    group_by(ID, sporulation) %>%
+    summarise(
+      pos.ParS.hit = max(ifelse(!is.na(q.value) & q.value <= th, 1, 0)),
+      .groups = "drop"
+    ) %>%
+    group_by(sporulation) %>%
+    summarise(
+      Phage_has_ParS = sum(pos.ParS.hit),
+      total.phage = n(),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      ParS.pos.perc = Phage_has_ParS / total.phage * 100,
+      threshold = th
+    )
+}) %>% bind_rows()
+
+results.fig <- merge(results, meta.cats, by="sporulation")
+
+# Plot
+p<- ggplot(results.fig, aes(x = threshold, y = ParS.pos.perc, color = nice)) +
+  geom_line(size = 1.2) +
+  geom_point() +
+  scale_x_log10() +  # log scale for q-values
+  labs(
+    x = "False Positive (q-value) Threshold",
+    y = "% Phages with 1 or more ParS Binding Site"
+  ) + labs(color="Bacterial Host") +geom_vline(xintercept = 1e-4, linetype = "dotted") #+ theme(legend.position="none")
+p + theme(legend.position = c(0.125, 0.82)) + scale_color_manual(values = pal.shuk)
+
+
+#ggsave(here("02_motifs/ParS/QValueTresh1e4_pooled.png"),width=7, height=7)
+```
+
+
+## Filter w/ q value and summarize data
+```{r}
+
+
+#### Q FILTERING
+ParS.qual <- all
+
+#ParS.qual$hit <- ifelse(ParS.qual$q.value<1e-4, 1, 0)
+ParS.qual$hit <- ifelse(ParS.qual$q.value<1e-4, 1, 0)
+
+## create binary list of phages w/ and w/out ParS hits
+ParS.pos <- ParS.qual %>% group_by(ID, sporulation) %>%
+  summarise(total.ParS.hits = sum(hit), pos.ParS.hit = max(hit), .groups = "drop") #%>% 
+ParS.pos %>% count(sporulation)
+
+ParS.sanity <- ParS.qual %>% group_by(ID, host_phage_spor, gtdb_f, newgtdb_Class, newgtdb_Order) %>%
+  summarise(total.ParS.hits = sum(hit), pos.ParS.hit = max(hit), .groups = "drop") #%>% 
+
+
+only.pos <- subset(ParS.sanity, ParS.sanity$total.ParS.hits>0)
+
+
+ParS.pos %>% count(sporulation)
+
+ParS.summary <- ParS.pos %>% 
+  group_by(sporulation) %>% 
+  summarise(
+    total_ParS_hits = sum(total.ParS.hits, na.rm = TRUE),
+    Phage_has_ParS = sum(pos.ParS.hit, na.rm = TRUE),
+    total.phage = n(),
+    .groups = "drop"
+  ) %>% 
+  mutate(ParS.pos.perc = Phage_has_ParS / total.phage * 100)
+
+
+ParS.bin <- ParS.pos[,c(1,2,4)]
+
+```
+
+#### ParS positional analysis
+```{r}
+
+
+ParS.hits <- subset(ParS.qual, ParS.qual$hit==1)
+
+## find center phage genome (whole genome /2)
+ParS.hits$seq.mdpt <- as.numeric(ParS.hits$contig_length)/2
+
+## find center of motif 
+ParS.hits$motif.mdpt <- (ParS.hits$stop + ParS.hits$start )/ 2
+
+### subtract midpoint motif from sequence midpoint to see how far away they are
+ParS.hits <- ParS.hits %>%
+  mutate(mdpt.align = (motif.mdpt - seq.mdpt))
+
+ParS.hits$mdpt.align.kbp <- ParS.hits$mdpt.align/1000
+
+#### TO GET RELATIVE motif alignmen
+
+# Relative position as fraction of genome length
+# (-0.5 = start, 0 = center, +0.5 = end)
+ParS.hits$rel.mdpt <- (ParS.hits$motif.mdpt - ParS.hits$seq.mdpt) / ParS.hits$contig_length
+
+
+
+# Relative position from genome start (0 to 1)
+ParS.hits$rel.frac <- ParS.hits$motif.mdpt / ParS.hits$contig_length
+
+# Optionally convert to percentage
+ParS.hits$rel.percent <- ParS.hits$rel.frac * 100
+
+##Set specific order for bacterial hosts to appear on graphs
+#ParS.hits$nice <- factor(ParS.hits$nice, levels = c('Lytic Phages of Sporulating Bacillota', 'Temperate Phages of Sporulating Bacillota', 'Lytic Phages of Nonsporulating Bacillota', 'Temperate Phages of Nonsporulating Bacillota', 'Lytic Phages of Non-Bacillota', 'Temperate Phages of Non-Bacillota' ),ordered = TRUE)
+
+
+ggplot(ParS.hits, aes(x = mdpt.align.kbp, fill = nice)) +
+  geom_histogram(binwidth = 5, position = "dodge") +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_x_continuous(breaks = seq(-90, 90, by = 30)) +
+  labs(x = "Motif distance (kb) from center of phage genome", y = "Motif count") +
+  facet_wrap(~ nice, ncol = 2) + theme(legend.position="none")+ scale_fill_manual(values = pal.shuk)+ggtitle("")#+ ggtitle("Absolute Position of ParS Motif on Phage Genomes") +
+
+
+#ggsave(here("02_motifs/ParS/figs/AbsoluteParSposition_1e4_pooled.png"), width=8.5, height=7)
+
+ggplot(ParS.hits, aes(x = rel.mdpt, fill = nice)) +
+  geom_histogram(binwidth = 0.05, position = "dodge") +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_x_continuous(breaks = seq(-0.5, 0.5, by = 0.25)) +
+  labs(x = "Motif position relative to center of phage genome", y = "Motif count") +
+  facet_wrap(~ nice, ncol = 2) + theme(legend.position="none") + scale_fill_manual(values = pal.shuk) +ggtitle("")#+ ggtitle("Relative Position of ParS Motif on Phage Genomes")+
+
+
+#ggsave(here("02_motifs/ParS/figs/RelativeParSposition_1e4_pooled.png"), width=8.5, height=7)
+```
+### Enrichment
+```{r}
+# -----------------------------
+pairwise_fisher_both_directions <- function(df, group_col, hits_col, total_col, p.adjust.method = "BH") {
+  
+  groups <- unique(df[[group_col]])
+  combs <- combn(groups, 2, simplify = FALSE)
+  
+  results <- data.frame(
+    group1 = character(),
+    group2 = character(),
+    odds_ratio = numeric(),
+    conf_low = numeric(),
+    conf_high = numeric(),
+    p.value = numeric(),
+    p.adj = numeric(),
+    stringsAsFactors = FALSE
+  )
+  
+  pvals <- numeric()
+  
+  for (c in combs) {
+    g1 <- df[df[[group_col]] == c[1], ]
+    g2 <- df[df[[group_col]] == c[2], ]
+    
+    tab <- matrix(c(
+      g1[[hits_col]], g1[[total_col]] - g1[[hits_col]],
+      g2[[hits_col]], g2[[total_col]] - g2[[hits_col]]
+    ), nrow = 2, byrow = TRUE)
+    
+    rownames(tab) <- c(c[1], c[2])
+    colnames(tab) <- c("Present", "Absent")
+    
+    ft <- fisher.test(tab)
+    
+    # group1 vs group2
+    results <- rbind(results, data.frame(
+      group1 = c[1],
+      group2 = c[2],
+      odds_ratio = ft$estimate,
+      conf_low = ft$conf.int[1],
+      conf_high = ft$conf.int[2],
+      p.value = ft$p.value,
+      p.adj = NA
+    ))
+    
+    # group2 vs group1 (inverse OR)
+    results <- rbind(results, data.frame(
+      group1 = c[2],
+      group2 = c[1],
+      odds_ratio = 1 / ft$estimate,
+      conf_low = 1 / ft$conf.int[2],
+      conf_high = 1 / ft$conf.int[1],
+      p.value = ft$p.value,
+      p.adj = NA
+    ))
+    
+    pvals <- c(pvals, ft$p.value, ft$p.value)
+  }
+  
+  results$p.adj <- p.adjust(pvals, method = p.adjust.method)
+  return(results)
+}
+
+```
+
+```{r}
+# -----------------------------
+# Compute Fisher tests
+t <- pairwise_fisher_both_directions(
+  df = ParS.summary,
+  group_col = "sporulation",
+  hits_col = "Phage_has_ParS",
+  total_col = "total.phage",
+  p.adjust.method = "BH"
+)
+
+
+
+
+
+selected_pairs <- list(
+  c("Spor", "NonSpor")
+)
+
+pairs_df <- do.call(rbind, lapply(selected_pairs, function(x) {
+  data.frame(group1 = x[1], group2 = x[2], stringsAsFactors = FALSE)
+}))
+
+
+
+pairwise_res_subset <- t %>%
+  semi_join(pairs_df, by = c("group1", "group2")) 
+
+
+
+pairwise_res_subset <- pairwise_res_subset %>%
+  mutate(
+    label_combined = ifelse(
+      p.adj < 0.05,
+      ifelse(
+        p.adj < 0.0001,
+        paste0("OR=", round(odds_ratio, 2), ", p<0.0001"),
+        paste0("OR=", round(odds_ratio, 2), ", p=", signif(p.adj, 3))
+      ),
+      "n.s."
+    )
+  )
+
+
+
+
+```
+
+```{r}
+# -----------------------------
+
+df_all <- ParS.pos
+
+# Sample sizes
+n_counts <- df_all %>%
+  group_by(sporulation) %>%
+  summarise(
+    positive = sum(pos.ParS.hit == 1, na.rm = TRUE),
+    total    = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    perc  = round(100 * positive / total, 1),
+    label = paste0(positive, "/", total, " (", perc, "%)")
+  )
+
+# Base plot
+pd <- position_jitter(width = 0.25, height = 0.05)
+
+df_all$sporulation <- factor(df_all$sporulation, levels = c("Spor","NonSpor"), ordered = TRUE)
+
+
+vp <- ggplot(df_all, aes(x = sporulation, y = pos.ParS.hit, color = sporulation)) +
+  geom_point(
+    aes(fill = sporulation),
+    position = pd,
+    size = 2,
+    alpha = 0.6,
+    shape = 21,
+    color = "black",
+    stroke = 0.3
+  ) + scale_y_continuous(
+    #limits = c(-0.5, 10),  # make room for bars above
+    breaks = c(0, 1),
+    labels = c("Absent", "Present")
+  ) +
+  xlab("") + ylab("Presence of ParS in phage genomes") +
+  geom_text(
+    data = n_counts,
+    aes(x = sporulation, y = -0.3, label = paste0("n=", label)),
+    inherit.aes = FALSE,
+    size = 4
+  )
+
+#pairwise_res_subset$group1 <- factor(pairwise_res_subset$group1, levels = levels_order, ordered = TRUE)
+pairwise_res_subset <- pairwise_res_subset %>%
+  #arrange(factor(group1, levels = levels_order),
+  #        factor(group2, levels = levels_order)) %>%
+  mutate(y.position = max(df_all$pos.ParS.hit, na.rm = TRUE) + 
+           0.5 + (nrow(.) - row_number()) * 0.3)
+
+
+
+# Add significance bars
+vp_fisher <- vp +
+  stat_pvalue_manual(
+    pairwise_res_subset,
+    label = "label_combined",
+    hide.ns = FALSE,
+    tip.length = 0.02,
+    size = 3.5
+  )
+
+# Show plot
+vp_fisher+ scale_fill_manual(values = pal.shuk)+ scale_x_discrete(labels = c('Spor'= 'Sporulating Host', 'NonSpor' = 'Nonsporulating Host')) + theme(legend.position="none")
+
+
+#ggsave(here("02_motifs/ParS/figs/ParS_Enrichment_1e4_pooled.png"), width=7, height=7)
+
+```
+
+##### Kruskal
+```{r}
+# -----------------------------
+# Count positives and totals per group
+n_counts <- df_all %>%
+  group_by(sporulation) %>%
+  summarise(
+    positive = sum(total.ParS.hits > 0, na.rm = TRUE),
+    total    = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    perc  = round(100 * positive / total, 1),
+    label = paste0(positive, "/", total, " (", perc, "%)")
+  )
+
+# -----------------------------
+kruskal_res <- kruskal.test(total.ParS.hits ~ sporulation, data = df_all)
+#print(kruskal_res)
+
+# -----------------------------
+# Define comparisons
+comparisons_list <- combn(unique(df_all$sporulation), 2, simplify = FALSE)
+
+# Bar placement settings
+offset <- 1     # push bars higher than max data
+y_step <- 1.5   # vertical spacing
+y_start <- max(df_all$total.ParS.hits, na.rm = TRUE) + offset
+
+# Compute raw p-values
+pairwise_res <- lapply(seq_along(comparisons_list), function(i){
+  comp <- comparisons_list[[i]]
+  x <- df_all$total.ParS.hits[df_all$sporulation == comp[1]]
+  y <- df_all$total.ParS.hits[df_all$sporulation == comp[2]]
+  wt <- wilcox.test(x, y)
+  data.frame(
+    group1 = comp[1],
+    group2 = comp[2],
+    p.value = wt$p.value,
+    y.position = y_start + (i - 1) * y_step
+  )
+}) %>% bind_rows()
+
+# Adjust p-values (BH)
+pairwise_res$p.adj <- p.adjust(pairwise_res$p.value, method = "BH")
+
+# Label formatting
+pairwise_res <- pairwise_res %>%
+  mutate(
+    label = case_when(
+      p.adj < 0.0001 ~ "p < 0.0001",
+      p.adj < 0.05   ~ paste0("p = ", signif(p.adj, 3)),
+      TRUE           ~ "n.s."
+    )
+  )
+
+# -----------------------------
+levels_order <- c(
+  'Bacillota_Lytic_Spor',
+  'Bacillota_Temp_Spor',
+  'Bacillota_Lytic_NonSpor',
+  'Bacillota_Temp_NonSpor',
+  'OtherPhyla_Lytic_NonSpor',
+  'OtherPhyla_Temp_NonSpor'
+)
+
+
+
+```
+
+visualize 
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(rstatix)
+
+# --- Factor setup ---
+levels_order <- c(
+  'Bacillota_Lytic_Spor',
+  'Bacillota_Temp_Spor',
+  'Bacillota_Lytic_NonSpor',
+  'Bacillota_Temp_NonSpor',
+  'OtherPhyla_Lytic_NonSpor',
+  'OtherPhyla_Temp_NonSpor'
+)
+
+df_all <- ParS.pos %>%
+  mutate(host_phage_spor = factor(sporulation, levels = levels_order))
+df_all$sporulation <- factor(df_all$sporulation, levels = c("Spor","NonSpor"), ordered = TRUE)
+
+
+df_violin <- df_all %>%
+  filter(total.ParS.hits > 0)
+df_violin$sporulation <- factor(df_violin$sporulation, levels = c("Spor","NonSpor"), ordered = TRUE)
+
+
+
+# --- n counts ---
+n_counts <- df_all %>%
+  group_by(sporulation) %>%
+  summarise(
+    positive = sum(total.ParS.hits > 0, na.rm = TRUE),
+    total    = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    perc  = round(100 * positive / total, 1),
+    label = paste0(positive, "/", total, " (", perc, "%)")
+  )
+
+# --- Stats ---
+# Kruskal–Wallis
+kw_res <- kruskal_test(df_all, total.ParS.hits ~ sporulation)
+
+# Pairwise Wilcoxon with BH correction
+wilc_test <- df_all %>%
+  pairwise_wilcox_test(total.ParS.hits ~ sporulation,
+                       p.adjust.method = "BH") #%>%
+
+wilc_test <- wilc_test %>% unite(col = "test", c("group1", "group2"), remove = FALSE, sep = "_")
+
+
+
+
+max_y <- max(df_all$total.ParS.hits, na.rm = TRUE)
+step <- .85
+wilc_test <- wilc_test %>%
+  mutate(y.position = max_y + rev(seq(1, nrow(.)))*step)
+
+
+# Make label: OR not relevant here (Wilcoxon), so p only
+wilc_test <- wilc_test %>%
+  mutate(
+    p_label = ifelse(p.adj < 0.0001, "p < 0.0001",
+              ifelse(p.adj < 0.05, paste0("p=", signif(p.adj, 3)), "n.s."))
+  )
+
+
+
+  
+# --- Plot ---
+pd <- position_jitter(width = 0.25, height = 0.25)
+
+vp <- ggplot(df_all, aes(x = sporulation,
+                         y = total.ParS.hits,
+                         color = sporulation)) +
+  # Violin for positives
+  geom_violin(
+    data = df_violin,
+    inherit.aes = TRUE,
+    color = "black",
+    fill = NA,
+    scale = "width",
+    width = 0.8,
+    trim = TRUE
+  ) +
+  # Jittered points
+  geom_point(
+    aes(fill = sporulation),
+    position = pd,
+    size = 2,
+    alpha = 0.5,
+    shape = 21,
+    color = "black",
+    stroke = 0.3
+  ) +
+  # Total n
+  geom_text(
+  data = n_counts,
+  aes(
+    x = sporulation,
+    y = -0.75,   # slightly below 0; adjust as needed
+    label = label
+  ),
+  inherit.aes = FALSE,
+  size = 3,
+  vjust = 1  # align text above the y position
+) +
+  # Add significance bars
+  stat_pvalue_manual(
+    wilc_test,
+    label = "p_label",
+    hide.ns = FALSE,
+    tip.length = 0.02,
+    size = 3.5
+  ) +
+  # Axis order
+  # Give room for n labels and bars
+  #expand_limits(y = max(df_all$total.ParS.hits, na.rm = TRUE) * 4) +
+  coord_cartesian(clip = "off") +
+  theme(legend.position = "none",
+        plot.margin = margin(10, 10, 10, 10)) +
+  xlab("") + scale_y_continuous(limits=c(0,8,2),  breaks=c(0,2,4,6,8))+ scale_x_discrete(labels = c('Spor'= 'Sporulating Host', 'NonSpor' = 'Nonsporulating Host')) + ylab("Number of ParS Hits per Genome")
+#vp #+ expand_limits(y = c(-1, max(df_all$total.ParS.hits) * 1.2))
+
+
+
+
+
+vp+ scale_fill_manual(values = pal.shuk)
+
+#ggsave(here("02_motifs/ParS/figs/ParS_Hits_Kruskal_1e4_pooled.png")) 
+```
+
+
+##### NON BACILLOTA now its own category
+
+```{r}
+
+## Filter w/ q value and summarize data
+
+
+
+#### Q FILTERING
+ParS.qual <- all
+
+#ParS.qual$hit <- ifelse(ParS.qual$q.value<1e-4, 1, 0)
+ParS.qual$hit <- ifelse(ParS.qual$q.value<1e-4, 1, 0)
+
+## create binary list of phages w/ and w/out ParS hits
+ParS.pos <- ParS.qual %>% group_by(ID, bac.host) %>%
+  summarise(total.ParS.hits = sum(hit), pos.ParS.hit = max(hit), .groups = "drop") #%>% 
+ParS.pos %>% count(bac.host)
+
+## create binary list of phages w/ and w/out ParS hits
+
+ParS.sanity <- ParS.qual %>% group_by(ID, host_phage_spor, gtdb_f, newgtdb_Class, newgtdb_Order, bac.host) %>%
+  summarise(total.ParS.hits = sum(hit), pos.ParS.hit = max(hit), .groups = "drop") #%>% 
+
+
+
+only.pos <- subset(ParS.sanity, ParS.sanity$total.ParS.hits>0)
+
+
+ParS.pos %>% count(bac.host)
+
+ParS.summary <- ParS.pos %>% 
+  group_by(bac.host) %>% 
+  summarise(
+    total_ParS_hits = sum(total.ParS.hits, na.rm = TRUE),
+    Phage_has_ParS = sum(pos.ParS.hit, na.rm = TRUE),
+    total.phage = n(),
+    .groups = "drop"
+  ) %>% 
+  mutate(ParS.pos.perc = Phage_has_ParS / total.phage * 100)
+
+
+ParS.bin <- ParS.pos[,c(1,2,4)]
+
+```
+
+
+#### ParS positional analysis
+```{r}
+
+
+ParS.hits <- subset(ParS.qual, ParS.qual$hit==1)
+
+## find center phage genome (whole genome /2)
+ParS.hits$seq.mdpt <- as.numeric(ParS.hits$contig_length)/2
+
+## find center of motif 
+ParS.hits$motif.mdpt <- (ParS.hits$stop + ParS.hits$start )/ 2
+
+### subtract midpoint motif from sequence midpoint to see how far away they are
+ParS.hits <- ParS.hits %>%
+  mutate(mdpt.align = (motif.mdpt - seq.mdpt))
+
+ParS.hits$mdpt.align.kbp <- ParS.hits$mdpt.align/1000
+
+#### TO GET RELATIVE motif alignmen
+
+# Relative position as fraction of genome length
+# (-0.5 = start, 0 = center, +0.5 = end)
+ParS.hits$rel.mdpt <- (ParS.hits$motif.mdpt - ParS.hits$seq.mdpt) / ParS.hits$contig_length
+
+
+
+# Relative position from genome start (0 to 1)
+ParS.hits$rel.frac <- ParS.hits$motif.mdpt / ParS.hits$contig_length
+
+# Optionally convert to percentage
+ParS.hits$rel.percent <- ParS.hits$rel.frac * 100
+
+##Set specific order for bacterial hosts to appear on graphs
+#ParS.hits$nice <- factor(ParS.hits$nice, levels = c('Lytic Phages of Sporulating Bacillota', 'Temperate Phages of Sporulating Bacillota', 'Lytic Phages of Nonsporulating Bacillota', 'Temperate Phages of Nonsporulating Bacillota', 'Lytic Phages of Non-Bacillota', 'Temperate Phages of Non-Bacillota' ),ordered = TRUE)
+
+
+ggplot(ParS.hits, aes(x = mdpt.align.kbp, fill = bac.host)) +
+  geom_histogram(binwidth = 5, position = "dodge") +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_x_continuous(breaks = seq(-90, 90, by = 30)) +
+  labs(x = "Motif distance (kb) from center of phage genome", y = "Motif count") +
+  facet_wrap(~ bac.host, ncol = 2) + theme(legend.position="none")+ scale_fill_manual(values = pal.shuk)+ggtitle("")#+ ggtitle("Absolute Position of ParS Motif on Phage Genomes") +
+
+
+##ggsave(here("02_motifs/ParS/figs/AbsoluteParSposition_1e4_pooled.png"), width=8.5, height=7)
+
+ggplot(ParS.hits, aes(x = rel.mdpt, fill = bac.host)) +
+  geom_histogram(binwidth = 0.05, position = "dodge") +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_x_continuous(breaks = seq(-0.5, 0.5, by = 0.25)) +
+  labs(x = "Motif position relative to center of phage genome", y = "Motif count") +
+  facet_wrap(~ bac.host, ncol = 2) + theme(legend.position="none") + scale_fill_manual(values = pal.shuk) +ggtitle("")#+ ggtitle("Relative Position of ParS Motif on Phage Genomes")+
+
+
+##ggsave(here("02_motifs/ParS/figs/RelativeParSposition_1e4_pooled.png"), width=8.5, height=7)
+```
+
+### Enrichment
+```{r}
+# -----------------------------
+pairwise_fisher_both_directions <- function(df, group_col, hits_col, total_col, p.adjust.method = "BH") {
+  
+  groups <- unique(df[[group_col]])
+  combs <- combn(groups, 2, simplify = FALSE)
+  
+  results <- data.frame(
+    group1 = character(),
+    group2 = character(),
+    odds_ratio = numeric(),
+    conf_low = numeric(),
+    conf_high = numeric(),
+    p.value = numeric(),
+    p.adj = numeric(),
+    stringsAsFactors = FALSE
+  )
+  
+  pvals <- numeric()
+  
+  for (c in combs) {
+    g1 <- df[df[[group_col]] == c[1], ]
+    g2 <- df[df[[group_col]] == c[2], ]
+    
+    tab <- matrix(c(
+      g1[[hits_col]], g1[[total_col]] - g1[[hits_col]],
+      g2[[hits_col]], g2[[total_col]] - g2[[hits_col]]
+    ), nrow = 2, byrow = TRUE)
+    
+    rownames(tab) <- c(c[1], c[2])
+    colnames(tab) <- c("Present", "Absent")
+    
+    ft <- fisher.test(tab)
+    
+    # group1 vs group2
+    results <- rbind(results, data.frame(
+      group1 = c[1],
+      group2 = c[2],
+      odds_ratio = ft$estimate,
+      conf_low = ft$conf.int[1],
+      conf_high = ft$conf.int[2],
+      p.value = ft$p.value,
+      p.adj = NA
+    ))
+    
+    # group2 vs group1 (inverse OR)
+    results <- rbind(results, data.frame(
+      group1 = c[2],
+      group2 = c[1],
+      odds_ratio = 1 / ft$estimate,
+      conf_low = 1 / ft$conf.int[2],
+      conf_high = 1 / ft$conf.int[1],
+      p.value = ft$p.value,
+      p.adj = NA
+    ))
+    
+    pvals <- c(pvals, ft$p.value, ft$p.value)
+  }
+  
+  results$p.adj <- p.adjust(pvals, method = p.adjust.method)
+  return(results)
+}
+
+```
+
+```{r}
+# -----------------------------
+# Compute Fisher tests
+t <- pairwise_fisher_both_directions(
+  df = ParS.summary,
+  group_col = "bac.host",
+  hits_col = "Phage_has_ParS",
+  total_col = "total.phage",
+  p.adjust.method = "BH"
+)
+
+
+
+
+selected_pairs <- list(
+  c("Sporulating Bacillota", "Nonsporulating Bacillota"),
+  c("Sporulating Bacillota", "Non-Bacillota"),
+  c("Nonsporulating Bacillota", "Non-Bacillota")
+)
+
+
+pairs_df <- do.call(rbind, lapply(selected_pairs, function(x) {
+  data.frame(group1 = x[1], group2 = x[2], stringsAsFactors = FALSE)
+}))
+
+
+
+pairwise_res_subset <- t %>%
+  semi_join(pairs_df, by = c("group1", "group2")) 
+
+
+
+pairwise_res_subset <- pairwise_res_subset %>%
+  mutate(
+    label_combined = ifelse(
+      p.adj < 0.05,
+      ifelse(
+        p.adj < 0.0001,
+        paste0("OR=", round(odds_ratio, 2), ", p<0.0001"),
+        paste0("OR=", round(odds_ratio, 2), ", p=", signif(p.adj, 3))
+      ),
+      "n.s."
+    )
+  )
+
+# -----------------------------
+
+df_all <- ParS.pos
+
+# Sample sizes
+n_counts <- df_all %>%
+  group_by(bac.host) %>%
+  summarise(
+    positive = sum(pos.ParS.hit == 1, na.rm = TRUE),
+    total    = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    perc  = round(100 * positive / total, 1),
+    label = paste0(positive, "/", total, " (", perc, "%)")
+  )
+
+# Base plot
+pd <- position_jitter(width = 0.25, height = 0.05)
+
+df_all$bac.host <- factor(df_all$bac.host, levels = c("Sporulating Bacillota","Nonsporulating Bacillota", "Non-Bacillota"), ordered = TRUE)
+
+
+vp <- ggplot(df_all, aes(x = bac.host, y = pos.ParS.hit, color = bac.host)) +
+  geom_point(
+    aes(fill = bac.host),
+    position = pd,
+    size = 2,
+    alpha = 0.6,
+    shape = 21,
+    color = "black",
+    stroke = 0.3
+  ) + scale_y_continuous(
+    #limits = c(-0.5, 10),  # make room for bars above
+    breaks = c(0, 1),
+    labels = c("Absent", "Present")
+  ) +
+  xlab("") + ylab("Presence of ParS in phage genomes") +
+  geom_text(
+    data = n_counts,
+    aes(x = bac.host, y = -0.3, label = paste0("n=", label)),
+    inherit.aes = FALSE,
+    size = 4
+  )
+
+#pairwise_res_subset$group1 <- factor(pairwise_res_subset$group1, levels = levels_order, ordered = TRUE)
+pairwise_res_subset <- pairwise_res_subset %>%
+  #arrange(factor(group1, levels = levels_order),
+  #        factor(group2, levels = levels_order)) %>%
+  mutate(y.position = max(df_all$pos.ParS.hit, na.rm = TRUE) + 
+           0.5 + (nrow(.) - row_number()) * 0.3)
+
+
+
+# Add significance bars
+vp_fisher <- vp +
+  stat_pvalue_manual(
+    pairwise_res_subset,
+    label = "label_combined",
+    hide.ns = FALSE,
+    tip.length = 0.02,
+    size = 3.5
+  )
+
+# Show plot
+vp_fisher+ scale_fill_manual(values = pal.shuk)+ theme(legend.position="none")
+
+#+ scale_x_discrete(labels = c('Spor'= 'Sporulating Host', 'NonSpor' = 'Nonsporulating Host')) 
+
+##ggsave(here("02_motifs/ParS/figs/ParS_Enrichment_1e4_pooled.png"), width=7, height=7)
+
+
+
+```
+
+##### Kruskal
+```{r}
+# -----------------------------
+# Count positives and totals per group
+n_counts <- df_all %>%
+  group_by(bac.host) %>%
+  summarise(
+    positive = sum(total.ParS.hits > 0, na.rm = TRUE),
+    total    = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    perc  = round(100 * positive / total, 1),
+    label = paste0(positive, "/", total, " (", perc, "%)")
+  )
+
+# -----------------------------
+kruskal_res <- kruskal.test(total.ParS.hits ~ bac.host, data = df_all)
+#print(kruskal_res)
+
+# -----------------------------
+# Define comparisons
+comparisons_list <- combn(unique(df_all$bac.host), 2, simplify = FALSE)
+
+# Bar placement settings
+offset <- 1     # push bars higher than max data
+y_step <- 1.5   # vertical spacing
+y_start <- max(df_all$total.ParS.hits, na.rm = TRUE) + offset
+
+# Compute raw p-values
+pairwise_res <- lapply(seq_along(comparisons_list), function(i){
+  comp <- comparisons_list[[i]]
+  x <- df_all$total.ParS.hits[df_all$bac.host == comp[1]]
+  y <- df_all$total.ParS.hits[df_all$bac.host == comp[2]]
+  wt <- wilcox.test(x, y)
+  data.frame(
+    group1 = comp[1],
+    group2 = comp[2],
+    p.value = wt$p.value,
+    y.position = y_start + (i - 1) * y_step
+  )
+}) %>% bind_rows()
+
+# Adjust p-values (BH)
+pairwise_res$p.adj <- p.adjust(pairwise_res$p.value, method = "BH")
+
+# Label formatting
+pairwise_res <- pairwise_res %>%
+  mutate(
+    label = case_when(
+      p.adj < 0.0001 ~ "p < 0.0001",
+      p.adj < 0.05   ~ paste0("p = ", signif(p.adj, 3)),
+      TRUE           ~ "n.s."
+    )
+  )
+
+# -----------------------------
+levels_order <- c("Sporulating Bacillota","Nonsporulating Bacillota", "Non-Bacillota")
+
+
+```
+
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(rstatix)
+
+
+df_all <- ParS.pos %>%
+  mutate(host_phage_spor = factor(bac.host, levels = levels_order))
+
+
+df_all$bac.host <- factor(df_all$bac.host, levels = levels_order, ordered = TRUE)
+
+
+df_violin <- df_all %>%
+  filter(total.ParS.hits > 0)
+df_violin$bac.host <- factor(df_violin$bac.host, levels = levels_order, ordered = TRUE)
+
+
+
+# --- n counts ---
+n_counts <- df_all %>%
+  group_by(bac.host) %>%
+  summarise(
+    positive = sum(total.ParS.hits > 0, na.rm = TRUE),
+    total    = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    perc  = round(100 * positive / total, 1),
+    label = paste0(positive, "/", total, " (", perc, "%)")
+  )
+
+# --- Stats ---
+# Kruskal–Wallis
+kw_res <- kruskal_test(df_all, total.ParS.hits ~ bac.host)
+
+# Pairwise Wilcoxon with BH correction
+wilc_test <- df_all %>%
+  pairwise_wilcox_test(total.ParS.hits ~ bac.host,
+                       p.adjust.method = "BH") #%>%
+
+wilc_test <- wilc_test %>% unite(col = "test", c("group1", "group2"), remove = FALSE, sep = "_")
+
+
+
+
+max_y <- max(df_all$total.ParS.hits, na.rm = TRUE)
+step <- .85
+wilc_test <- wilc_test %>%
+  mutate(y.position = max_y + rev(seq(1, nrow(.)))*step)
+
+
+# Make label: OR not relevant here (Wilcoxon), so p only
+wilc_test <- wilc_test %>%
+  mutate(
+    p_label = ifelse(p.adj < 0.0001, "p < 0.0001",
+              ifelse(p.adj < 0.05, paste0("p=", signif(p.adj, 3)), "n.s."))
+  )
+
+
+
+  
+# --- Plot ---
+pd <- position_jitter(width = 0.25, height = 0.25)
+
+vp <- ggplot(df_all, aes(x = bac.host,
+                         y = total.ParS.hits,
+                         color = bac.host)) +
+  # Violin for positives
+  geom_violin(
+    data = df_violin,
+    inherit.aes = TRUE,
+    color = "black",
+    fill = NA,
+    scale = "width",
+    width = 0.8,
+    trim = TRUE
+  ) +
+  # Jittered points
+  geom_point(
+    aes(fill = bac.host),
+    position = pd,
+    size = 2,
+    alpha = 0.5,
+    shape = 21,
+    color = "black",
+    stroke = 0.3
+  ) +
+  # Total n
+  geom_text(
+  data = n_counts,
+  aes(
+    x = bac.host,
+    y = -0.75,   # slightly below 0; adjust as needed
+    label = label
+  ),
+  inherit.aes = FALSE,
+  size = 3,
+  vjust = 1  # align text above the y position
+) +
+  # Add significance bars
+  stat_pvalue_manual(
+    wilc_test,
+    label = "p_label",
+    hide.ns = FALSE,
+    tip.length = 0.02,
+    size = 3.5
+  ) +
+  # Axis order
+  # Give room for n labels and bars
+  #expand_limits(y = max(df_all$total.ParS.hits, na.rm = TRUE) * 4) +
+  coord_cartesian(clip = "off") +
+  theme(legend.position = "none",
+        plot.margin = margin(10, 10, 10, 10)) +
+  xlab("") + scale_y_continuous(limits=c(0,10,2),  breaks=c(0,2,4,6,8)) + ylab("Number of ParS Hits per Genome")
+#vp #+ expand_limits(y = c(-1, max(df_all$total.ParS.hits) * 1.2))
+
+
+
+
+
+vp+ scale_fill_manual(values = pal.shuk)
+
+##ggsave(here("02_motifs/ParS/figs/ParS_Hits_Kruskal_1e4_pooled.png")) 
+```

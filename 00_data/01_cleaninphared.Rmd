@@ -1,0 +1,141 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+### load libraries, set wd
+```{r}
+library(tidyverse)
+library(here)
+here()
+
+dr_here()
+```
+## INPHARED database
+
+```{r}
+### check inph for dereplication/ duplicates between refseq and genbank, ex: Bacillus phage Eldridge
+#inph <- read.delim2(here(raw_dir, "1Jan2025_data.tsv"))
+#inph$ignore <- "keep"
+#inph <- inph[,c(1,28)]
+
+
+tax <- read.csv(here("00_data/gtdb/updated_fam_spor.csv"))
+
+
+## load inphared
+inph<- read.delim2(here("00_data/inphared_db/original_metadata/14Apr2025_data_excluding_refseq.tsv"))
+#inph.clean <- merge(inph, inph.noref, by="Accession", all.x=FALSE, all.y=TRUE)
+
+## add in sporulation status based on inphared host 
+inph <- merge(inph, tax, by.x="Host", by.y="newgtdb_Genus", all.x=TRUE, all.y=FALSE)
+
+## add in lifestyle predictions from phastyle
+style <- read.delim2(here("00_data/inphared_db/inphared_phastyle_predictions.tsv"))
+
+inph <- merge(inph, style, by.x="Accession", by.y="fasta_id", all.x=TRUE, all.y=FALSE)
+
+
+## make f_spor sporulation status as unknown if NA
+inph$f_spor[is.na(inph$f_spor)] <- "unknown"
+inph$newgtdb_Phylum[is.na(inph$newgtdb_Phylum)] <- "unknown"
+
+#### all phage with known sporulation status (T/F) of host, exclude any unknown phyla/sporulation status
+inph.known <- subset(inph, inph$f_spor!="unknown")
+
+### keep only phage with lifestyle predictions
+inph.known <- subset(inph.known, !is.na(inph.known$predicted_label))
+
+
+## create helpful labels
+inph.known$sporulation <- "T"
+inph.known$sporulation <- ifelse(inph.known$f_spor==TRUE, "Spor", "NonSpor")
+
+inph.known$lifestyle <- "T"
+inph.known$lifestyle <- ifelse(inph.known$predicted_label=="temperate", "Temp", "Lytic")
+
+inph.known$host_phyla <- "T"
+inph.known$host_phyla <- ifelse(inph.known$newgtdb_Phylum=="Bacillota", "Bacillota", "OtherPhyla")
+
+inph.known <- unite(inph.known, "host_phage_spor", c("host_phyla", "lifestyle", "sporulation"), sep = "_", remove = FALSE, na.rm = FALSE)
+inph.known <- unite(inph.known, "hostspec_phage_spor", c("newgtdb_Phylum", "lifestyle", "sporulation"), sep = "_", remove = FALSE, na.rm = FALSE)
+inph.known$newgtdb_Phylum2 <- inph.known$newgtdb_Phylum
+inph.known$newgtdb_Phylum2 <- ifelse(inph.known$newgtdb_Phylum=="Bacillota" & inph.known$f_spor==TRUE, "Bacillota_Spor", inph.known$newgtdb_Phylum2 )
+inph.known$newgtdb_Phylum2 <- ifelse(inph.known$newgtdb_Phylum=="Bacillota" & inph.known$f_spor==FALSE, "Bacillota_NonSpor", inph.known$newgtdb_Phylum2 )
+
+
+
+## add in inphared dRep data (99.5% similarity clustered across 100% alignment)
+### currently this is just test data w/ bacilliota
+drep.w <- read.csv(here("00_data/inphared_db/inphared_bacill_drep_995-100_Wdb.csv"))
+drep.w$ref<- "ref_seq"
+drep.c <- read.csv(here("00_data/inphared_db/inphared_bacill_drep_995-100_Cdb.csv"))
+drep.c <- drep.c[,c(1,8)]
+
+drep <- merge(drep.w, drep.c, by="genome", all=TRUE)
+drep$ref[is.na(drep$ref)] <- "dup"
+drep$cluster <- drep$secondary_cluster
+drep <- drep[,c(1,2,4)]
+
+drep$genome<- gsub('.fna[^_]*$', '', drep$genome)
+
+
+
+inph.known <- merge(inph.known, drep, by.x="Accession", by.y="genome", all=TRUE) 
+inph.known$ref[is.na(inph.known$ref)] <- "not_run"
+inph.known$cluster[is.na(inph.known$cluster)] <- "not_run"
+
+
+unique(inph.known$newgtdb_Phylum)
+```
+
+
+```{r}
+
+
+inph.phyla <- inph.known[,c(2,33)]
+write.table(inph.phyla, here("00_data/inphared_db/14Apr2025_knownspore_phylalist.txt"), col.names = FALSE, row.names = FALSE, quote=FALSE, sep = "\t")
+
+write.csv(inph.known, here("00_data/inphared_db/14Apr2025_knownsporestatus.csv"))
+### only spore phages
+
+inph.known <- read.csv(here("00_data/inphared_db/14Apr2025_knownsporestatus.csv"))
+### create useful lists for splitting multifasta files
+
+### list of all phage with KNOWN host sporulation status 
+writeLines(as.character(inph.known$Accession), here("00_data/inphared_db/14Apr2025_KnownHostSporulation.txt"))
+
+
+### list of all bacilliota sporulating (TRUE) hosts
+writeLines(as.character(inph.known$Accession[inph.known$f_spor==TRUE]), here("00_data/inphared_db/14Apr2025_BacilliotataSporeTRUEphage.txt"))
+
+## list of all bacilliota non-sporulating (FALSE) hosts
+writeLines(as.character(inph.known$Accession[inph.known$f_spor==FALSE & inph.known$newgtdb_Phylum=="Bacillota"]), here("00_data/inphared_db/14Apr2025_BacilliotaSporeFALSEphage.txt"))
+
+## list of all non-bacilliota and therefore non-sporulating hosts
+writeLines(as.character(inph.known$Accession[inph.known$newgtdb_Phylum!="Bacillota"]), here("00_data/inphared_db/14Apr2025_NonBacilliotaphage.txt"))
+
+
+### list of all bacilliota sporulating (TRUE) hosts + Lytic phage
+writeLines(as.character(inph.known$Accession[inph.known$f_spor==TRUE & inph.known$predicted_label=="virulent"]), here("00_data/inphared_db/14Apr2025_BacilliotataSporeTRUELytic.txt"))
+
+### list of all bacilliota NONsporulating (FALSE) hosts + Lytic phage
+writeLines(as.character(inph.known$Accession[inph.known$f_spor==FALSE & inph.known$predicted_label=="virulent"]), here("00_data/inphared_db/14Apr2025_BacilliotataSporeFALSELytic.txt"))
+
+
+### list of all bacilliota sporulating (TRUE) hosts + temp phage
+writeLines(as.character(inph.known$Accession[inph.known$f_spor==TRUE & inph.known$predicted_label=="temperate"]), here("00_data/inphared_db/14Apr2025_BacilliotataSporeTRUETemp.txt"))
+
+### list of all bacilliota NON sporulating (FALSE) hosts + temp phage
+writeLines(as.character(inph.known$Accession[inph.known$f_spor==FALSE & inph.known$predicted_label=="temperate"]), here("00_data/inphared_db/14Apr2025_BacilliotataSporeFALSEemp.txt"))
+
+
+## list of all non-bacilliota (and therefore non-sporulating hosts) and LYTIC
+writeLines(as.character(inph.known$Accession[inph.known$newgtdb_Phylum!="Bacillota" & inph.known$predicted_label=="virulent"]), here("00_data/inphared_db/14Apr2025_NonBacilliotaLytic.txt"))
+
+## list of all non-bacilliota (and therefore non-sporulating hosts) and temp
+writeLines(as.character(inph.known$Accession[inph.known$newgtdb_Phylum!="Bacillota" & inph.known$predicted_label=="temperate"]), here("00_data/inphared_db/14Apr2025_NonBacilliotaTemp.txt"))
+
+
+```
+
+

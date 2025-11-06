@@ -1,0 +1,517 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## INPHARED descriptive stats
+
+
+```{r}
+library(tidyverse)
+library(here)
+library(cowplot)
+here()
+dr_here()
+
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+#inph <- read.csv(here("data/inphared_db/14Apr2025_knownsporestatus.csv", row.names=1))
+inph <- read.csv(here("00_data", "inphared_db", "14Apr2025_knownsporestatus.csv"), row.names = 1)
+
+inph$sporulation <- "T"
+inph$sporulation <- ifelse(inph$f_spor==TRUE, "SproulatingHost", "NonsporulatingHost")
+
+inph <- unite(inph, "phage_type", c("sporulation", "predicted_label"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+
+
+### remove duplicates (keep only reference strains)
+### currently this only works on bacilliota, 99.5% ANI over 100% alignment threshold
+## rest of inphared is pending 
+
+inph <- subset(inph, inph$ref=="not_run" | inph$ref=="ref_seq")
+
+```
+
+### compare genome size of temperate vs. lytic  BACILLOTA ONLY
+```{r}
+inph.all <- inph
+#inph<- subset(inph.all, inph.all$Jumbophage==FALSE)
+
+inph$genome.log <- log10(inph$Genome.Length..bp.)
+
+inph.subset <- subset(inph.all, inph.all$newgtdb_Phylum=="Actinomycetota" | inph.all$newgtdb_Phylum=="Pseudomonadota" | inph.all$newgtdb_Phylum=="Bacteroidota" | inph.all$newgtdb_Phylum=="Bacillota" | inph.all$newgtdb_Phylum=="Campylobacterota" | inph.all$newgtdb_Phylum== "Cyanobacteriota")
+
+
+inph.bac <- subset(inph.all, inph.all$newgtdb_Phylum=="Bacillota")
+
+
+inph.log <- ggplot(inph.bac, aes(x = factor(lifestyle), fill = factor(lifestyle), y = genome.log)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("log10 (Genome Size)") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~ newgtdb_Phylum2, ncol = 2)
+
+inph.genes <- ggplot(inph.bac, aes(x = factor(lifestyle), fill = factor(lifestyle), y = Number.CDS)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("Number of Genes") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~ newgtdb_Phylum2, ncol = 2)
+
+ggplot(inph.subset, aes(x = factor(lifestyle), fill = factor(lifestyle), y = genome.log)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("log10 (Genome Size)") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~ newgtdb_Phylum2, ncol = 3)
+
+
+oneway.inph.l <- aov(genome.log ~ lifestyle , data = inph.bac)
+oneway.inph.s <- aov(genome.log ~ sporulation , data = inph.bac)
+
+twoway.inph.a <- aov(genome.log ~ lifestyle + sporulation, data = inph.bac)
+
+twoway.inph.m <- aov(Number.CDS ~ lifestyle * sporulation, data = inph.bac)
+
+summary(twoway.inph)
+
+em.inph <- emmeans(twoway.inph.m, ~ lifestyle * sporulation, data=inph.bac)
+pairs(em.inph)
+summary(em.inph)
+contrast(em.inph, method = "pairwise", by = "lifestyle", adjust = "holm")
+
+
+library(AICcmodavg)
+
+model.set <- list(oneway.inph.l, oneway.inph.s, twoway.inph.a, twoway.inph.m)
+model.names <- c("lifestyle", "sporulation", "two.way", "interaction")
+
+aictab(model.set, modnames = model.names)
+
+ggplot(inph.bac, aes(x = factor(lifestyle), fill = factor(lifestyle), y = molGC....)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("Phage Genome Size (bp)") + xlab("") + ggtitle("INPHARED, with jumbophages") + labs(fill="Lifestyle") + facet_wrap(~ newgtdb_Phylum2, ncol = 2)
+
+
+
+ggplot(inph.bac, aes(x = factor(lifestyle), fill = factor(lifestyle), y = tRNAs)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("Phage Genome Size (bp)") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~ newgtdb_Phylum2, ncol = 2)
+
+
+
+ggplot(inph.bac, aes(x = factor(lifestyle), fill = factor(lifestyle), y = Number.CDS)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("Phage Genome Size (bp)") + xlab("") + ggtitle("INPHARED, with jumbophages") + labs(fill="Lifestyle") + facet_wrap(~ newgtdb_Phylum2, ncol = 2)
+
+````
+
+
+
+
+
+ggplot(inph.all, aes(x = factor(f_spor), fill = factor(lifestyle), y = Genome.Length..bp.)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("Phage Genome Size (bp)") + xlab("") + ggtitle("INPHARED, with jumbophages") + labs(fill="Lifestyle") 
+
+
+ggplot(inph.all, aes(x = factor(lifestyle), fill = factor(lifestyle), y = Genome.Length..bp.)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("Phage Genome Size (bp)") + xlab("") + ggtitle("INPHARED, with jumbophages") + labs(fill="Lifestyle") + facet_wrap(~ newgtdb_Phylum2, ncol = 2)
+
+
+ggplot(inph.subset, aes(x = factor(lifestyle), fill = factor(lifestyle), y = Genome.Length..bp.)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("Phage Genome Size (bp)") + xlab("") + ggtitle("INPHARED, with jumbophages") + labs(fill="Lifestyle") + facet_wrap(~ newgtdb_Phylum2, ncol = 2)
+
+
+# ggplot(inph, aes(x = factor(f_spor), fill = factor(predicted_label), y = Genome.Length..bp.)) 
+#  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + scale_fill_manual(values=pal2, labels = c ("Temperate", "Lytic")) + ylab("Phage # Genome Size (bp)") + xlab("") + ggtitle("INPHARED, no jumbophages") + labs(fill="Lifestyle")
+  
+  
+  
+  
+  
+inph.spor <- subset(inph.all, inph.all$f_spor==TRUE)  
+
+size.spor <- ggplot(inph.spor, aes(x = factor(lifestyle), fill = factor(lifestyle), y = Genome.Length..bp.)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("Phage Genome Size (bp)") + xlab("") + ggtitle("") + labs(fill="Lifestyle")+ ylim(0, 750000)
+
+
+
+inph.no <- subset(inph.all, inph.all$f_spor==FALSE)  
+
+size.no <- ggplot(inph.no, aes(x = factor(lifestyle), fill = factor(lifestyle), y = Genome.Length..bp.)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("Phage Genome Size (bp)") + xlab("") + ggtitle("") + labs(fill="Lifestyle") + ylim(0, 750000) + theme(legend.position = "none")
+
+
+
+
+
+genome.size <- plot_grid(size.no, size.spor, labels = c('Nonsporulating Host', 'Sporulating Host'), label_size = 12, rel_widths = c(1.5, 2))
+
+genome.size
+
+
+```{r}
+
+inph.all$f_spor <- as.factor(inph.all$f_spor)
+inph.all$predicted_label <- as.factor(inph.all$predicted_label)
+inph.all$Host <- as.factor(inph.all$Host)
+
+
+#inph <- subset(inph, inph$Jumbophage==FALSE)
+
+oneway <- aov(Genome.Length..bp. ~ predicted_label, data = inph.all)
+
+summary(oneway)
+
+
+twoway <- aov(Genome.Length..bp. ~ predicted_label + f_spor, data = inph.all)
+
+summary(twoway)
+
+
+twoway.int <- aov(Genome.Length..bp. ~ predicted_label * f_spor, data = inph.all)
+
+summary(twoway.int)
+
+
+block <- aov(Genome.Length..bp. ~predicted_label + f_spor + Host, data = inph.all)
+
+summary(block)
+
+block_int <- aov(Genome.Length..bp. ~ predicted_label + f_spor * Host, data = inph.all)
+summary(block_int)
+all_int <- aov(Genome.Length..bp. ~ predicted_label * f_spor * Host, data = inph.all)
+summary(all_int)
+
+library(AICcmodavg)
+
+model.set <- list(oneway, twoway, twoway.int, block, block_int)
+model.names <- c("one.way", "two.way", "interaction", "blocking", "block_int")
+
+aictab(model.set, modnames = model.names)
+
+par(mfrow=c(2,2))
+plot(twoway.int)
+par(mfrow=c(1,1))
+
+terms(block)
+
+TukeyHSD(block)  # or:
+TukeyHSD(block, which = c("predicted_label", "f_spor"))
+
+
+#tkey
+
+kruskal.test(predicted_label ~ Genome.Length..bp., data = inph)
+
+
+
+
+library(emmeans)
+em <- emmeans(block, ~ predicted_label * f_spor)
+pairs(em)
+
+## no spor temp vs. vir, different
+## spor temp vs. vir, different
+
+## no difference between spor temp and nonspor temp
+## no difference between spor vir and nonspor vir
+
+
+```
+
+```{r}
+ ggplot(inph.subset, aes(x = factor(predicted_label), fill = factor(predicted_label), y = molGC....)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2, labels = c ("Temperate", "Lytic")) + ylab("GC %") + xlab("") + ggtitle("") + labs(fill="Lifestyle")+ ylim(0, 75)+ facet_wrap(~ newgtdb_Phylum2, ncol = 2)
+
+gc.spor <- ggplot(inph.spor, aes(x = factor(predicted_label), fill = factor(predicted_label), y = molGC....)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2, labels = c ("Temperate", "Lytic")) + ylab("GC %") + xlab("") + ggtitle("") + labs(fill="Lifestyle")+ ylim(0, 75)
+
+
+
+inph.no <- subset(inph.all, inph.all$f_spor==FALSE)  
+
+gc.no <- ggplot(inph.no, aes(x = factor(predicted_label), fill = factor(predicted_label), y = molGC....)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2, labels = c ("Temperate", "Lytic")) + ylab("GC %") + xlab("") + ggtitle("") + labs(fill="Lifestyle") + ylim(0, 75) + theme(legend.position = "none")
+
+
+
+
+gc.amount <- plot_grid(gc.no, gc.spor, labels = c('Nonsporulating Host', 'Sporulating Host'), label_size = 12, rel_widths = c(1.5, 2))
+
+gc.amount
+```
+
+
+```{r}
+
+inph.all$f_spor <- as.factor(inph.all$f_spor)
+inph.all$predicted_label <- as.factor(inph.all$predicted_label)
+inph.all$Host <- as.factor(inph.all$Host)
+
+#inph <- subset(inph, inph$Jumbophage==FALSE)
+
+oneway <- aov(molGC.... ~ predicted_label, data = inph.all)
+
+summary(oneway)
+
+
+twoway <- aov(molGC.... ~ predicted_label + f_spor, data = inph.all)
+
+summary(twoway)
+
+
+twoway.int <- aov(molGC.... ~ predicted_label * f_spor, data = inph.all)
+
+summary(twoway.int)
+
+
+block <- aov(molGC.... ~predicted_label + f_spor + Host, data = inph.all)
+
+summary(block)
+
+block_int <- aov(molGC.... ~ predicted_label + f_spor * Host, data = inph.all)
+summary(block_int)
+all_int <- aov(molGC.... ~ predicted_label * f_spor * Host, data = inph.all)
+summary(all_int)
+
+library(AICcmodavg)
+
+model.set <- list(oneway, twoway, twoway.int, block, block_int)
+model.names <- c("one.way", "two.way", "interaction", "blocking", "block_int")
+
+aictab(model.set, modnames = model.names)
+summary(block)
+
+par(mfrow=c(2,2))
+plot(twoway.int)
+par(mfrow=c(1,1))
+
+terms(block)
+
+TukeyHSD(block)  # or:
+
+
+
+#tkey
+
+kruskal.test(predicted_label ~ molGC...., data = inph)
+
+
+
+
+library(emmeans)
+em <- emmeans(block, ~ predicted_label * f_spor)
+pairs(em)
+
+### no effect 
+n
+
+```
+
+
+```{r}
+tRNA.spor <-  ggplot(inph.spor, aes(x = factor(predicted_label), fill = factor(predicted_label), y = tRNAs)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2, labels = c ("Temperate", "Lytic")) + ylab("# of tRNAs") + xlab("") + ggtitle("") + labs(fill="Lifestyle")+ ylim(0, 30)
+
+ ggplot(inph.subset, aes(x = factor(predicted_label), fill = factor(predicted_label), y = tRNAs)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2, labels = c ("Temperate", "Lytic")) + ylab("# of tRNAs") + xlab("") + ggtitle("") + labs(fill="Lifestyle")+ ylim(0, 30) + facet_wrap(~ newgtdb_Phylum2, ncol = 2)
+
+inph.no <- subset(inph.all, inph.all$f_spor==FALSE)  
+
+tRNA.no <-ggplot(inph.no, aes(x = factor(predicted_label), fill = factor(predicted_label), y = tRNAs)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2, labels = c ("Temperate", "Lytic")) + ylab("# of tRNAs") + xlab("") + ggtitle("") + labs(fill="Lifestyle") + ylim(0, 30) + theme(legend.position="none")
+
+
+tRNA.amount <- plot_grid(tRNA.no, tRNA.spor, labels = c('Nonsporulating Host', 'Sporulating Host'), label_size = 12, rel_widths = c(1.5, 2))
+
+tRNA.amount
+
+twoway_block <- aov(tRNAs ~ predicted_label+ f_spor+Host, data = inph.all)
+
+summary(twoway_block)
+
+library(emmeans)
+em <- emmeans(twoway_block, ~ predicted_label * f_spor)
+pairs(em)
+
+### lifestyle, sporulation, and host, have impact on tRNAs 
+## non spor vir vs. spor temp are different
+## spor vir vs. spor temp are diffent
+
+## vir spor vs. non spor are NOT different
+## temp spor vs. non spor ARE NOT different
+
+```
+
+
+```{r}
+
+ggplot(inph.subset, aes(x = factor(predicted_label), fill = factor(predicted_label), y = Number.CDS)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2, labels = c ("Temperate", "Lytic")) + ylab("# of Coding Regions") + xlab("") + ggtitle("") + labs(fill="Lifestyle")+ ylim(0, 350) + facet_wrap(~ newgtdb_Phylum2, ncol = 2)
+
+
+
+
+CDS.spor <- ggplot(inph.spor, aes(x = factor(predicted_label), fill = factor(predicted_label), y = Number.CDS)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2, labels = c ("Temperate", "Lytic")) + ylab("# of Coding Regions") + xlab("") + ggtitle("") + labs(fill="Lifestyle")+ ylim(0, 350)
+
+
+
+
+
+inph.no <- subset(inph.all, inph.all$f_spor==FALSE)  
+
+CDS.no <- ggplot(inph.no, aes(x = factor(predicted_label), fill = factor(predicted_label), y = Number.CDS)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2, labels = c ("Temperate", "Lytic")) + ylab("# of Coding Regions") + xlab("") + ggtitle("") + labs(fill="Lifestyle") + ylim(0, 350) + theme(legend.position="none")
+
+
+CDS.amount <- plot_grid(CDS.no, CDS.spor, labels = c('Nonsporulating Host', 'Sporulating Host'), label_size = 12, rel_widths = c(1.5, 2))
+
+CDS.amount
+
+
+twoway <- aov(Number.CDS ~ predicted_label+ f_spor+Host, data = inph.all)
+## lifestyle and sporulation both an impact on number of CDS
+
+
+
+summary(twoway)
+
+library(emmeans)
+em <- emmeans(twoway, ~ predicted_label * f_spor)
+pairs(em)
+
+## lifestyle and sporulation both an impact on number of CDS <0.001
+
+## nonspor temp vs. vir are different
+## spor temp vs. vir are different
+
+## vir spor vs. vir no spor are NOT different
+## temp spor vs. temp no spor are NOT different
+
+
+```
+
+```{r}
+all <- plot_grid(
+  genome.size, gc.amount, CDS.amount, tRNA.amount, ncol=1)
+ # labels = c('Genome Size', 'GC %', 'Predicted CD Regions', 'Predicted tRNAs'), ncol = 1)
+
+all
+
+##ggsave(here("data/inphared_db/inphared_desc.png"), height=11, width=8)
+
+```
+
+```{r}
+#inph.spor 
+#inph.no
+
+## BACILLOTA
+
+library(ggpubr)
+
+inph.bac <- subset(inph.all, inph.all$newgtdb_Phylum=="Bacillota")
+
+gvT <- ggplot(inph.bac, aes(Genome.Length..bp., tRNAs, fill=phage_type, colour = phage_type, shape = f_spor)) +
+  geom_point() +
+  geom_smooth(method="lm")+ # Add regression line
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "middle", label.y.npc = "top" )# Add equation#+ ylim(0, 25) #+ xlim(0, 400000)
+
+gvT
+
+cvT <- ggplot(inph.bac, aes(Number.CDS, tRNAs, fill=phage_type, colour = phage_type, shape = f_spor)) +
+  geom_point() +
+  geom_smooth(method="lm")+ # Add regression line
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "middle", label.y.npc = "top" )# Add equation#+ ylim(0, 25) #+ xlim(0, 400000)
+
+MvT <- ggplot(inph.bac, aes(molGC...., tRNAs, fill=phage_type, colour = phage_type, shape = f_spor)) +
+  geom_point() +
+  geom_smooth(method="lm")+ # Add regression line
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "middle", label.y.npc = "top" )# Add equation#+ ylim(0, 25) #+ xlim(0, 400000)
+
+MvT  ## not interesting lol
+
+gvC <- ggplot(inph.bac, aes(Genome.Length..bp., Number.CDS, fill=phage_type, colour = phage_type, shape = f_spor)) +
+  geom_point() +
+  geom_smooth(method="lm")+ # Add regression line
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "left", label.y.npc = "top" )# Add equation#+ ylim(0, 25) #+ xlim(0, 400000)
+
+
+GvGC <- ggplot(inph.bac, aes(Genome.Length..bp., molGC...., fill=phage_type, colour = phage_type, shape = f_spor)) +
+  geom_point() + geom_smooth(method="lm") +
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "middle", label.y.npc = "top" )
+GvGC
+
+all.line <- plot_grid(
+  gvT, cvT, gvC, GvGC, ncol=1)
+ # labels = c('Genome Size', 'GC %', 'Predicted CD Regions', 'Predicted tRNAs'), ncol = 1)
+
+all.line
+
+#ggsave(here("data/inphared_db/inphared_linear.png"), height=11, width=8)
+
+
+```
+
+
+```{r}
+
+
+length.by.codon <- ggplot(inph.bac, aes(genome.log, Number.CDS, fill=host_phage_spor, colour = host_phage_spor, shape = host_phage_spor)) +
+  geom_point() + geom_smooth(method="lm") +
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "middle", label.y.npc = "top" )
+length.by.codon
+
+ggsave(here("01_desc_stats/inph_linear_bacil.png"))
+
+
+```
+
+```{r}
+#inph.spor 
+#inph.no
+
+## all
+
+library(ggpubr)
+
+gvT <- ggplot(inph.all, aes(Genome.Length..bp., tRNAs, fill=phage_type, colour = phage_type, shape = f_spor)) +
+  geom_point() +
+  geom_smooth(method="lm")+ # Add regression line
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "middle", label.y.npc = "top" )# Add equation#+ ylim(0, 25) #+ xlim(0, 400000)
+
+
+cvT <- ggplot(inph.all, aes(Number.CDS, tRNAs, fill=phage_type, colour = phage_type, shape = f_spor)) +
+  geom_point() +
+  geom_smooth(method="lm")+ # Add regression line
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "middle", label.y.npc = "top" )# Add equation#+ ylim(0, 25) #+ xlim(0, 400000)
+
+MvT <- ggplot(inph.all, aes(molGC...., tRNAs, fill=phage_type, colour = phage_type, shape = f_spor)) +
+  geom_point() +
+  geom_smooth(method="lm")+ # Add regression line
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "middle", label.y.npc = "top" )# Add equation#+ ylim(0, 25) #+ xlim(0, 400000)
+
+MvT  ## not interesting lol
+
+gvC <- ggplot(inph.all, aes(Genome.Length..bp., Number.CDS, fill=phage_type, colour = phage_type, shape = f_spor)) +
+  geom_point() +
+  geom_smooth(method="lm")+ # Add regression line
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "left", label.y.npc = "top" )# Add equation#+ ylim(0, 25) #+ xlim(0, 400000)
+
+
+GvGC <- ggplot(inph.bac, aes(Genome.Length..bp., molGC...., fill=host_phage_spor, colour = host_phage_spor, shape = host_phage_spor)) +
+  geom_point() + geom_smooth(method="lm") +
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "middle", label.y.npc = "top" )
+GvGC
+
+all.line <- plot_grid(
+  gvT, cvT, gvC, GvGC, ncol=1)
+ # labels = c('Genome Size', 'GC %', 'Predicted CD Regions', 'Predicted tRNAs'), ncol = 1)
+
+all.line
+
+#ggsave(here("data/inphared_db/inphared_linear.png"), height=11, width=8)
+
+
+```
+

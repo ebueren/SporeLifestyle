@@ -1,0 +1,260 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(here)
+
+here::here()
+ParS <- read.delim2(here("02_motifs/ParS/data/inph_ParS_fimo.tsv"))
+#ParS <- read.delim2(here("02_motifs/ParS/data/inphared_0Afimo.tsv"))
+## remove text headers
+ParS <- subset(ParS, ParS$motif_id=="ParS_BSub")
+ParS$q.value<- as.numeric(ParS$q.value)
+###remove low quality ParS hits (false positive rate of >1%)
+ParS.qual <- subset(ParS, ParS$q.value<0.01)
+
+#### remove low quality ParS hits (False positive rate of 0.01%)
+#ParS.qual <- subset(ParS, ParS$q.value<0.0001)
+ParS.qual <- ParS.qual %>%
+  group_by(sequence_name, start, stop) %>%  # group by coordinates
+  slice_max(order_by = score, n = 1) %>%    # keep only the row with highest score
+  ungroup()
+### phi3T KY030782, spbeta AF020713
+
+## combine phage metadata with ParS hits. Label any phage that had no ParS hits with "no_hit" in metadata
+inph <- read.csv(here("00_data", "inphared_db", "14Apr2025_knownsporestatus.csv"), row.names = 1)
+inph <- select(inph, Accession, Host, Genome.Length..bp., gtdb_f, f_spor, newgtdb_Phylum,  host_phage_spor, phage_type, sporulation, lifestyle)
+all <- merge(inph, ParS.qual, by.x="Accession", by.y="sequence_name", all.x=TRUE, all.y=FALSE)
+all$motif_id[is.na(all$motif_id)] <- "no_hit"
+all$q.value[is.na(all$q.value)] <- 1
+
+### create binary hit column of 1 for ParS hit, 0 if no hit
+all$hit <- ifelse(all$motif_id=="ParS_BSub", 1, 0)
+
+
+
+## create binary list of phages w/ and w/out ParS hits
+ParS.pos <- all %>% group_by(Accession, host_phage_spor) %>%
+  summarise(total.ParS.hits = sum(hit), pos.ParS.hit = max(hit), .groups = "drop") #%>% 
+
+
+## create quick summary stats for ParS hits by host_phage_spor groups  
+ParS.summary <- ParS.pos %>% group_by(host_phage_spor) %>%
+  summarise( total_ParS_hits = sum(total.ParS.hits), Phage_has_ParS = sum(pos.ParS.hit), total.phage = n(), .groups = "drop") %>% mutate(ParS.pos.perc = Phage_has_ParS/total.phage*100)
+
+
+
+
+```
+
+
+
+
+```{r}
+
+
+#ParS.hits <- ParS.hits.all
+ParS.hits <- all
+#ParS.hits <- subset(ParS.hits.all, ParS.hits.all$phage_type=="Lytic_Spor")
+
+## find center phage genome (whole genome /2)
+ParS.hits$seq.mdpt <- as.numeric(ParS.hits$Genome.Length..bp.)/2
+
+## find center of motif 
+ParS.hits$motif.mdpt <- (ParS.hits$stop + ParS.hits$start )/ 2
+
+### subtract midpoint motif from sequence midpoint to see how far away they are
+ParS.hits <- ParS.hits %>%
+  mutate(mdpt.align = (motif.mdpt - seq.mdpt))
+
+ParS.hits$mdpt.align.kbp <- ParS.hits$mdpt.align/1000
+
+#### TO GET RELATIVE motif alignmen
+
+# Relative position as fraction of genome length
+# (-0.5 = start, 0 = center, +0.5 = end)
+ParS.hits$rel.mdpt <- (ParS.hits$motif.mdpt - ParS.hits$seq.mdpt) / ParS.hits$Genome.Length..bp.
+
+
+
+# Relative position from genome start (0 to 1)
+ParS.hits$rel.frac <- ParS.hits$motif.mdpt / ParS.hits$Genome.Length..bp.
+
+# Optionally convert to percentage
+ParS.hits$rel.percent <- ParS.hits$rel.frac * 100
+
+
+
+ggplot(ParS.hits, aes(x = mdpt.align.kbp, fill = host_phage_spor)) +
+  geom_histogram(binwidth = 5, position = "dodge") +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_x_continuous(breaks = seq(-90, 90, by = 30)) +
+  labs(x = "Motif distance (kb) from center of phage genome", y = "Motif count") +
+  facet_wrap(~ host_phage_spor, ncol = 2)+ ggtitle("Absolute Position of ParS Motif on Phage Genomes")
+
+ggsave(here("02_motifs/ParS/AbsoluteParSposition.png"))
+
+ggplot(ParS.hits, aes(x = rel.mdpt, fill = host_phage_spor)) +
+  geom_histogram(binwidth = 0.05, position = "dodge") +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_x_continuous(breaks = seq(-0.5, 0.5, by = 0.25)) +
+  labs(x = "Motif position relative to center of phage genome", y = "Motif count") +
+  facet_wrap(~ host_phage_spor, ncol = 2) + ggtitle("Relative Position of ParS Motif on Phage Genomes")
+
+ggsave(here("02_motifs/ParS/RelativeParSposition.png"))
+```
+statistics 
+```{r}
+
+ParS.bin <- ParS.pos[,c(1,2,4)]
+
+
+
+```
+
+```{r}
+analyze_enrichment <- function(df, ref_treatment = "Enriched") {
+  # relevel the treatment factor
+  df$host_phage_spor <- relevel(factor(df$host_phage_spor), ref = ref_treatment)
+  
+  # logistic regression: motif presence ~ treatment
+  model <- glm(pos.ParS.hit ~ host_phage_spor, family = binomial, data = df)
+  
+  # estimated probabilities per treatment
+  emm <- emmeans(model, ~ host_phage_spor, type = "response")
+  
+  list(
+    model_summary = summary(model),
+    probabilities = emm,
+    pairwise_tests = pairs(emm, adjust = "tukey")
+  )
+}
+library(emmeans)
+res <- analyze_enrichment(ParS.bin, ref_treatment = "Bacillota_Lytic_Spor")
+
+res$model_summary     # logistic regression coefficients
+res$probabilities     # estimated motif probability per treatment
+res$pairwise_tests    # all pairwise comparisons
+
+
+
+```
+
+```{r}
+library(ggplot2)
+
+prob_df <- as.data.frame(res$probabilities)
+head(prob_df)
+
+prob_df$host_phage_spor <- reorder(prob_df$host_phage_spor, prob_df$prob)
+
+ggplot(prob_df, aes(x = host_phage_spor, y = prob)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), width = 0.2) +
+  coord_flip() +  # horizontal view
+  theme_minimal(base_size = 14) +
+  ylab("Estimated probability of motif presence") +
+  xlab("Treatment") +
+  ggtitle("Motif enrichment across treatments")
+
+
+```
+
+```{r}
+
+## create binary list of phages w/ and w/out ParS hits
+ParS.sum <- all %>% group_by(Accession, host_phage_spor) %>%
+  summarise(total.ParS.hits = sum(hit), pos.ParS.hit = max(hit), .groups = "drop") #%>% 
+
+
+ggplot(ParS.pos, aes(x = factor(host_phage_spor), fill = factor(host_phage_spor), color=factor(host_phage_spor), y = total.ParS.hits )) +
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2) + ylab("Number of ParS sites / Genome") +theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1)) + theme(legend.position = "left") + xlab("Phyla_Spor_Lifestyle") + ggtitle("Total ParS Binding Sites per Genome")
+
+
+
+
+ParS_summary <- ParS.pos %>%
+  group_by(host_phage_spor) %>%
+  summarise(mean_hit = mean(pos.ParS.hit, na.rm = TRUE)*100,
+            se_hit = (sd(pos.ParS.hit, na.rm = TRUE)/sqrt(n())))
+
+ParS_summary$se_hit <- ParS_summary$se_hit*100
+
+ggplot(ParS_summary, aes(x = factor(host_phage_spor),
+                         y = mean_hit,
+                         fill = factor(host_phage_spor))) +
+  geom_col(color = "black", position = "dodge") +
+  geom_errorbar(aes(ymin = mean_hit - se_hit,
+                    ymax = mean_hit + se_hit),
+                width = 0.2) +
+  ylab("% Phage with 1+ ParS  site") +
+  xlab("Phyla_Spor_Lifestyle") +
+  theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1),
+        legend.position = "none") + ggtitle("Proportion of Phages with at least 1 ParS Binding Site")
+```
+
+```{r}
+pairwise_fisher_summary <- function(df, group_col = "group", hits_col = "hits", total_col = "total", p.adjust.method = "BH") {
+  groups <- df[[group_col]]
+  combs <- combn(groups, 2, simplify = FALSE)
+  
+  results <- data.frame(
+    group1 = character(),
+    group2 = character(),
+    odds_ratio = numeric(),
+    conf_low = numeric(),
+    conf_high = numeric(),
+    p.value = numeric(),
+    p.adj = numeric(),
+    stringsAsFactors = FALSE
+  )
+  
+  pvals <- numeric()
+  
+  for (c in combs) {
+    # subset the two groups
+    g1 <- df[df[[group_col]] == c[1], ]
+    g2 <- df[df[[group_col]] == c[2], ]
+    
+    # create 2x2 table
+    tab <- matrix(c(
+      g1[[hits_col]], g1[[total_col]] - g1[[hits_col]],
+      g2[[hits_col]], g2[[total_col]] - g2[[hits_col]]
+    ), nrow = 2, byrow = TRUE)
+    
+    rownames(tab) <- c(c[1], c[2])
+    colnames(tab) <- c("Present", "Absent")
+    
+    ft <- fisher.test(tab)
+    
+    pvals <- c(pvals, ft$p.value)
+    
+    results <- rbind(results, data.frame(
+      group1 = c[1],
+      group2 = c[2],
+      odds_ratio = ft$estimate,             # odds ratio
+      conf_low = ft$conf.int[1],            # lower 95% CI
+      conf_high = ft$conf.int[2],           # upper 95% CI
+      p.value = ft$p.value,
+      p.adj = NA
+    ))
+  }
+  
+  # Adjust p-values
+  results$p.adj <- p.adjust(pvals, method = p.adjust.method)
+  
+  return(results)
+}
+
+
+t <- pairwise_fisher_summary(
+  df = Pars.FISH, 
+  group_col = "host_phage_spor", 
+  hits_col = "Phage_has_ParS",  # number of positive hits
+  total_col = "total.phage",    # total number per group
+  p.adjust.method = "BH"
+)
+```

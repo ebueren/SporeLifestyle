@@ -1,0 +1,72 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(emmeans)
+library(ggsignif)
+library(here)
+library(tidyverse)
+library(grid)
+library(PNWColors)
+
+theme_eb <- theme_classic(base_size = 16) +
+  theme(
+    plot.title = element_text(size = 20),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 14)
+  )
+
+
+
+
+theme_set(theme_eb)
+pal3 <- pnw_palette("Sunset", 3, type=c("discrete"))
+pal7 <-  pnw_palette("Starfish", 7, type=c("discrete"))
+
+here::here()
+
+### note the quartz script needs to be fixed, the headers are janky and wrong (had to be manually fixed)
+ParS <- read.csv(here("02_motifs/ParS/ParSpos_1e4.csv"), row.name=1)
+ParS <- ParS[,c(1,3,4)]
+
+ParAssoc <- read.csv(here("02_motifs/ParS/data/old_mmseqs_kegg_phrogs_cog_cleaned.csv"))
+
+ParAssoc <- subset(ParAssoc, ParAssoc$gene_name=="Bs_parB" | ParAssoc$gene_name=="Bs_parA" )
+
+ParAssoc <- select(ParAssoc, phage, mmseqs_qseqid, gene_name)
+
+all <- merge(ParAssoc, ParS,  by.x="phage", by.y="Accession", all.x=FALSE, all.y=TRUE)
+
+all$gene_name[is.na(all$gene_name)] <- "no_ParAssoc"
+
+all$ParAccesshit <- ifelse(all$gene_name!="no_ParAssoc", 1, 0)
+
+all$dualhit <- ifelse(all$ParAccesshit==1 & all$pos.ParS.hit==1, 1, 0)
+```
+
+
+```{r}
+## combine phage metadata with ParAssoc hits. Label any phage that had no ParAssoc hits with "no_hit" in metadata
+inph <- read.csv(here("00_data", "inphared_db", "14Apr2025_knownsporestatus.csv"), row.names = 1)
+inph$lifestyle <- ifelse(inph$lifestyle=="Temp", "Temperate", inph$lifestyle)
+inph$bac.host <- ifelse(inph$sporulation=="Spor", "Sporulating Bacillota", "Nonsporulating Bacillota")  #"Asporogenous Bacillota")
+inph$bac.host <- ifelse(inph$newgtdb_Phylum=="Bacillota", inph$bac.host, "Non-Bacillota")
+
+inph <- unite(inph, nice, c("lifestyle", "bac.host"), sep=" Phages of ", remove = FALSE )
+
+all <- merge(all, inph, by.x="phage", by.y="Accession", all.x=TRUE, all.y=FALSE)
+
+
+
+### remove duplicates (keep only reference strains)
+### currently this only works on bacilliota, 99.5% ANI over 100% alignment threshold
+## rest of inphared is pending 
+
+all <- subset(all, all$ref=="not_run" | all$ref=="ref_seq")
+
+```

@@ -1,0 +1,100 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+library(here)
+library(cowplot)
+here()
+dr_here()
+
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+#gpdgvd <- read.csv(here("data/gpdgvdared_db/14Apr2025_knownsporestatus.csv", row.names=1))
+gpdgvd <- read.csv(here("00_data", "gpd_gvd", "gpd_gvd_sporstatus_checkv.csv"), row.names = 1)
+
+gpdgvd$sporulation <- "T"
+gpdgvd$sporulation <- ifelse(gpdgvd$f_spor==TRUE, "SproulatingHost", "NonsporulatingHost")
+
+gpdgvd$newgtdb_Phylum2 <- gpdgvd$newgtdb_Phylum
+gpdgvd$newgtdb_Phylum2 <- ifelse(gpdgvd$newgtdb_Phylum=="Bacillota" & gpdgvd$f_spor==TRUE, "Bacillota_Spor", gpdgvd$newgtdb_Phylum2 )
+gpdgvd$newgtdb_Phylum2 <- ifelse(gpdgvd$newgtdb_Phylum=="Bacillota" & gpdgvd$f_spor==FALSE, "Bacillota_NonSpor", gpdgvd$newgtdb_Phylum2 )
+
+
+
+gpdgvd <- subset(gpdgvd,  gpdgvd$newgtdb_Phylum!="unknown")
+gpdgvd <- subset(gpdgvd,  gpdgvd$checkv_quality!="Low-quality" & gpdgvd$checkv_quality!="Medium-quality")
+
+gpdgvd <- subset(gpdgvd,  gpdgvd$checkv_quality=="Complete")
+### remove duplicates (keep only reference strains)
+### currently this only works on bacilliota, 99.5% ANI over 100% alignment threshold
+## rest of gpdgvdared is pending 
+
+#gpdgvd <- subset(gpdgvd, gpdgvd$ref=="not_run" | gpdgvd$ref=="ref_seq")
+
+```
+
+```{r}
+
+gpdgvd$genome.log <- log10(gpdgvd$contig_length)
+
+ggplot(gpdgvd, aes(x = factor(f_spor), fill = factor(lifestyle), y = genome.log)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("log10 (Genome Size)") + xlab("") + ggtitle("GPD, high quality phages") + labs(fill="Lifestyle") #+ facet_wrap(~ newgtdb_Phylum2, ncol = 2)
+
+
+gpdgvd.bac <- subset(gpdgvd, gpdgvd$newgtdb_Phylum=="Bacillota")
+
+
+
+
+ggplot(gpdgvd, aes(x = factor(lifestyle), fill = factor(lifestyle), y = genome.log)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("log10 (Genome Size)") + xlab("") + ggtitle("GPD, high quality phages ") + labs(fill="Lifestyle") + facet_wrap(~ newgtdb_Phylum2, ncol = 3)
+
+
+
+gpdgvd.log <- ggplot(gpdgvd.bac, aes(x = factor(lifestyle), fill = factor(lifestyle), y = genome.log)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("Genome size log10(bp)") + xlab("") + ggtitle("GPDGVD") + labs(fill="Lifestyle") + facet_wrap(~ newgtdb_Phylum2, ncol = 2)
+
+gpdgvd.gene <- ggplot(gpdgvd.bac, aes(x = factor(lifestyle), fill = factor(lifestyle), y = gene_count)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("Number of Genes") + xlab("") + ggtitle("GPDGVD") + labs(fill="Lifestyle") + facet_wrap(~ newgtdb_Phylum2, ncol = 2)
+
+twoway <- aov(gene_count ~ lifestyle * sporulation, data = gpdgvd.bac)
+
+summary(twoway)
+
+em <- emmeans(twoway, ~ lifestyle * sporulation)
+pairs(em)
+
+summary(em)
+```
+
+
+```{r}
+num.genes <- plot_grid(
+  inph.genes, gpdgvd.gene, ncol=1)
+# labels = c('Genome Size', 'GC %', 'Predicted CD Regions', 'Predicted tRNAs'), ncol = 1)
+
+num.genes
+ggsave(here("01_desc_stats/num_genes.png"))
+
+log.size <- plot_grid(
+  inph.log, gpdgvd.log, ncol=1)
+# labels = c('Genome Size', 'GC %', 'Predicted CD Regions', 'Predicted tRNAs'), ncol = 1)
+
+log.size
+
+
+ggsave(here("01_desc_stats/log_size.png"))
+
+
+length.by.codon <- ggplot(gpdgvd.bac, aes(genome.log, gene_count, fill=host_phage_spor, colour = host_phage_spor)) +
+  geom_point() + geom_smooth(method="lm") +
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "middle", label.y.npc = "top" )
+length.by.codon
+
+ggsave(here("01_desc_stats/gpdgvd_linear_bacil.png"))
+```

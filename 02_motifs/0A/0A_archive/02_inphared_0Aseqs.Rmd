@@ -1,0 +1,977 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(here)
+library(tidyverse)
+library(ggpubr)
+library(epitools)
+library(seqinr)
+library(dplyr)
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+here::here()
+
+source(here("utility-scripts/cd-hit-cluster.R"))
+
+box <- read.delim2(here("data/inphared_db/14Apr2025inph_0A_v3.txt" ))
+## remove extra .txt headers from catting files
+box <- subset(box, box$Context!="Context")
+### remove incomplete flanking regions
+box <- subset(box, box$Partial=="None")
+
+box <- box %>% rename(product = Sequence, phage = Contig)
+box[,c(2)] <- "0A"
+#box <- box[,c(3,2,1)]
+box$count <- 1
+
+
+## FJ230960 spo1
+## EU771092 phi29
+## EU622808 nf
+## KY030782 phi3t
+## AF020713
+
+
+```
+
+## if i needed to do reverse complement, don't right now
+box$RevComp <- sapply(box$Context, function(s) {
+  c2s(rev(comp(s2c(s), forceToLower = FALSE)))
+})
+
+
+box$Five2Three <- ifelse(box$Strand=="+", box$Context, box$RevComp) 
+
+
+```{r}
+box.all <- box
+
+phage <- read.csv(here("data/inphared_db/14Apr2025_knownsporestatus.csv"), row.names=1)
+
+
+
+
+all <- merge(box, phage, by.x="phage", by.y="Accession", all.x=FALSE, all.y=TRUE) 
+
+all$product[is.na(all$product)] <- "No_0A"
+
+all.hits <- subset(all, all$product=="0A")
+
+
+all.hits$strand2 <- ifelse(all.hits$Strand=="+", "Fwd", "Rev")
+
+all.hits <- unite(all.hits, "Box_Contig", c("phage", "product", "strand2", "Position"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+
+all.hits[] <- lapply(all.hits, function(x) {
+  if (is.character(x)) {
+    gsub("Desulfobacterota_I", "Desulfobacterota", x)
+  } else {
+    x
+  }
+})
+
+all.hits[] <- lapply(all.hits, function(x) {
+  if (is.character(x)) {
+    gsub("Bacteroidota_A", "Bacteroidota", x)
+  } else {
+    x
+  }
+})
+
+all.hits[] <- lapply(all.hits, function(x) {
+  if (is.character(x)) {
+    gsub("Bacillaceae_C", "Bacillaceae", x)
+  } else {
+    x
+  }
+})
+
+all.hits[] <- lapply(all.hits, function(x) {
+  if (is.character(x)) {
+    gsub("Bacillaceae_C", "Bacillaceae", x)
+  } else {
+    x
+  }
+})
+
+all.hits[] <- lapply(all.hits, function(x) {
+  if (is.character(x)) {
+    gsub("Bacillales_D", "Bacillales", x)
+  } else {
+    x
+  }
+})
+
+all.hits[] <- lapply(all.hits, function(x) {
+  if (is.character(x)) {
+    gsub("Bacillales_A", "Bacillales", x)
+  } else {
+    x
+  }
+})
+
+all.hits[] <- lapply(all.hits, function(x) {
+  if (is.character(x)) {
+    gsub("Bacillales_B", "Bacillales", x)
+  } else {
+    x
+  }
+})
+
+
+```
+
+
+```{r}
+
+
+
+# Construct FASTA-formatted lines
+fasta_lines <- paste0(">", all.hits$Box_Contig, "\n", all.hits$Context_no_motif)
+#fasta_lines
+# Write to file
+writeLines(fasta_lines, here("data/inphared_db/14Apr2025_0Ahits_nopartials.fna"))
+           
+           
+           
+```
+
+
+
+```{r}
+clust <- read.csv(here("data/inphared_db/0a_clusters/nested/14Apr2025_0A_nested.csv"), row.names=1)
+
+```
+
+
+```{r}
+
+library(DECIPHER)
+set.seed(123)
+# specify the path to the FASTA file (in quotes)
+fas <- here("data/inphared_db/0a_clusters/nested/14Apr2025_0A_80sim.out")
+
+# load the sequences from the file
+# change "DNA" to "RNA" or "AA" as needed
+n 
+
+
+
+clust.50 <- Clusterize(seqs,
+cutoff=0.5, # > 50% similar
+minCoverage=0.5, # > 50% coverage
+processors=NULL) # use all CPUs
+
+clust50 <- clust.50
+clust50$Sequence_ID <- row.names(clust50)
+clust50$cluster<- paste0("50_", clust50$cluster)
+
+clust.super <- merge(clust, clust50, by="Sequence_ID", all=TRUE)
+clust8050 <- unique(clust.super[,c(6:7)])
+clust8050 <- na.omit(clust8050)
+colnames(clust8050) <- c("Cluster80", "Cluster50")
+
+
+clust <- merge(clust, clust8050, by="Cluster80", all=TRUE)
+
+
+```
+
+
+```{r}
+
+all.clust <- merge(all.hits, clust, by.x="Box_Contig", by.y="Sequence_ID", all.x=TRUE, all.y=TRUE)
+
+
+gc_content <- function(seq) {
+  seq <- toupper(seq)
+  bases <- strsplit(seq, "")[[1]]
+  gc_count <- sum(bases %in% c("G", "C"))
+  total <- length(bases)
+  return(gc_count / total)
+}
+
+# Vectorized version for multiple sequences
+gc_content_vec <- function(seqs) {
+  sapply(seqs, gc_content)
+}
+
+
+all.clust$GC.flanks <- gc_content_vec(all.clust$Upstream)
+
+
+gc.check <- select(all.clust, Box_Contig, phage, GC.flanks, Context, Context_no_motif, gtdb_f, f_spor, predicted_label, host_phage_spor, phage_type, sporulation, newgtdb_Phylum, host_phyla, lifestyle,)
+
+
+
+gc.check.mean.nofilt <- gc.check %>%
+  group_by(host_phage_spor) %>%
+  summarise(gc_mean = mean(GC.flanks), total=n())
+
+#gc.check <- subset(gc.check, gc.check$GC.flanks<0.35)
+
+gc.check.mean <- gc.check %>%
+  group_by(host_phage_spor) %>%
+  summarise(gc_mean = mean(GC.flanks), total=n())
+
+
+all.clust.clean <- all.clust
+```
+
+
+```{r}
+
+all.clust <- subset(all.clust.clean, all.clust.clean$GC.flanks<0.35)
+host.clust <- all.clust %>%
+  group_by(Cluster50, Host) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n))
+
+
+
+
+
+cluster_super.matrix <- all.clust %>%
+  group_by(Cluster50, hostspec_phage_spor) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = hostspec_phage_spor, values_from = count, values_fill = 0) %>%
+  column_to_rownames("Cluster50") %>%
+  as.matrix()
+
+t.super <- t(cluster_super.matrix)
+
+cluster_taxa_matrix <- all.clust %>%
+  group_by(Cluster50, host_phage_spor) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = host_phage_spor, values_from = count, values_fill = 0) %>%
+  column_to_rownames("Cluster50") %>%
+  as.matrix()
+
+t.all <- t(cluster_taxa_matrix)
+
+#all.clust.bacill <- subset(all.clust, all.clust$newgtdb_Phylum=="Bacillota" | all.clust$newgtdb_Phylum=="Pseudomonadota")
+
+all.clust.bacill <- subset(all.clust, all.clust$newgtdb_Phylum=="Bacillota")
+
+cluster_taxa_matrix <- all.clust.bacill %>%
+  group_by(Cluster50, phage_type) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = phage_type, values_from = count, values_fill = 0) %>%
+  column_to_rownames("Cluster50") %>%
+  as.matrix()
+
+t.bacilli <- t(cluster_taxa_matrix)
+
+
+cluster_taxa_matrix <- all.clust.bacill %>%
+  group_by(Cluster50, phage) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = phage, values_from = count, values_fill = 0) %>%
+  column_to_rownames("Cluster50") %>%
+  as.matrix()
+
+all.clust.bacill <- unite(all.clust.bacill, "fam_life", c("gtdb_f", "lifestyle"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+
+cluster_fam_matrix <- all.clust.bacill %>%
+  group_by(Cluster50, fam_life) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = fam_life, values_from = count, values_fill = 0) %>%
+  column_to_rownames("Cluster50") %>%
+  as.matrix()
+
+t.bacilli.fam <- t(cluster_fam_matrix)
+
+library(pheatmap)
+
+pheatmap(t.all,
+         cluster_rows = TRUE,
+         cluster_cols = TRUE,
+         display_numbers = TRUE,
+         fontsize = 10,
+         main = "Taxonomic Composition by Flanking Sequence Cluster")
+
+
+pheatmap(t.bacilli,
+         cluster_rows = TRUE,
+         cluster_cols = TRUE,
+         display_numbers = TRUE,
+         fontsize = 10,
+         main = "Taxonomic Composition by Flanking Sequence Cluster")
+
+pheatmap(t.bacilli.fam,
+         cluster_rows = TRUE,
+         cluster_cols = TRUE,
+         display_numbers = TRUE,
+         fontsize = 10,
+         main = "Taxonomic Composition by Flanking Sequence Cluster")
+
+
+
+library(vegan)
+library(ggplot2)
+
+
+
+
+bray_dist.bac <- vegdist(t.bacilli, method = "bray")
+jaccard_dist.bac <- vegdist(t.bacilli, method = "jaccard")
+
+
+
+hc.jac.bac <- hclust(jaccard_dist.bac, method = "ward.D")  # Use "complete", "ward.D", etc. if preferred
+plot(hc.jac.bac, main = "Ward.D Clustering of 0A Flanks in Phages by Host",
+     xlab = "Cluster", sub = "", hang = -1)
+
+
+hc.bray.bac <- hclust(bray_dist.bac, method = "ward.D")  # Use "complete", "ward.D", etc. if preferred
+plot(hc.bray.bac, main = "Dendrogram of Flanking Clusters by Host Composition",
+     xlab = "Cluster", sub = "", hang = -1)
+
+
+
+
+bray_dist.all <- vegdist(t.all, method = "bray")
+jaccard_dist.all <- vegdist(t.all, method = "jaccard")
+
+
+hc.bray.all <- hclust(bray_dist.all, method = "ward.D")  # Use "complete", "ward.D", etc. if preferred
+plot(hc.bray.all, main = "Dendrogram of Flanking Clusters by Host Composition",
+     xlab = "Cluster", sub = "", hang = -1)
+
+hc.dist.all <- hclust(jaccard_dist.all, method = "ward.D")  # Use "complete", "ward.D", etc. if preferred
+par(mar = c(5, 8, 4, 15))  # adjust as needed
+plot(as.dendrogram(hc.dist.all),
+     main = "Ward.D Clustering of 0A Flanks in Phages by Host",
+     xlab = "Height", ylab = "Cluster",
+     sub = "", horiz = TRUE)
+
+
+ggsave(here("lab_pres/Ward_BacVsOther0A_jacc.png"))
+```
+
+
+```{r}
+bray_dist.phy <- vegdist(t.super, method = "bray")
+jaccard_dist.phy <- vegdist(t.super, method = "jaccard")
+
+hc.bray.phy <- hclust(bray_dist.phy, method = "ward.D")  # Use "complete", "ward.D", etc. if preferred
+plot(hc.bray.phy, main = "Dendrogram of Flanking Clusters by Host Composition",
+     xlab = "Cluster", sub = "", hang = -1)
+
+hc.dist.phy <- hclust(jaccard_dist.phy, method = "ward.D")  # Use "complete", "ward.D", etc. if preferred
+plot(hc.dist.phy, main = "Ward.D Clustering of 0A Flanks in Phages by Host",
+     xlab = "Cluster", sub = "", hang = -1)
+
+
+ggsave(here("lab_pres/Ward_Phy0A_jacc.png"))
+
+
+jaccard_dist.fam <- vegdist(t.bacilli.fam, method = "jaccard")
+hc.dist.phy <- hclust(jaccard_dist.fam, method = "ward.D")  # Use "complete", "ward.D", etc. if preferred
+par(mar = c(5, 8, 4, 15))  # adjust as needed
+
+# Then plot your dendrogram
+plot(as.dendrogram(hc.dist.phy),
+     main = "Ward.D Clustering of 0A Flanks in Phages by Host",
+     xlab = "Height", ylab = "Cluster",
+     sub = "", horiz = TRUE)
+```
+
+```{r}
+library(dendextend)
+
+
+jaccard_dist.fam <- vegdist(t.bacilli.fam, method = "jaccard")
+hc.dist.phy <- hclust(jaccard_dist.fam, method = "ward.D")  # Use "complete", "ward.D", etc. if preferred
+par(mar = c(5, 8, 4, 15))  # adjust as needed
+
+# Then plot your dendrogram
+plot(as.dendrogram(hc.dist.phy),
+     main = "Ward.D Clustering of 0A Flanks in Phages by Host",
+     xlab = "Height", ylab = "Cluster",
+     sub = "", horiz = TRUE)
+
+
+# 2. Convert to dendrogram object
+dend <- as.dendrogram(hc.dist.phy)
+
+
+
+meta <- select(all.clust.bacill, hostspec_phage_spor, sporulation, lifestyle, host_phyla,newgtdb_Phylum, fam_life, gtdb_f)
+meta <- unique(meta)
+rownames(meta) <- meta$fam_life
+
+# Ensure rownames of meta are fam_life, which match dend labels
+rownames(meta) <- meta$fam_life
+group_vector <- meta$gtdb_f
+names(group_vector) <- meta$fam_life
+label_order <- labels(dend)
+group_vector <- group_vector[label_order]
+
+library(dendextend)
+
+
+library(viridis)
+palette <- turbo(length(unique(group_vector)))
+
+# Same as above
+tip_colors <- setNames(palette, levels(as.factor(group_vector)))[group_vector]
+
+dend_colored <- dend %>%
+  set("labels_colors", value = tip_colors)
+
+par(mar = c(5, 8, 4, 15))
+plot(dend_colored, main = "Clustered by fam_life, Colored by GTDB Family", horiz = TRUE)
+
+legend("topright", legend = unique(group_vector),
+       fill = as.numeric(as.factor(unique(group_vector))), border = NA, bty = "n")
+
+
+
+# 4. Color the branches or labels
+dend_colored <- dend %>%
+  set("labels_colors", value = as.numeric(as.factor(group_vector)))# %>%
+  #set("branches_k_color", k = length(unique(group_vector)))  # optional
+
+
+par(mar = c(5, 8, 4, 15))  # adjust as needed
+plot(as.dendrogram(dend_colored),
+     main = "Ward.D Clustering of 0A Flanks in Phages by Host",
+     xlab = "Height", ylab = "Cluster",
+     sub = "", horiz = TRUE)
+
+```
+
+
+```{r}
+library(dendextend)
+all.clust.bacill <- subset(all.clust, all.clust$newgtdb_Phylum=="Bacillota")
+all.clust.bacill <- unite(all.clust.bacill, "ord_life", c("newgtdb_Order", "lifestyle", "sporulation"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+
+cluster_order_matrix <- all.clust.bacill %>%
+  group_by(Cluster50, ord_life) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = ord_life, values_from = count, values_fill = 0) %>%
+  column_to_rownames("Cluster50") %>%
+  as.matrix()
+
+t.bacilli.ord <- t(cluster_order_matrix)
+
+
+
+jaccard_dist.ord <- vegdist(t.bacilli.ord, method = "jaccard")
+hc.dist.phy <- hclust(jaccard_dist.ord, method = "ward.D")  # Use "complete", "ward.D", etc. if preferred
+par(mar = c(5, 8, 4, 15))  # adjust as needed
+
+# Then plot your dendrogram
+plot(as.dendrogram(hc.dist.phy),
+     main = "Ward.D Clustering of 0A Flanks in Phages by Host",
+     xlab = "Height", ylab = "Cluster",
+     sub = "", horiz = TRUE)
+
+
+# 2. Convert to dendrogram object
+dend <- as.dendrogram(hc.dist.phy)
+
+
+
+meta <- select(all.clust.bacill, hostspec_phage_spor, sporulation, lifestyle, host_phyla,newgtdb_Phylum, ord_life, newgtdb_Order)
+meta <- unique(meta)
+rownames(meta) <- meta$ord_life
+
+# Ensure rownames of meta are fam_life, which match dend labels
+rownames(meta) <- meta$ord_life
+group_vector <- meta$newgtdb_Order
+names(group_vector) <- meta$ord_life
+label_order <- labels(dend)
+group_vector <- group_vector[label_order]
+
+library(dendextend)
+
+
+library(viridis)
+palette <- turbo(length(unique(group_vector)))
+
+# Same as above
+tip_colors <- setNames(palette, levels(as.factor(group_vector)))[group_vector]
+
+dend_colored <- dend %>%
+  set("labels_colors", value = tip_colors)
+
+par(mar = c(5, 8, 4, 15))
+plot(dend_colored, main = "Clustered by ord_life, Colored by GTDB Family", horiz = TRUE)
+
+legend("topright", legend = unique(group_vector),
+       fill = as.numeric(as.factor(unique(group_vector))), border = NA, bty = "n")
+
+
+
+# 4. Color the branches or labels
+dend_colored <- dend %>%
+  set("labels_colors", value = as.numeric(as.factor(group_vector)))# %>%
+  #set("branches_k_color", k = length(unique(group_vector)))  # optional
+
+
+par(mar = c(5, 8, 4, 15))  # adjust as needed
+plot(as.dendrogram(dend_colored),
+     main = "Ward.D Clustering of 0A Flanks in Phages by Host",
+     xlab = "Height", ylab = "Cluster",
+     sub = "", horiz = TRUE)
+
+```
+
+```{r}
+library(vegan)
+library(ggplot2)
+
+# 1. Compute Bray-Curtis distance
+bray_dist.phy <- vegdist(t.bacilli.fam, method = "bray")
+
+# 2. Run NMDS
+nmds_result <- metaMDS(bray_dist.phy, k = 2, trymax = 100)
+
+# 3. Extract NMDS coordinates
+nmds_points <- as.data.frame(nmds_result$points)
+nmds_points$SampleID <- rownames(nmds_points)
+
+
+meta <- select(all.clust.bacill, hostspec_phage_spor, fam_life, sporulation, lifestyle, host_phyla,newgtdb_Phylum, gtdb_f, phage_type, newgtdb_Order, newgtdb_Class)
+
+meta <- subset(meta, meta$newgtdb_Phylum=="Bacillota")
+meta <- unique(meta)
+
+# 4. If you have metadata (e.g., groupings), merge it here
+# Assuming `meta` is a data.frame with sample metadata and matching rownames
+ nmds_points <- merge(nmds_points, meta, by.x = "SampleID", by.y = "fam_life")
+
+# 5. Plot
+ggplot(nmds_points, aes(x = MDS1, y = MDS2, color= newgtdb_Order, shape=sporulation)) +
+  geom_point(size = 3) +
+  theme_minimal() +
+  labs(title = "NMDS of Bray-Curtis Distances", x = "NMDS1", y = "NMDS2") 
+ 
+ 
+ggplot(nmds_points, aes(x = MDS1, y = MDS2, color= newgtdb_Order, shape=phage_type)) +
+  geom_point(size = 4) +
+  theme_minimal() +
+  labs(title = "NMDS of Jaccard Distances of 0A boxes of Bacillota phages", x = "NMDS1", y = "NMDS2")
+
+#ggsave(here("lab_pres/Jaccard_0ABacilliota_NMDS.png"), height = 9, width=9)
+
+
+ggplot(nmds_points, aes(x = MDS1, y = MDS2, color= newgtdb_Order, shape=phage_type)) +
+  geom_point(size = 4) +
+  theme_minimal() +
+  labs(title = "NMDS of Bray Distances of 0A boxes of Bacillota phages", x = "NMDS1", y = "NMDS2")
+
+
+
+ggsave(here("lab_pres/Bray_0ABacilliota_NMDS.png"), height = 9, width=9)
+
+```
+
+
+
+
+
+```{r}
+library(vegan)
+library(ggplot2)
+
+# 1. Compute Bray-Curtis distance
+bray_dist.phy <- vegdist(t.super, method = "bray")
+
+# 2. Run NMDS
+nmds_result <- metaMDS(bray_dist.phy, k = 2, trymax = 100)
+
+# 3. Extract NMDS coordinates
+nmds_points <- as.data.frame(nmds_result$points)
+nmds_points$SampleID <- rownames(nmds_points)
+
+
+meta <- select(all, hostspec_phage_spor, sporulation, lifestyle, host_phyla,newgtdb_Phylum)
+meta <- unique(meta)
+
+# 4. If you have metadata (e.g., groupings), merge it here
+# Assuming `meta` is a data.frame with sample metadata and matching rownames
+ nmds_points <- merge(nmds_points, meta, by.x = "SampleID", by.y = "hostspec_phage_spor")
+
+# 5. Plot
+ggplot(nmds_points, aes(x = MDS1, y = MDS2, color=newgtdb_Phylum, shape=lifestyle)) +
+  geom_point(size = 5) +
+  theme_minimal() +
+  labs(title = "NMDS of Bray-Curtis Distances", x = "NMDS1", y = "NMDS2")
+
+
+ggsave(here("lab_pres/NMDS_Phy0A_bray.png"), height = 9, width=9)
+```
+```{r}
+library(vegan)
+library(ggplot2)
+
+# 1. Compute Bray-Curtis distance
+bray_dist.phy <- vegdist(t.super, method = "jaccard")
+
+# 2. Run NMDS
+nmds_result <- metaMDS(bray_dist.phy, k = 2, trymax = 100)
+
+# 3. Extract NMDS coordinates
+nmds_points <- as.data.frame(nmds_result$points)
+nmds_points$SampleID <- rownames(nmds_points)
+
+
+meta <- select(all, hostspec_phage_spor, sporulation, lifestyle, host_phyla,newgtdb_Phylum)
+meta <- unique(meta)
+
+# 4. If you have metadata (e.g., groupings), merge it here
+# Assuming `meta` is a data.frame with sample metadata and matching rownames
+ nmds_points <- merge(nmds_points, meta, by.x = "SampleID", by.y = "hostspec_phage_spor")
+
+# 5. Plot
+ggplot(nmds_points, aes(x = MDS1, y = MDS2, color=newgtdb_Phylum, shape=lifestyle)) +
+  geom_point(size = 5) +
+  theme_minimal() +
+  labs(title = "NMDS of Jaccard Distances", x = "NMDS1", y = "NMDS2")
+
+ggsave(here("lab_pres/NMDS_Phy0A_jaccard.png"), height = 9, width=10)
+```
+
+
+
+
+
+```{r}
+
+
+library(phyloseq)
+
+otu <- otu_table(t.super, taxa_are_rows = FALSE)
+
+sample_names(otu)
+
+
+sample_df <- phage
+
+rownames(sample_df) <- sample_df$Accession
+sample_data_obj <- sample_data(sample_df)
+
+
+
+ps <- phyloseq(otu_table(otu), sample_data(sample_data_obj))
+
+
+# Bray-Curtis
+ord_bc <- ordinate(ps, method = "PCoA", distance = "bray")
+
+# Jaccard (binary presence/absence)
+ord_jaccard <- ordinate(ps, method = "PCoA", distance = "jaccard")
+
+
+plot_ordination(ps, ord_bc, color="host_phage_spor") +
+  ggtitle("PcOA (Bray-Curtis)") +
+  theme_minimal()
+
+plot_ordination(ps, ord_jaccard, color="newgtdb_Class") +
+  ggtitle("PcOA (Bray-Curtis)") +
+  theme_minimal()
+
+```
+
+
+
+
+library(phyloseq)
+
+otu <- otu_table(t.bacilli.phage, taxa_are_rows = FALSE)
+
+#sample_names(otu)
+
+
+sample_df <- phage
+
+rownames(sample_df) <- sample_df$Accession
+sample_data_obj <- sample_data(sample_df)
+
+
+
+ps <- phyloseq(otu_table(otu), sample_data(sample_data_obj))
+
+
+# Bray-Curtis
+ord_bc <- ordinate(ps, method = "PCoA", distance = "bray")
+
+# Jaccard (binary presence/absence)
+ord_jaccard <- ordinate(ps, method = "PCoA", distance = "jaccard")
+
+
+plot_ordination(ps, ord_bc, color="host_phage_spor") +
+  ggtitle("PcOA (Bray-Curtis)") +
+  theme_minimal()
+
+plot_ordination(ps, ord_jaccard, color="newgtdb_Class") +
+  ggtitle("PcOA (Bray-Curtis)") +
+  theme_minimal()
+
+
+
+
+#### MAYBE ALSO LOL IDK
+
+
+
+unique.30 <- as.data.frame(unique(all.hits$Context))
+
+unique.30$boxID <- row.names(unique.30)
+colnames(unique.30) <- c("Context", "boxID")
+unique.30$boxCluster <- paste0("Box_", unique.30$boxID)
+
+all.hits <- merge(all.hits, unique.30, by="Context", all.x=TRUE, all.y=TRUE)
+
+#box.div <- all.hits[,c(1:3,12,15,17,38,39,46,49:56)]
+
+# Construct FASTA-formatted lines
+fasta_lines <- paste0(">", unique.30$boxCluster, "\n", unique.30$Context)
+#fasta_lines
+# Write to file
+writeLines(fasta_lines, here("data/inphared_db/14Apr2025_0AUnique.fna"))
+     
+
+
+
+```{r}
+clust <- read.csv(here("data/inphared_db/0a_clusters/nested/14Apr2025_0A_nested.csv"), row.names=1)
+```
+
+
+
+### more idk lol
+
+
+
+```{r}
+
+### nmds angry memory very slow
+set.seed(42)
+nmds <- metaMDS(cluster_taxa_matrix, distance = "bray", k = 2, trymax = 100)
+
+nmds_points <- as.data.frame(nmds$points)
+nmds_points$Cluster <- rownames(nmds_points)
+
+ggplot(nmds_points, aes(x = MDS1, y = MDS2, label = Cluster)) +
+  geom_point(size = 3, color = "darkblue") +
+  geom_text(vjust = -0.8) +
+  labs(title = "NMDS of Flanking Region Clusters by Taxonomy") +
+  theme_minimal()
+
+
+
+hc <- hclust(bray_dist, method = "average")  # Use "complete", "ward.D", etc. if preferred
+plot(hc, main = "Dendrogram of Flanking Clusters by Host Composition",
+     xlab = "Cluster", sub = "", hang = -1)
+
+
+bray_dist <- vegdist(cluster_taxa_matrix, method = "bray")
+jaccard_dist <- vegdist(cluster_taxa_matrix, method = "jaccard")
+
+pcoa_result <- cmdscale(jaccard_dist, eig = TRUE, k = 2) # k specifies the number of dimensions to retrieve
+
+pcoa_scores <- as.data.frame(pcoa_result$points)
+colnames(pcoa_scores) <- c("PCo1", "PCo2") # Rename columns for clarity
+pcoa_eigenvalues <- pcoa_result$eig
+
+pcoa_scores$Group <- metadata$Group
+
+ggplot(pcoa_scores, aes(x = PCo1, y = PCo2, color = Group)) +
+  geom_point(size = 3) +
+  stat_ellipse() + # Add confidence ellipses for groups (optional)
+  labs(title = "PCoA of Jaccard Distances",
+       x = paste0("PCo1 (", round(pcoa_eigenvalues[1]/sum(pcoa_eigenvalues) * 100, 2), "%)"),
+       y = paste0("PCo2 (", round(pcoa_eigenvalues[2]/sum(pcoa_eigenvalues) * 100, 2), "%)")) +
+  theme_bw()
+
+
+
+Bd_AS_ob.ord.nmds.bray <- ordinate(, method="NMDS", distance="bray")
+
+
+Bd_AS_brayplot=plot_ordination(Bd_AS_ob.prop, Bd_AS_ob.ord.nmds.bray, color="BdPos", shape="Type_Site_Year", title="Bray-Curtis Dissimilarity")+ 
+  geom_point(size = 3)+ theme_classic()+theme(plot.title=element_text(size=12))
+
+
+```
+
+
+
+
+
+### IDK LOL
+
+```{r}
+### chatGPT suggestion
+library(DECIPHER)
+set.seed(123)
+# specify the path to the FASTA file (in quotes)
+fas <- here("data/inphared_db/0a_clusters/nested/14Apr2025_0A_80sim.out")
+
+# load the sequences from the file
+# change "DNA" to "RNA" or "AA" as needed
+seqs <- readDNAStringSet(fas)
+
+
+
+cdhit95 <- read.csv("data/inphared_db/0a_clusters/14Apr2025_0A_95_clusters.csv", row.names=1)
+
+dists <- DistanceMatrix(seqs, type = "dist", correction = "Jukes-Cantor")
+
+library(fastcluster)
+hc <- hclust(as.dist(dists), method = "average")
+
+## too much memory
+## hc <- hclust(as.dist(dists), method = "complete")  # or "average", "ward.D2", etc.
+
+clusters <- Clusterize(seqs,
+                       cutoff = 0.1,
+                       method = "overlap",
+                       includeTerminalGaps = FALSE,
+                       minCoverage = 0.5,
+                       processors = NULL)  # or NULL for auto
+
+clusters <- cutree(hc, h = 0.1)  # Or set k = number of clusters
+```
+
+
+
+
+
+
+
+```{r}
+
+
+```
+
+
+```{r}
+# look at some of the sequences (optional)
+seqs
+
+clust90 <- Clusterize(seqs,
+cutoff=0.1, # >= 90% similar
+minCoverage=0.5, # > 50% coverage
+processors=NULL) # use all CPUs
+
+clust.90 <- clust90
+max(clust.90)
+t <- table(clust.90)
+
+mean(t)
+tail(sort(t)) # biggest clusters
+```
+
+
+```{r}
+clust75 <- Clusterize(seqs,
+cutoff=0.25, # > 75% similar
+minCoverage=0.5, # > 50% coverage
+processors=NULL) # use all CPUs
+
+clust.75 <- clust75
+max(clust.75)
+t <- table(clust.75)
+
+mean(t)
+tail(sort(t)) # biggest clusters
+```
+
+```{r}
+clust50 <- Clusterize(seqs,
+cutoff=0.5, # > 50% similar
+minCoverage=0.5, # > 50% coverage
+processors=NULL) # use all CPUs
+
+clust.50 <- clust50
+max(clust.50)
+t <- table(clust.50)
+
+mean(t)
+tail(sort(t)) # biggest clusters
+
+```
+
+```{r}
+
+clust.50 <- clust50
+clust.90 <- clust90
+clust.75 <- clust75
+
+colnames(clust.90) <- c("cluster90")
+clust.90$boxCluster <- row.names(clust.90)
+
+colnames(clust.75) <- c("cluster75")
+clust.75$boxCluster <- row.names(clust.75)
+
+colnames(clust.50) <- c("cluster50")
+clust.50$boxCluster <- row.names(clust.50)
+
+```
+
+```{r}
+clustnest90.2 <- Clusterize(seqs,
+cutoff=seq(0.5, 0.25, -.10)) # use all CPUs
+
+clustnest75 <- Clusterize(seqs,
+cutoff=seq(0.5, 0.25, 0)) # use all CPUs
+
+clustnest50 <- Clusterize(seqs,
+cutoff=0.5) # use all CPUs
+
+
+
+
+clust.nest <- clustnest90
+max(clust.nest$cluster_0_3)
+t <- table(clust.75)
+
+mean(t)
+tail(sort(t)) # biggest clusters
+
+
+clustnest.90 <- clustnest90
+clustnest.75 <- clustnest75
+clustnest.50 <- clustnest50
+
+
+colnames(clustnest.90) <- c("cluster90")
+clustnest.90$boxCluster <- row.names(clustnest.90)
+
+colnames(clustnest.75) <- c("cluster75")
+clustnest.75$boxCluster <- row.names(clustnest.75)
+
+colnames(clustnest.50) <- c("cluster50")
+clustnest.50$boxCluster <- row.names(clustnest.50)
+```
+
+
+```{r}
+unique.30.clusts <- merge(unique.30, clustnest.90, by="boxCluster", all.x=TRUE, all.y=TRUE) %>%
+  merge(clustnest.75, by="boxCluster", all.x=TRUE, all.y=TRUE) %>%
+   merge(clustnest.50, by="boxCluster", all.x=TRUE, all.y=TRUE)
+
+box.div <- merge(all.hits, unique.30.clusts, by="Context", all.x=TRUE, all.y=TRUE)
+
+##note that unique30clusts may NOT be perfectly nested
+
+unique.30.uni <- unique(unique.30.clusts[,c(4:6)])
+```
+
+```{r}
+
+box.div2 <- select(box.div, phage, Context, Box_Contig, boxID, cluster90, cluster75, cluster50, Host, gtdb_f, f_spor, predicted_label, host_phage_spor, phage_type, sporulation, newgtdb_Phylum, host_phyla, lifestyle)
+
+```
+

@@ -1,0 +1,78 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(here)
+library(tidyverse)
+library(ggpubr)
+library(epitools)
+library(seqinr)
+library(dplyr)
+library(DECIPHER)
+
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+here::here()
+set.seed(123)
+
+#source(here("utility-scripts/cd-hit-cluster.R"))
+```
+
+
+```{r}
+
+phage <- read.csv(here("00_data/inphared_db/14Apr2025_knownsporestatus.csv"), row.names=1)
+phage$phage.GC <- as.numeric(phage$molGC....)
+phage$phage.length <- as.numeric(phage$Genome.Length..bp.)
+
+phage <- select(phage, Accession, sporulation, lifestyle, host_phyla, newgtdb_Phylum, newgtdb_Class, newgtdb_Order, gtdb_f, Host, Description, host_phage_spor, phage_type, phage.length, phage.GC)
+
+# Define all your pattern-replacement pairs
+replacements <- c(
+  "Desulfobacterota_I" = "Desulfobacterota",
+  "Bacteroidota_A"     = "Bacteroidota",
+  "Bacillaceae_C"      = "Bacillaceae",
+  "Bacillales_D"       = "Bacillales",
+  "Bacillales_A"       = "Bacillales",
+  "Bacillales_B"       = "Bacillales"
+)
+
+# Apply all replacements to character columns
+phage[] <- lapply(phage, function(x) {
+  if (is.character(x)) {
+    for (pattern in names(replacements)) {
+      x <- gsub(pattern, replacements[[pattern]], x)
+    }
+  }
+  x
+})
+
+```
+
+
+### clean up 0A box hits
+```{r}
+box <- read.delim2(here("00_data/inphared_db/14Apr2025inph_0A_v3.txt" ))
+box <- as.data.frame(box)
+head(box)
+## remove extra .txt headers from catting files
+box <- subset(box, box$Context!="Context")
+### remove incomplete flanking regions
+box <- subset(box, box$Partial=="None")
+
+colnames(box)
+box <- dplyr::rename(box, product = Sequence, phage = Contig)
+
+box[,c(2)] <- "0A"
+
+#box <- box[,c(3,2,1)]
+box$is.0A <- 1
+
+
+box$strand2 <- ifelse(box$Strand=="+", "Fwd", "Rev")
+
+box <- unite(box, "Box_Contig", c("phage", "product", "strand2", "Position"), sep = "_", remove = FALSE, na.rm = FALSE)
+```
+

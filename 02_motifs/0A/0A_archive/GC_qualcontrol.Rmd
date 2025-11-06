@@ -1,0 +1,133 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## set up
+```{r}
+library(here)
+library(tidyverse)
+library(ggpubr)
+library(epitools)
+library(seqinr)
+library(dplyr)
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+here::here()
+
+source(here("utility-scripts/cd-hit-cluster.R"))
+
+box <- read.delim2(here("data/inphared_db/14Apr2025inph_0A_v3.txt" ))
+## remove extra .txt headers from catting files
+box <- subset(box, box$Context!="Context")
+### remove incomplete flanking regions
+box <- subset(box, box$Partial=="None")
+
+box <- box %>% rename(product = Sequence, phage = Contig)
+box[,c(2)] <- "0A"
+#box <- box[,c(3,2,1)]
+box$count <- 1
+
+
+box.all <- box
+
+phage <- read.csv(here("data/inphared_db/14Apr2025_knownsporestatus.csv"), row.names=1)
+
+
+
+
+all <- merge(box, phage, by.x="phage", by.y="Accession", all.x=FALSE, all.y=TRUE) 
+
+all$product[is.na(all$product)] <- "No_0A"
+
+all.hits <- subset(all, all$product=="0A")
+
+
+all.hits$strand2 <- ifelse(all.hits$Strand=="+", "Fwd", "Rev")
+
+all.hits <- unite(all.hits, "Box_Contig", c("phage", "product", "strand2", "Position"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+
+
+
+# Construct FASTA-formatted lines
+fasta_lines <- paste0(">", all.hits$Box_Contig, "\n", all.hits$Context_no_motif)
+#fasta_lines
+# Write to file
+#writeLines(fasta_lines, here("data/inphared_db/14Apr2025_0Ahits_nopartials.fna"))
+
+clust <- read.csv(here("data/inphared_db/0a_clusters/nested/14Apr2025_0A_nested.csv"), row.names=1)
+
+
+library(DECIPHER)
+set.seed(123)
+# specify the path to the FASTA file (in quotes)
+fas <- here("data/inphared_db/0a_clusters/nested/14Apr2025_0A_80sim.out")
+
+# load the sequences from the file
+# change "DNA" to "RNA" or "AA" as needed
+seqs <- readDNAStringSet(fas)
+
+
+
+
+clust.50 <- Clusterize(seqs,
+cutoff=0.5, # > 50% similar
+minCoverage=0.5, # > 50% coverage
+processors=NULL) # use all CPUs
+
+clust50 <- clust.50
+clust50$Sequence_ID <- row.names(clust50)
+clust50$cluster<- paste0("50_", clust50$cluster)
+
+clust.super <- merge(clust, clust50, by="Sequence_ID", all=TRUE)
+clust8050 <- unique(clust.super[,c(6:7)])
+clust8050 <- na.omit(clust8050)
+colnames(clust8050) <- c("Cluster80", "Cluster50")
+
+
+clust <- merge(clust, clust8050, by="Cluster80", all=TRUE)
+
+all.clust <- merge(all.hits, clust, by.x="Box_Contig", by.y="Sequence_ID", all.x=TRUE, all.y=TRUE)
+
+#write.csv(all.clust, here("temp/allclust.csv"))
+```
+
+```{r}
+gc_content <- function(seq) {
+  seq <- toupper(seq)
+  bases <- strsplit(seq, "")[[1]]
+  gc_count <- sum(bases %in% c("G", "C"))
+  total <- length(bases)
+  return(gc_count / total)
+}
+
+# Vectorized version for multiple sequences
+gc_content_vec <- function(seqs) {
+  sapply(seqs, gc_content)
+}
+```
+
+
+
+### gc qual control
+
+```{r}
+
+all.clust <- read.csv(here("temp/allclust.csv"))
+
+
+all.clust$GC.flanks <- gc_content_vec(all.clust$Context_no_motif)
+all.clust$GC.Up <- gc_content_vec(all.clust$Upstream)
+all.clust$GC.Down <- gc_content_vec(all.clust$Downstream)
+
+
+gc.check <- select(all.clust, phage, GC.flanks, GC.Up, GC.Down, Context, Context_no_motif, gtdb_f, f_spor, predicted_label, host_phage_spor, phage_type, sporulation, newgtdb_Phylum, host_phyla, lifestyle,)
+
+
+gc.upstream <-  subset(gc.check, gc.check$GC.Up<0.35)
+gc.all <-  subset(gc.check, gc.check$GC.flanks<0.35)
+gc.down <-  subset(gc.check, gc.check$GC.Down<0.35)
+
+```
+
