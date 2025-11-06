@@ -32,7 +32,7 @@ vignettes/*.pdf
 cache/
 *.utf8.md
 *.knit.md
-*.html
+
 
 # Temporary files created by R
 .Rout
@@ -42,7 +42,7 @@ cache/
 *.log
 
 # Mac and Linux hidden files
-.DS_Store
+
 .Trashes
 *.swp
 *~
