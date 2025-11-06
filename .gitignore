@@ -40,12 +40,14 @@ cache/
 .Rout.fail
 *.out
 *.log
+*.html
 
 # Mac and Linux hidden files
 
 .Trashes
 *.swp
 *~
+*.DS_Store
 
 # Package build directories
 .Rcheck/
