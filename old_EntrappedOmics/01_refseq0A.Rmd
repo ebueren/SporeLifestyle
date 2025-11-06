@@ -1,0 +1,51 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-03-07"
+---
+
+
+```{r}
+library(here)
+library(tidyverse)
+library(knitr)
+library(cowplot)
+library(ggrepel)
+
+here::here()
+data_dir <- here("refseq/out-dir/")
+raw_dir <- here("refseq/raw_data/")
+
+boxes <- read.delim2(here("refseq/raw_data/0A_inphjan25_knownsporphage0A_consensus_py.txt"))
+
+### remove mismatches for now
+boxes <- subset(boxes, boxes$Mismatches==0)
+
+
+### enriched sporulation genes from Dan paer
+enrich <- read.csv(here(raw_dir, "viral_sporGenes.csv" )) 
+hit <- enrich[,c(1,2)]
+hit$sporulation <- "sporulation_hit"
+
+
+### dan sporulation T/F information
+dan.tax <- read.csv(here(raw_dir, "known_sporhostphage.csv" ), row.names=1) 
+dan.tax <- dan.tax[,c(2,29)]
+
+##phage lifestyle information
+### some inphared phages missing
+phagescope <- read.delim2(here(raw_dir, "22825_refseq_phagescope.tsv" ))   # d_vir
+#phagescope <- subset(phagescope, phagescope$Phage_source=="RefSeq" | phagescope$Phage_source=="GenBank")
+phagescope$phage<- gsub('.[^.]*$', '', phagescope$Phage_ID) 
+
+
+
+all <- merge(phagescope, dan.tax, by.x="phage", by.y="Accession", all.x=TRUE, all.y=TRUE)
+
+refseq <- merge(all, boxes, by.x="phage", by.y="Contig", all.x=FALSE, all.y=TRUE)
+
+box.count <- refseq %>% group_by(phage, Lifestyle, f_spor, Host) %>% summarise(n=n())
+
+box.count %>% group_by(Lifestyle) %>% summarise(n=n())
+
+```

@@ -1,0 +1,14 @@
+"","gene_name","gene_id","Bs_locus","description","Function","enriched","dif.n","dif"
+"1","Bs_cwlJ","K01449","BSU_02600","spore coat protein,cell wall hydrolase","spore germination","temperate",32.4675324675325,150
+"2","Bs_lexA","K01356","BSU_17850","transcriptional repressor of the SOS regulon","regulation of DNA damage repair","virulent",-10.8552631578947,-66
+"3","Bs_parA","K03496","BSU_40970","ATPase,centromere-like function involved in forespore chromosome partitioning / negative regulation of [[category|SW.4.2 initiation,regulator of SMC complex dynamics","forespore chromosome partitioning / negative regulation of [[category|SW.4.2 initiation","virulent",-10.5990783410138,-207
+"4","Bs_sigH","K03091","BSU_00980","RNA polymerase sigma factor SigH,not fully active in laboratory strains due to a mutation (V117A)","transcription of early stationary phase genes (sporulation","virulent",-32.7131782945736,-211
+"5","Bs_spo0A","K07699","BSU_24220","phosphorelay regulator,initiation of sporulation,coordinates DNA replication and initiation of sporulation by binding to sites close to the <i>oriC</i>","initiation of sporulation","temperate",31.3207547169811,83
+"6","Bs_spoIIIE","K03466","BSU_16800","ATP-dependent dsDNA translocase,resolution of chromosomal dimers after DNA replication,coordinates chromosome segregation and peptidoglycan remodeling during sporulation,transports the forespore chromosome across the sporulation septum","chromosome partition during sporulation","virulent",-77.7777777777778,-231
+"7","Bs_spoVG","K06412","BSU_00490","RNA-binding regulatory protein,negative effector of asymetric septation at the onset of sporulation","cell division","virulent",-51.3513513513513,-19
+"8","Bs_ykoV","K10979","BSU_13410","DNA-end-binding protein Ku,non-homologous end joining DNA repair","non-homologous end joining DNA repair","temperate",64.4444444444444,29
+"9","Bs_ylaK","K07175","BSU_14810","similar to phosphate starvation inducible protein [6BF4F99DEF2E032A8547B920086305775D04FACF","unknown","temperate",57.396449704142,97
+"10","Bs_ypeP","K03469","BSU_21970","similar to RNase HI","unknown","virulent",-20.8333333333333,-50
+"11","Bs_ytlC","K02049","BSU_30610","similar to anion transport ABC transporter (ATP-binding protein)","unknown","temperate",60.7142857142857,34
+"12","Cd_dnaX","K02343","BSU_00190","DNA polymerase  III (gamma and tau subunits) part of the clamp-loader complex and the replisome","[[category|SW.3.1.1","virulent",-40.625,-26
+"13","Cd_EndoA","K07171",NA,NA,NA,"temperate",30.4924242424242,322

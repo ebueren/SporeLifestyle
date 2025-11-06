@@ -1,0 +1,32 @@
+COGlet,COG.broad,Cog.cat,Cog.letcat,Nog.cat,Nog.abbrev,Nog.new
+A,INFORMATION STORAGE AND PROCESSING,RNA processing and modification,[A] RNA processing and modification,RNA processing and modification,RNA (A),Information processing (ALBY)
+B,INFORMATION STORAGE AND PROCESSING,Chromatin structure and dynamics,[B] Chromatin structure and dynamics,Chromatin structure and dynamics,Chromatin (B),Information processing (ALBY)
+C,METABOLISM,Energy production and conversion,[C] Energy production and conversion,Energy production and conversion,Energy (C),Energy (C)
+D,CELLULAR PROCESSES AND SIGNALING,"Cell cycle control, cell division, chromosome partitioning","[D] Cell cycle control, cell division, chromosome partitioning","Cell cycle control, cell division, chromosome partitioning",Cell cycle (D),Signaling (DTNZU)
+E,METABOLISM,Amino acid transport and metabolism,[E] Amino acid transport and metabolism,Amino acid transport and metabolism,Amino acid (E),Amino acid (E)
+F,METABOLISM,Nucleotide transport and metabolism,[F] Nucleotide transport and metabolism,Nucleotide transport and metabolism,Nucleotide (F),Nucleotide (F)
+G,METABOLISM,Carbohydrate transport and metabolism,[G] Carbohydrate transport and metabolism,Carbohydrate transport and metabolism,Carbohydrate (G),Carbohydrate (G)
+H,METABOLISM,Coenzyme transport and metabolism,[H] Coenzyme transport and metabolism,Coenzyme transport and metabolism,Coenzyme (H),Coenzyme (H)
+I,METABOLISM,Lipid transport and metabolism,[I] Lipid transport and metabolism,Lipid transport and metabolism,Lipid (I),Lipid (I)
+J,INFORMATION STORAGE AND PROCESSING,"Translation, ribosomal structure and biogenesis","[J] Translation, ribosomal structure and biogenesis","Translation, ribosomal structure and biogenesis",Translation (J),Translation (JO)
+K,INFORMATION STORAGE AND PROCESSING,Transcription,[K] Transcription,Transcription,Transcription (K),Transcription (K)
+L,INFORMATION STORAGE AND PROCESSING,"Replication, recombination and repair","[L] Replication, recombination and repair","Replication, recombination and repair","Replication, recombination, repair (L)",Information processing (ALBY)
+M,CELLULAR PROCESSES AND SIGNALING,Cell wall/membrane/envelope biogenesis,[M] Cell wall/membrane/envelope biogenesis,Cell wall/membrane/envelope biogenesis,Cell membrane (M),Membrane (MW)
+N,CELLULAR PROCESSES AND SIGNALING,Cell motility,[N] Cell motility,Cell motility,Motility (N),Signaling (DTNZU)
+O,CELLULAR PROCESSES AND SIGNALING,"Posttranslational modification, protein turnover, chaperones","[O] Posttranslational modification, protein turnover, chaperones","Posttranslational modification, protein turnover, chaperones",Posttranslational (O),Translation (JO)
+P,METABOLISM,Inorganic ion transport and metabolism,[P] Inorganic ion transport and metabolism,Inorganic ion transport and metabolism,Inorganic ion (P),Inorganic ion (P)
+Aux,PHAGE_Aux,"Phage moron, auxiliary metabolic and host takeover","Phage moron, auxiliary metabolic and host takeover","Phage moron, auxiliary metabolic and host takeover",Phage aux,Phage aux
+Ph,PHAGE,Phage-associated,Phage-associated,Phage-associated,Phage-associated,Phage-associated
+Q,METABOLISM,"Secondary metabolites biosynthesis, transport and catabolism","[Q] Secondary metabolites biosynthesis, transport and catabolism","Secondary metabolites biosynthesis, transport and catabolism",Secondary metabolite (Q),Secondary metabolite (Q)
+R,POORLY CHARACTERIZED,General function prediction only,[R] General function prediction only,General function prediction only,Gen. function (R),General function (R)
+S,POORLY CHARACTERIZED,Function unknown,[S] Function unknown,Function unknown,Unknown function (S),"Unknown (S, No Hits)"
+T,CELLULAR PROCESSES AND SIGNALING,Signal transduction mechanisms,[T] Signal transduction mechanisms,Signal transduction mechanisms,Signal transd. (T),Signaling (DTNZU)
+U,CELLULAR PROCESSES AND SIGNALING,"Intracellular trafficking, secretion, and vesicular transport","[U] Intracellular trafficking, secretion, and vesicular transport","Intracellular trafficking, secretion, and vesicular transport",General transport (U),Signaling (DTNZU)
+V,CELLULAR PROCESSES AND SIGNALING,Defense mechanisms,[V] Defense mechanisms,Defense mechanisms,Defense (V),Defense (V)
+W,CELLULAR PROCESSES AND SIGNALING,Extracellular structures,[W] Extracellular structures,Extracellular structures,Extracell. struct. (W),Membrane (MW)
+Y,CELLULAR PROCESSES AND SIGNALING,Nuclear structure,[Y] Nuclear structure,Nuclear structure,Nuclear structure (Y),Information processing (ALBY)
+Z,CELLULAR PROCESSES AND SIGNALING,Cytoskeleton,[Z] Cytoskeleton,Cytoskeleton,Cytoskeleton (Z),Signaling (DTNZU)
+0,POORLY CHARACTERIZED,No hits,[0] No Hits,No hits,No hits (0),"Unknown (S, No Hits)"
+X,PHAGE,"Mobilome:Êprophages,Êtransposons","[X] Mobilome:Êprophages,Êtransposons","Mobilome:Êprophages,Êtransposons",Mobilome (X),Phage-associated
+SpE,SPORULATION,"Sporulation, enriched","Sporulation, enriched","Sporulation, enriched","Sporulation, enriched",Sporulation (All)
+Sp,SPORULATION,"Sporulation, other","Sporulation, other","Sporulation, other","Sporulation, other",Sporulation (All)

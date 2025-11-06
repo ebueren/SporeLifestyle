@@ -1,0 +1,1500 @@
+target	product	best_hit	HMM	evalue	score	EC	gene	ORF_start	ORF_end	product_start	product_end	product_length	ORF_length-aa
+D5TM67	Diadenylate cyclase	K18672	KOFam_prokaryote_KEGG	1.3e-55	185.9	2.7.7.85	dacA	N/A	N/A	75	198	123	428
+O32727	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	3.1e-65	215.1	2.7.11.1		N/A	N/A	2	140	138	428
+O34327	Response regulator aspartate phosphatase J	K06368	KOFam_prokaryote_KEGG	3e-172	569.6	3.1.-.-	rapJ	N/A	N/A	1	372	371	428
+O34398	Bifunctional non-homologous end joining protein LigD	K01971	KOFam_prokaryote_KEGG	1.7e-134	446.4	6.5.1.1	ligD	N/A	N/A	6	608	602	428
+O34928	Peptidoglycan-N-acetylmuramic acid deacetylase	K01567	KOFam_prokaryote_KEGG	5e-110	364.5	3.5.1.-	pdaA	N/A	N/A	5	256	251	428
+O35002	Carboxyl-terminal processing protease	K03797	KOFam_prokaryote_KEGG	4.4e-117	389.1	3.4.21.102	E3.4.21.102, prc, ctpA	N/A	N/A	21	459	438	428
+P00782	Subtilisin	K01342	KOFam_prokaryote_KEGG	8.8e-151	499.9	3.4.21.62	aprE	N/A	N/A	8	381	373	428
+P04189	Subtilisin	K01342	KOFam_prokaryote_KEGG	3.2e-151	501.3	3.4.21.62	aprE	N/A	N/A	2	380	378	428
+P05043	Stage 0 sporulation regulatory protein	K06376	KOFam_prokaryote_KEGG	4.4e-23	78.5		spo0E	N/A	N/A	5	81	76	428
+P05519	Hypothetical							N/A	N/A				
+P06534	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	1.4e-129	427.8		spo0A	N/A	N/A	1	266	265	428
+P06575	Hypothetical							N/A	N/A				
+P07788	Spore coat protein A, manganese oxidase	K06324	KOFam_prokaryote_KEGG	6.7e-255	844.2	1.16.3.3	cotA	N/A	N/A	2	511	509	428
+P07860	RNA polymerase sigma-B factor	K03090	KOFam_prokaryote_KEGG	5.4e-79	262.6		sigB	N/A	N/A	19	251	232	428
+P08164	NAD+ synthase	K01916	KOFam_prokaryote_KEGG	1.8e-113	376.8	6.3.1.5	nadE	N/A	N/A	2	272	270	428
+P10728	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	8.7e-65	213.7	2.7.11.1		N/A	N/A	2	141	139	428
+P13801	Stage II sporulation protein GA (sporulation sigma-E factor processing peptidase)	K06383	KOFam_prokaryote_KEGG	2.9e-105	348.7	3.4.23.-	spoIIGA	N/A	N/A	1	306	305	428
+P16655	Cell division protein FtsQ	K03589	KOFam_prokaryote_KEGG	7.1e-41	137.8		ftsQ	N/A	N/A	17	245	228	428
+P17556	ald; alanine dehydrogenase	K00259	KOFam_prokaryote_FOAM	1.4e-167	554.2	1.4.1.1		N/A	N/A	1	371	370	428
+P17896	Stage IV sporulation protein B	K06399	KOFam_prokaryote_KEGG	2.8e-172	570.3	3.4.21.116	spoIVB	N/A	N/A	4	422	418	428
+P20964	GTPase	K03979	KOFam_prokaryote_KEGG	9.3e-165	545.7	3.6.5.-	obgE, cgtA, MTG2	N/A	N/A	2	349	347	428
+P21340	Diamine N-acetyltransferase	K22441	KOFam_prokaryote_KEGG	5.8e-64	213.0	2.3.1.57	paiA	N/A	N/A	1	171	170	428
+P21458	DNA segregation ATPase FtsK/SpoIIIE, S-DNA-T family	K03466	KOFam_prokaryote_KEGG	2.4e-219	727.1		ftsK, spoIIIE	N/A	N/A	16	778	762	428
+P24141	Oligopeptide transport system substrate-binding protein	K15580	KOFam_prokaryote_KEGG	1.7e-182	605.3		oppA, mppA	N/A	N/A	1	544	543	428
+P26937	Stage IV sporulation protein FB	K06402	KOFam_prokaryote_KEGG	5.5e-79	262.6	3.4.24.-	spoIVFB	N/A	N/A	9	285	276	428
+P32960	racD; aspartate racemase	K01779	KOFam_prokaryote_FOAM	5.3e-57	190.6	5.1.1.13		N/A	N/A	1	224	223	428
+P35149	Stage IV sporulation protein A	K06398	KOFam_prokaryote_KEGG	1.5e-254	842.0		spoIVA	N/A	N/A	1	492	491	428
+P35835	Subtilisin	K01342	KOFam_prokaryote_KEGG	2.3e-151	501.8	3.4.21.62	aprE	N/A	N/A	2	380	378	428
+P37475	spoIIE; stage II sporulation protein E	K06382	KOFam_prokaryote_FOAM	2.3e-300	995.0	3.1.3.16		N/A	N/A	26	821	795	428
+P37484	Cyclic-di-AMP phosphodiesterase	K22927	KOFam_prokaryote_KEGG	4.1e-265	877.9	3.1.4.59	gdpP	N/A	N/A	9	654	645	428
+P37534	Hypothetical							N/A	N/A				
+P37817	Stage V sporulation protein M	K06414	KOFam_prokaryote_KEGG	1.3e-20	69.2		spoVM	N/A	N/A	1	26	25	428
+P37869	ENO, eno; enolase	K01689	KOFam_prokaryote_FOAM	1.9e-212	703.7	4.2.1.11		N/A	N/A	3	425	422	428
+P37956	Spore photoproduct lyase	K03716	KOFam_prokaryote_KEGG	3.3e-176	581.6	4.1.99.14	splB	N/A	N/A	3	342	339	428
+P39065	acuA; acetoin utilization protein AcuA	K04766	KOFam_prokaryote_FOAM	1.5e-105	347.5	2.3.1.-		N/A	N/A	1	210	209	428
+P39773	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	3e-249	825.6	5.4.2.12		N/A	N/A	1	511	510	428
+P40288	Glucose 1-dehydrogenase	K00034	KOFam_prokaryote_KEGG	3.9e-121	400.3	1.1.1.47	gdh	N/A	N/A	1	259	258	428
+P45453	Competence protein ComX	K02253	KOFam_prokaryote_KEGG	6.9e-19	64.2		comX	N/A	N/A	1	53	52	428
+P54507	Spore coat-associated protein N	K06336	KOFam_prokaryote_KEGG	1.6e-51	172.7		tasA, cotN	N/A	N/A	1	259	258	428
+P71021	Cell division initiation protein	K04074	KOFam_prokaryote_KEGG	3.2e-64	213.7		divIVA	N/A	N/A	1	155	154	428
+P94416	Phosphatase RapC regulator	K06353	KOFam_prokaryote_KEGG	4.3e-32	106.4		phrC	N/A	N/A	1	40	39	428
+Q00828	Response regulator aspartate phosphatase A (stage 0 sporulation protein L)	K06359	KOFam_prokaryote_KEGG	1.5e-184	609.8	3.1.-.-	rapA, spo0L	N/A	N/A	3	378	375	428
+Q00829	Phosphatase RapA inhibitor	K06352	KOFam_prokaryote_KEGG	8.3e-36	118.4		phrA	N/A	N/A	1	44	43	428
+Q06320	amiABC; N-acetylmuramoyl-L-alanine amidase	K01448	KOFam_prokaryote_FOAM	1.4e-64	215.0	3.5.1.28		N/A	N/A	3	205	202	428
+Q07868	Penicillin-binding protein 2B	K08724	KOFam_prokaryote_KEGG	0.0	1022.9		pbpB	N/A	N/A	1	712	711	428
+Q182W3	Stage IV sporulation protein A	K06398	KOFam_prokaryote_KEGG	1.5e-222	736.4		spoIVA	N/A	N/A	2	491	489	428
+Q59HN7	Phosphatase RapH regulator	K20389	KOFam_prokaryote_KEGG	7.5e-43	141.0		phrH	N/A	N/A	1	57	56	428
+Q59HN8	Response regulator aspartate phosphatase H	K06366	KOFam_prokaryote_KEGG	7.2e-191	631.1	3.1.-.-	rapH	N/A	N/A	1	376	375	428
+Q7AKG8	Hypothetical							N/A	N/A				
+Q7AKI9	WhiB family transcriptional regulator, redox-sensing transcriptional regulator	K18955	KOFam_prokaryote_KEGG	1.4e-32	110.2		whiB1_2_3_4	N/A	N/A	13	100	87	428
+Q81X77	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	6.7e-245	811.2	5.4.2.12		N/A	N/A	3	509	506	428
+Q9L268	Hypothetical							N/A	N/A				
+Q9WX11	RNA polymerase sigma-70 factor, ECF subfamily	K03088	KOFam_prokaryote_KEGG	6.2e-50	167.1		rpoE	N/A	N/A	22	259	237	428
+Q9X519	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	4.5e-250	828.3	5.4.2.12		N/A	N/A	1	510	509	428
+Q9ZN78	TetR/AcrR family transcriptional regulator, repressor for uid operon	K16138	KOFam_prokaryote_KEGG	1.6e-25	85.5		uidR	N/A	N/A	3	210	207	428
+A0PZS6	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.7e-63	207.9	2.7.11.1		N/A	N/A	3	140	137	428
+A0RI78	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.5e-63	207.8	2.7.11.1		N/A	N/A	2	141	139	428
+A4IQI5	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	4.1e-66	218.0	2.7.11.1		N/A	N/A	2	141	139	428
+A5N217	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	2.8e-62	205.6	2.7.11.1		N/A	N/A	3	138	135	428
+A6LRL7	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	2e-62	206.1	2.7.11.1		N/A	N/A	3	139	136	428
+A7GS97	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	6.4e-63	207.6	2.7.11.1		N/A	N/A	2	141	139	428
+A7Z692	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	3.7e-65	214.9	2.7.11.1		N/A	N/A	2	141	139	428
+A8FET0	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	4.3e-64	211.4	2.7.11.1		N/A	N/A	2	141	139	428
+A9VFH8	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.5e-63	207.8	2.7.11.1		N/A	N/A	2	141	139	428
+B0K150	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	2.2e-62	206.0	2.7.11.1		N/A	N/A	3	139	136	428
+B0K9G3	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	2.2e-62	206.0	2.7.11.1		N/A	N/A	3	139	136	428
+B2TLY1	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	1.1e-63	210.1	2.7.11.1		N/A	N/A	2	139	137	428
+B2V2G9	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	1.1e-63	210.1	2.7.11.1		N/A	N/A	2	139	137	428
+B7GKG6	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	1.4e-65	216.3	2.7.11.1		N/A	N/A	2	141	139	428
+B7H965	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.5e-63	207.8	2.7.11.1		N/A	N/A	2	141	139	428
+B7HN53	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.5e-63	207.8	2.7.11.1		N/A	N/A	2	141	139	428
+B7IWI6	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.5e-63	207.8	2.7.11.1		N/A	N/A	2	141	139	428
+B7JLS6	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.5e-63	207.8	2.7.11.1		N/A	N/A	2	141	139	428
+B9E5R9	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	2.8e-62	205.6	2.7.11.1		N/A	N/A	3	138	135	428
+B9IWT7	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.5e-63	207.8	2.7.11.1		N/A	N/A	2	141	139	428
+C0SP90	Cytochrome bd ubiquinol oxidase subunit I	K00425	KOFam_prokaryote_KEGG	1.3e-125	416.7	7.1.1.7	cydA	N/A	N/A	1	435	434	428
+C1EQU8	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.5e-63	207.8	2.7.11.1		N/A	N/A	2	141	139	428
+C3LIU0	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.5e-63	207.8	2.7.11.1		N/A	N/A	2	141	139	428
+C3P7L0	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.5e-63	207.8	2.7.11.1		N/A	N/A	2	141	139	428
+C5D403	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	1.7e-66	219.2	2.7.11.1		N/A	N/A	2	141	139	428
+C9RZ55	Spore photoproduct lyase	K03716	KOFam_prokaryote_KEGG	1.4e-170	563.2	4.1.99.14	splB	N/A	N/A	1	341	340	428
+O05272	Amidotransferase	K14244	KOFam_prokaryote_KEGG	8.4e-171	565.9	6.3.5.-	oxyD	N/A	N/A	1	579	578	428
+O31671	kinD; two-component system, sporulation sensor kinase D	K13532	KOFam_prokaryote_FOAM	1.5e-134	446.1	2.7.13.3		N/A	N/A	10	504	494	428
+O32032	Penicillin-binding protein 4B	K21468	KOFam_prokaryote_KEGG	9e-232	767.3		pbpI	N/A	N/A	2	582	580	428
+O32721	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	4.4e-64	211.4	2.7.11.1		N/A	N/A	1	146	145	428
+O32724	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	8e-56	184.6	2.7.11.1		N/A	N/A	2	138	136	428
+O34779	PPM family protein phosphatase	K20074	KOFam_prokaryote_KEGG	7.6e-91	301.5	3.1.3.16	prpC, phpP	N/A	N/A	5	243	238	428
+O34800	Stage II sporulation protein SB	K06389	KOFam_prokaryote_KEGG	2.7e-31	104.0		spoIISB	N/A	N/A	1	56	55	428
+O34816	L,D-transpeptidase ErfK/SrfK	K16291	KOFam_prokaryote_KEGG	1.4e-52	175.8		erfK	N/A	N/A	3	162	159	428
+O34853	Stage II sporulation protein SA	K06388	KOFam_prokaryote_KEGG	6.3e-123	405.6		spoIISA	N/A	N/A	1	247	246	428
+P00781	Subtilisin	K01342	KOFam_prokaryote_KEGG	2.2e-125	416.1	3.4.21.62	aprE	N/A	N/A	1	273	272	428
+P05516	Hypothetical							N/A	N/A				
+P06222	RNA polymerase sporulation-specific sigma factor	K03091	KOFam_prokaryote_KEGG	5.6e-81	269.1		sigH	N/A	N/A	14	238	224	428
+P06533	XRE family transcriptional regulator, master regulator for biofilm formation	K19449	KOFam_prokaryote_KEGG	1.9e-51	169.8		sinR	N/A	N/A	1	110	109	428
+P06535	Stage 0 sporulation protein B (sporulation initiation phosphotransferase)	K06375	KOFam_prokaryote_KEGG	1.3e-57	191.4	2.7.-.-	spo0B	N/A	N/A	15	190	175	428
+P06628	Two-component system, response regulator, stage 0 sporulation protein F	K02490	KOFam_prokaryote_KEGG	2.6e-57	190.5		spo0F	N/A	N/A	1	119	118	428
+P07373	Cell division protein FtsW	K03588	KOFam_prokaryote_KEGG	5.5e-138	457.2		ftsW, spoVE	N/A	N/A	8	362	354	428
+P07518	Subtilisin	K01342	KOFam_prokaryote_KEGG	8.8e-129	427.3	3.4.21.62	aprE	N/A	N/A	1	274	273	428
+P08874	AbrB family transcriptional regulator, transcriptional pleiotropic regulator of transition state genes	K06284	KOFam_prokaryote_KEGG	9.2e-44	145.2		abrB	N/A	N/A	2	95	93	428
+P0A379	Hypothetical							N/A	N/A				
+P0A381	Hypothetical							N/A	N/A				
+P0A3V1	cwlJ, sleB; N-acetylmuramoyl-L-alanine amidase	K01449	KOFam_prokaryote_FOAM	8.1e-91	300.9	3.5.1.28		N/A	N/A	5	259	254	428
+P10565	Hypothetical							N/A	N/A				
+P10727	Stage II sporulation protein AA (anti-sigma F factor antagonist)	K06378	KOFam_prokaryote_KEGG	1.6e-42	142.3		spoIIAA	N/A	N/A	4	114	110	428
+P11065	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	4.2e-94	309.5		hpr	N/A	N/A	5	185	180	428
+P12254	RNA polymerase sporulation-specific sigma factor	K03091	KOFam_prokaryote_KEGG	7.6e-82	143.2		sigH	N/A	N/A	18	116	98	428
+P13243	6-phospho-5-dehydro-2-deoxy-D-gluconate aldolase	K03339	KOFam_prokaryote_KEGG	2.1e-129	427.5	4.1.2.29	iolJ	N/A	N/A	1	285	284	428
+P16497	kinA; two-component system, sporulation sensor kinase A	K02491	KOFam_prokaryote_FOAM	3e-171	542.5	2.7.13.3		N/A	N/A	142	604	462	428
+P18568	Hypothetical							N/A	N/A				
+P19638	dgkA; undecaprenol kinase	K00887	KOFam_prokaryote_FOAM	4.2e-50	166.4	2.7.1.66		N/A	N/A	1	123	122	428
+P19940	RNA polymerase sigma-B factor	K03090	KOFam_prokaryote_KEGG	1.1e-69	232.1		sigB	N/A	N/A	21	257	236	428
+P21158	2-glutathionyl-2-methylbut-3-en-1-ol dehydrogenase	K21101	KOFam_prokaryote_KEGG	6.6e-32	107.2	1.1.1.398	isoH	N/A	N/A	13	166	153	428
+P24136	Oligopeptide transport system ATP-binding protein	K15583	KOFam_prokaryote_KEGG	5.3e-199	659.9		oppD	N/A	N/A	6	342	336	428
+P24137	Oligopeptide transport system ATP-binding protein	K10823	KOFam_prokaryote_KEGG	1.1e-167	556.1		oppF	N/A	N/A	3	303	300	428
+P24138	Oligopeptide transport system permease protein	K15581	KOFam_prokaryote_KEGG	4.6e-135	447.1		oppB	N/A	N/A	1	309	308	428
+P24139	Dipeptide transport system permease protein	K16201	KOFam_prokaryote_KEGG	4.3e-144	475.9		dppC	N/A	N/A	2	305	303	428
+P26778	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	2.6e-64	212.1	2.7.11.1		N/A	N/A	2	141	139	428
+P26902	D-amino peptidase	K16203	KOFam_prokaryote_KEGG	4.1e-94	311.8	3.4.11.-	dppA1	N/A	N/A	1	269	268	428
+P26936	Stage IV sporulation protein FA	K06401	KOFam_prokaryote_KEGG	1.8e-81	270.3		spoIVFA	N/A	N/A	1	264	263	428
+P27206	entF; enterobactin synthetase component F	K02364	KOFam_prokaryote_FOAM	0.0	864.6	6.3.2.14		N/A	N/A	2097	3114	1017	428
+P28264	Cell division protein FtsA	K03590	KOFam_prokaryote_KEGG	2.5e-139	462.5		ftsA	N/A	N/A	1	421	420	428
+P29599	Subtilisin	K01342	KOFam_prokaryote_KEGG	2.4e-124	412.6	3.4.21.62	aprE	N/A	N/A	1	268	267	428
+P29600	Subtilisin	K01342	KOFam_prokaryote_KEGG	4.4e-125	415.1	3.4.21.62	aprE	N/A	N/A	1	268	267	428
+P31114	Heptaprenyl diphosphate synthase component 2	K24873	KOFam_prokaryote_KEGG	3.2e-156	515.5	2.5.1.30	hepT	N/A	N/A	29	348	319	428
+P35148	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	1.2e-62	206.7	2.7.11.1		N/A	N/A	2	142	140	428
+P35150	dacC, dacA, dacD; serine-type D-Ala-D-Ala carboxypeptidase (penicillin-binding protein 5/6)	K07258	KOFam_prokaryote_FOAM	5e-105	349.0	3.4.16.4		N/A	N/A	11	364	353	428
+P37522	Chromosome partitioning protein	K03496	KOFam_prokaryote_KEGG	4.7e-106	352.0		parA, soj	N/A	N/A	3	251	248	428
+P37554	AbrB family transcriptional regulator, stage V sporulation protein T	K04769	KOFam_prokaryote_KEGG	3.1e-89	294.6		spoVT	N/A	N/A	1	178	177	428
+P37873	Stage II sporulation protein M	K06384	KOFam_prokaryote_KEGG	3.5e-45	151.4		spoIIM	N/A	N/A	3	212	209	428
+P39620	Spore germination protein Q	K06305	KOFam_prokaryote_KEGG	9.7e-63	207.5		gerQ	N/A	N/A	8	180	172	428
+P39764	kinC; two-component system, sporulation sensor kinase C	K07698	KOFam_prokaryote_FOAM	9.5e-155	513.1	2.7.13.3		N/A	N/A	3	427	424	428
+P42234	katE, CAT, catB, srpA; catalase	K03781	KOFam_prokaryote_FOAM	2.4e-242	803.8	1.11.1.6		N/A	N/A	17	684	667	428
+P45858	2-methylcitrate synthase	K01659	KOFam_prokaryote_KEGG	2.3e-123	408.0	2.3.3.5	prpC	N/A	N/A	1	368	367	428
+P49782	Stage III sporulation protein AE	K06394	KOFam_prokaryote_KEGG	1.9e-162	537.4		spoIIIAE	N/A	N/A	1	399	398	428
+P52934	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	2.3e-126	417.3		spo0A	N/A	N/A	2	258	256	428
+P54450	N-acetylmuramoyl-L-alanine amidase	K01447	KOFam_prokaryote_KEGG	4.6e-42	141.3	3.5.1.28	xlyAB	N/A	N/A	1	221	220	428
+P59623	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	1.2e-61	203.6	2.7.11.1		N/A	N/A	3	139	136	428
+P59624	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	2.8e-62	205.5	2.7.11.1		N/A	N/A	2	143	141	428
+P60495	Inhibitor of KinA	K06351	KOFam_prokaryote_KEGG	7e-106	350.2		kipI	N/A	N/A	3	237	234	428
+P70878	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	8.5e-61	200.7	2.7.11.1		N/A	N/A	2	139	137	428
+P70962	Response regulator aspartate phosphatase B	K06360	KOFam_prokaryote_KEGG	1e-174	577.8	3.1.-.-	rapB	N/A	N/A	1	374	373	428
+Q03524	Stage V sporulation protein D (sporulation-specific penicillin-binding protein)	K08384	KOFam_prokaryote_KEGG	3e-262	869.0		spoVD	N/A	N/A	1	640	639	428
+Q04747	entF; enterobactin synthetase component F	K02364	KOFam_prokaryote_FOAM	0.0	851.8	6.3.2.14		N/A	N/A	8	1047	1039	428
+Q04809	Dipicolinate synthase subunit A	K06410	KOFam_prokaryote_KEGG	2.2e-134	443.8		spoVFA	N/A	N/A	1	292	291	428
+Q05523	dacC, dacA, dacD; serine-type D-Ala-D-Ala carboxypeptidase (penicillin-binding protein 5/6)	K07258	KOFam_prokaryote_FOAM	1.7e-109	363.7	3.4.16.4		N/A	N/A	1	431	430	428
+Q06117	Hypothetical							N/A	N/A				
+Q08352	ald; alanine dehydrogenase	K00259	KOFam_prokaryote_FOAM	3.5e-174	575.8	1.4.1.1		N/A	N/A	1	373	372	428
+Q08787	Surfactin family lipopeptide synthetase C	K15656	KOFam_prokaryote_KEGG	0.0	2635.3		srfAC, lchAC	N/A	N/A	1	1274	1273	428
+Q08788	External thioesterase TEII	K15657	KOFam_prokaryote_KEGG	3e-132	435.9		srfATE, srfAD, lchAD	N/A	N/A	1	241	240	428
+Q0SRC7	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	1.2e-63	210.0	2.7.11.1		N/A	N/A	2	138	136	428
+Q0TNR1	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	1.3e-63	209.9	2.7.11.1		N/A	N/A	2	138	136	428
+Q45757	Hypothetical							N/A	N/A				
+Q5KXJ2	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	3.6e-66	218.2	2.7.11.1		N/A	N/A	2	141	139	428
+Q5WH26	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	1.4e-62	206.5	2.7.11.1		N/A	N/A	2	141	139	428
+Q635K7	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.5e-63	207.8	2.7.11.1		N/A	N/A	2	141	139	428
+Q65HU3	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.2e-64	211.2	2.7.11.1		N/A	N/A	2	141	139	428
+Q6HE93	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.5e-63	207.8	2.7.11.1		N/A	N/A	2	141	139	428
+Q731M3	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.5e-63	207.8	2.7.11.1		N/A	N/A	2	141	139	428
+Q7AKN0	WhiB family transcriptional regulator, redox-sensing transcriptional regulator	K18955	KOFam_prokaryote_KEGG	1.3e-40	136.5		whiB1_2_3_4	N/A	N/A	14	84	70	428
+Q7WY62	Developmental checkpoint coupling sporulation initiation to replication initiation	K06371	KOFam_prokaryote_KEGG	1.4e-21	73.0		sda	N/A	N/A	5	46	41	428
+Q7WY77	Antagonist of KipI	K06350	KOFam_prokaryote_KEGG	1.3e-142	472.4		kipA	N/A	N/A	1	333	332	428
+Q819B3	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	1.5e-61	203.1	2.7.11.1		N/A	N/A	2	141	139	428
+Q81MF4	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	5.5e-63	207.8	2.7.11.1		N/A	N/A	2	141	139	428
+Q81SW4	Stage IV sporulation protein A	K06398	KOFam_prokaryote_KEGG	7.9e-253	836.3		spoIVA	N/A	N/A	1	492	491	428
+Q8EQ73	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	1.6e-64	212.8	2.7.11.1		N/A	N/A	2	141	139	428
+Q8RAA8	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	6.6e-62	204.4	2.7.11.1		N/A	N/A	3	140	137	428
+Q8XIR5	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	1.3e-63	209.9	2.7.11.1		N/A	N/A	2	138	136	428
+Q97GQ9	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	3.6e-63	208.4	2.7.11.1		N/A	N/A	3	138	135	428
+Q97L63	Spore photoproduct lyase	K03716	KOFam_prokaryote_KEGG	4e-140	463.0	4.1.99.14	splB	N/A	N/A	4	336	332	428
+Q9K2S2	Multicomponent Na+:H+ antiporter subunit A	K05565	KOFam_prokaryote_KEGG	5.3e-282	934.7		mnhA, mrpA	N/A	N/A	3	792	789	428
+Q9KCN2	spoIIAB; stage II sporulation protein AB (anti-sigma F factor)	K06379	KOFam_prokaryote_FOAM	2.9e-63	208.7	2.7.11.1		N/A	N/A	2	141	139	428
+Q9RNV1	DNA segregation ATPase FtsK/SpoIIIE, S-DNA-T family	K03466	KOFam_prokaryote_KEGG	5.8e-214	709.3		ftsK, spoIIIE	N/A	N/A	19	774	755	428
+A0A2K4Z9G8	Hypothetical							N/A	N/A				
+A0RKS4	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	1.4e-245	813.4	5.4.2.12		N/A	N/A	3	509	506	428
+A7GUR8	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	2.3e-246	816.0	5.4.2.12		N/A	N/A	3	509	506	428
+A7Z8Y2	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	2.2e-247	819.4	5.4.2.12		N/A	N/A	1	511	510	428
+A8FHJ1	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	2.4e-244	809.4	5.4.2.12		N/A	N/A	1	511	510	428
+C0H3P8	Hypothetical							N/A	N/A				
+C0H3Y2	Hypothetical							N/A	N/A				
+D5DNA8	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	1.5e-246	816.6	5.4.2.12		N/A	N/A	1	510	509	428
+D5DQW6	Stage II sporulation protein GA (sporulation sigma-E factor processing peptidase)	K06383	KOFam_prokaryote_KEGG	1.4e-101	336.5	3.4.23.-	spoIIGA	N/A	N/A	1	298	297	428
+D5DVF4	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	1.4e-245	813.4	5.4.2.12		N/A	N/A	1	510	509	428
+L8EBJ9	Hypothetical							N/A	N/A				
+O05102	Hypothetical							N/A	N/A				
+O05231	Sporulation inhibitor KapD	K06348	KOFam_prokaryote_KEGG	2.1e-90	299.3		kapD	N/A	N/A	2	204	202	428
+O05391	Forespore regulator of the sigma-K checkpoint	K06318	KOFam_prokaryote_KEGG	4.3e-54	179.6		bofC	N/A	N/A	8	169	161	428
+O05495	Spore germination protein	K06306	KOFam_prokaryote_KEGG	1.3e-138	459.7		yaaH	N/A	N/A	1	419	418	428
+O06014	Hypothetical							N/A	N/A				
+O07545	Hypothetical							N/A	N/A				
+O31510	Hypothetical							N/A	N/A				
+O31661	kinE; two-component system, sporulation sensor kinase E	K13533	KOFam_prokaryote_FOAM	1.7e-186	526.5	2.7.13.3		N/A	N/A	254	733	479	428
+O31687	Cytochrome c biogenesis protein CcmG, thiol:disulfide interchange protein DsbE	K02199	KOFam_prokaryote_KEGG	8.8e-30	100.9		ccmG, dsbE	N/A	N/A	11	161	150	428
+O31773	Teichoic acid D-alanine hydrolase	K22580	KOFam_prokaryote_KEGG	1.8e-118	392.4	3.1.1.103	fmtA	N/A	N/A	22	390	368	428
+O31982	N-acetylmuramoyl-L-alanine amidase	K01447	KOFam_prokaryote_KEGG	1.6e-27	93.5	3.5.1.28	xlyAB	N/A	N/A	13	346	333	428
+O32025	Phosphatase RapE regulator	K06354	KOFam_prokaryote_KEGG	1.6e-21	72.6		phrE	N/A	N/A	1	44	43	428
+O32062	Morphogenetic protein associated with SpoVID	K06370	KOFam_prokaryote_KEGG	3.3e-61	204.5		safA	N/A	N/A	1	387	386	428
+O32130	Peptidoglycan LD-endopeptidase LytH	K21472	KOFam_prokaryote_KEGG	2.6e-64	214.3	3.4.-.-	lytH	N/A	N/A	13	321	308	428
+O32230	SsrA-binding protein	K03664	KOFam_prokaryote_KEGG	7.4e-77	254.5		smpB	N/A	N/A	7	154	147	428
+O32307	Hypothetical							N/A	N/A				
+O32321	Hypothetical							N/A	N/A				
+O34391	N-acetylmuramoyl-L-alanine amidase	K01447	KOFam_prokaryote_KEGG	1.2e-34	116.9	3.5.1.28	xlyAB	N/A	N/A	23	271	248	428
+O66377	Hypothetical							N/A	N/A				
+O85805	Hypothetical							N/A	N/A				
+O86170	Hypothetical							N/A	N/A				
+O87404	Hypothetical							N/A	N/A				
+O87905	Hypothetical							N/A	N/A				
+O87906	Hypothetical							N/A	N/A				
+P00783	Subtilisin	K01342	KOFam_prokaryote_KEGG	2.2e-150	498.6	3.4.21.62	aprE	N/A	N/A	2	380	378	428
+P02959	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	2e-32	107.9		sspC	N/A	N/A	3	62	59	428
+P02960	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	9e-34	112.3		sspC	N/A	N/A	8	72	64	428
+P02961	Small acid-soluble spore protein E (minor gamma-type SASP)	K06422	KOFam_prokaryote_KEGG	4.9e-35	73.4		sspE	N/A	N/A	1	62	61	428
+P02964	RNA polymerase sporulation-specific sigma factor	K03091	KOFam_prokaryote_KEGG	2.1e-70	234.5		sigH	N/A	N/A	22	220	198	428
+P02966	Hypothetical							N/A	N/A				
+P04833	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	1.4e-29	98.9		sspC	N/A	N/A	3	62	59	428
+P05068	Hypothetical							N/A	N/A				
+P06653	Hypothetical							N/A	N/A				
+P07784	Hypothetical							N/A	N/A				
+P07999	Glucose 1-dehydrogenase	K00034	KOFam_prokaryote_KEGG	4.1e-116	383.8	1.1.1.47	gdh	N/A	N/A	1	260	259	428
+P09662	Hypothetical							N/A	N/A				
+P0A366	Hypothetical							N/A	N/A				
+P0A367	Hypothetical							N/A	N/A				
+P0A368	Hypothetical							N/A	N/A				
+P0A369	Hypothetical							N/A	N/A				
+P0A370	Hypothetical							N/A	N/A				
+P0A371	Hypothetical							N/A	N/A				
+P0A372	Hypothetical							N/A	N/A				
+P0A373	Hypothetical							N/A	N/A				
+P0A375	Hypothetical							N/A	N/A				
+P0A376	Hypothetical							N/A	N/A				
+P0A377	Hypothetical							N/A	N/A				
+P0A380	Hypothetical							N/A	N/A				
+P0A382	Hypothetical							N/A	N/A				
+P0A4I3	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	1.4e-127	421.3		spo0A	N/A	N/A	1	263	262	428
+P0A4I4	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	1.4e-127	421.3		spo0A	N/A	N/A	1	263	262	428
+P0CY50	Competence protein ComX	K02253	KOFam_prokaryote_KEGG	1.1e-19	66.6		comX	N/A	N/A	3	57	54	428
+P12310	Glucose 1-dehydrogenase	K00034	KOFam_prokaryote_KEGG	9.6e-120	395.7	1.1.1.47	gdh	N/A	N/A	1	259	258	428
+P12963	Hypothetical							N/A	N/A				
+P12964	Hypothetical							N/A	N/A				
+P14016	Spore coat protein E	K06328	KOFam_prokaryote_KEGG	2.1e-77	255.4		cotE	N/A	N/A	1	177	176	428
+P14892	N-acetylmuramoyl-L-alanine amidase	K01447	KOFam_prokaryote_KEGG	5.2e-29	98.5	3.5.1.28	xlyAB	N/A	N/A	22	228	206	428
+P15378	comC; leader peptidase (prepilin peptidase) / N-methyltransferase	K02236	KOFam_prokaryote_FOAM	9.6e-68	225.2	3.4.23.43 2.1.1.-		N/A	N/A	1	246	245	428
+P16449	KinB signaling pathway activation protein	K06349	KOFam_prokaryote_KEGG	1.6e-83	276.2		kbaA	N/A	N/A	1	197	196	428
+P16480	Hypothetical							N/A	N/A				
+P17531	RNA polymerase primary sigma factor	K03086	KOFam_prokaryote_KEGG	6.6e-169	555.1		rpoD	N/A	N/A	45	707	662	428
+P17557	ald; alanine dehydrogenase	K00259	KOFam_prokaryote_FOAM	1.1e-167	554.6	1.4.1.1		N/A	N/A	1	370	369	428
+P17869	RNA polymerase sporulation-specific sigma factor	K03091	KOFam_prokaryote_KEGG	2.2e-69	231.1		sigH	N/A	N/A	14	215	201	428
+P17969	Hypothetical							N/A	N/A				
+P19415	Hypothetical							N/A	N/A				
+P21254	Hypothetical							N/A	N/A				
+P21256	Hypothetical							N/A	N/A				
+P21886	Small acid-soluble spore protein D (minor alpha/beta-type SASP)	K06421	KOFam_prokaryote_KEGG	6e-26	87.6		sspD	N/A	N/A	3	58	55	428
+P21887	Small acid-soluble spore protein D (minor alpha/beta-type SASP)	K06421	KOFam_prokaryote_KEGG	4.8e-27	91.1		sspD	N/A	N/A	3	59	56	428
+P24282	Inhibitor of the pro-sigma K processing machinery	K06317	KOFam_prokaryote_KEGG	2.3e-26	89.2		bofA	N/A	N/A	1	86	85	428
+P24556	N-acetylmuramoyl-L-alanine amidase	K01447	KOFam_prokaryote_KEGG	2.9e-21	73.0	3.5.1.28	xlyAB	N/A	N/A	181	477	296	428
+P24808	N-acetylmuramoyl-L-alanine amidase	K01447	KOFam_prokaryote_KEGG	6.9e-37	124.4	3.5.1.28	xlyAB	N/A	N/A	14	255	241	428
+P26497	ParB family transcriptional regulator, chromosome partitioning protein	K03497	KOFam_prokaryote_KEGG	1.2e-81	271.7		parB, spo0J	N/A	N/A	10	278	268	428
+P26903	Dipeptide transport system permease protein	K16200	KOFam_prokaryote_KEGG	3.2e-169	558.8		dppB1	N/A	N/A	1	307	306	428
+P26904	Dipeptide transport system permease protein	K16201	KOFam_prokaryote_KEGG	1.3e-181	599.1		dppC	N/A	N/A	13	320	307	428
+P26905	Dipeptide transport system ATP-binding protein	K16202	KOFam_prokaryote_KEGG	2.9e-186	614.7		dppD	N/A	N/A	1	331	330	428
+P26906	Dipeptide transport system substrate-binding protein	K16199	KOFam_prokaryote_KEGG	3.8e-295	976.0		dppE	N/A	N/A	4	543	539	428
+P28842	Subtilisin	K01342	KOFam_prokaryote_KEGG	5.9e-99	328.9	3.4.21.62	aprE	N/A	N/A	2	415	413	428
+P29142	Subtilisin	K01342	KOFam_prokaryote_KEGG	4.3e-150	497.6	3.4.21.62	aprE	N/A	N/A	2	380	378	428
+P31112	Heptaprenyl diphosphate synthase component 1	K00805	KOFam_prokaryote_KEGG	9.7e-81	268.1	2.5.1.30	hepS	N/A	N/A	1	250	249	428
+P32959	Serine-type D-Ala-D-Ala carboxypeptidase/endopeptidase	K18988	KOFam_prokaryote_KEGG	4.7e-59	195.4	3.4.16.4 3.4.21.-	ampH	N/A	N/A	24	450	426	428
+P37466	Hypothetical							N/A	N/A				
+P37548	Spore coat assemly protein	K06436	KOFam_prokaryote_KEGG	9.5e-131	431.7		yabG	N/A	N/A	3	289	286	428
+P37553	Hypothetical							N/A	N/A				
+P37558	Hypothetical							N/A	N/A				
+P37559	Hypothetical							N/A	N/A				
+P37575	Stage II sporulation protein B	K06380	KOFam_prokaryote_KEGG	8.1e-72	239.3		spoIIB	N/A	N/A	1	331	330	428
+P37958	Adapter protein MecA 1/2	K16511	KOFam_prokaryote_KEGG	9.5e-67	221.9		mecA1_2	N/A	N/A	1	217	216	428
+P37963	Stage VI sporulation protein D	K06417	KOFam_prokaryote_KEGG	3.4e-129	263.4		spoVID	N/A	N/A	1	319	318	428
+P38490	Spore germination protein	K06313	KOFam_prokaryote_KEGG	1e-178	591.6		ypeB	N/A	N/A	1	448	447	428
+P38586	Hypothetical							N/A	N/A				
+P39043	Gamma-D-glutamyl-L-lysine dipeptidyl-peptidase	K20742	KOFam_prokaryote_KEGG	9.3e-51	169.5	3.4.14.13	ykfC	N/A	N/A	3	261	258	428
+P39482	Glucose 1-dehydrogenase	K00034	KOFam_prokaryote_KEGG	2.8e-121	400.8	1.1.1.47	gdh	N/A	N/A	1	259	258	428
+P39650	Prespore-specific regulator	K06314	KOFam_prokaryote_KEGG	4.5e-93	307.3		rsfA	N/A	N/A	1	258	257	428
+P39800	N-acetylmuramoyl-L-alanine amidase	K01447	KOFam_prokaryote_KEGG	2.5e-42	142.1	3.5.1.28	xlyAB	N/A	N/A	3	266	263	428
+P40746	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	1.8e-88	293.5	2.3.2.13	tgl	N/A	N/A	1	243	242	428
+P41371	Small acid-soluble spore protein D (minor alpha/beta-type SASP)	K06421	KOFam_prokaryote_KEGG	5.8e-27	90.8		sspD	N/A	N/A	3	59	56	428
+P42012	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	1.5e-113	375.2		spo0A	N/A	N/A	1	261	260	428
+P42061	ABC.PE.S; peptide/nickel transport system substrate-binding protein	K02035	KOFam_prokaryote_FOAM	2.7e-117	389.7			N/A	N/A	1	540	539	428
+P42064	Oligopeptide transport system ATP-binding protein	K15583	KOFam_prokaryote_KEGG	2.6e-155	515.5		oppD	N/A	N/A	3	322	319	428
+P42065	ddpF; peptide/nickel transport system ATP-binding protein	K02032	KOFam_prokaryote_FOAM	9e-162	536.7			N/A	N/A	6	327	321	428
+P42249	cwlJ, sleB; N-acetylmuramoyl-L-alanine amidase	K01449	KOFam_prokaryote_FOAM	1.2e-34	116.7	3.5.1.28		N/A	N/A	7	141	134	428
+P42969	Hypothetical							N/A	N/A				
+P42983	Hypothetical							N/A	N/A				
+P45706	Cytochrome c-type biogenesis protein	K06196	KOFam_prokaryote_KEGG	7.7e-70	232.2		ccdA	N/A	N/A	7	226	219	428
+P45855	ACAT, atoB; acetyl-CoA C-acetyltransferase	K00626	KOFam_prokaryote_FOAM	4.4e-145	480.8	2.3.1.9		N/A	N/A	1	391	390	428
+P45856	3-hydroxybutyryl-CoA dehydrogenase	K00074	KOFam_prokaryote_KEGG	9.4e-150	496.7	1.1.1.157	paaH, hbd, fadB, mmgB	N/A	N/A	2	284	282	428
+P45859	2-methylcitrate dehydratase	K01720	KOFam_prokaryote_KEGG	1.5e-245	813.6	4.2.1.79	prpD	N/A	N/A	2	471	469	428
+P45870	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	4.5e-56	186.0		racA	N/A	N/A	1	183	182	428
+P45943	Response regulator aspartate phosphatase E	K06363	KOFam_prokaryote_KEGG	1.9e-221	731.6	3.1.-.-	rapE	N/A	N/A	1	375	374	428
+P49600	spoIIE; stage II sporulation protein E	K06382	KOFam_prokaryote_FOAM	7.5e-237	784.9	3.1.3.16		N/A	N/A	1	579	578	428
+P49785	Stage III sporulation protein AH	K06397	KOFam_prokaryote_KEGG	8.8e-55	182.5		spoIIIAH	N/A	N/A	1	217	216	428
+P50739	cwlJ, sleB; N-acetylmuramoyl-L-alanine amidase	K01449	KOFam_prokaryote_FOAM	1.1e-85	284.0	3.5.1.28		N/A	N/A	7	305	298	428
+P50865	Peptidoglycan-N-acetylglucosamine deacetylase	K22278	KOFam_prokaryote_KEGG	2.1e-55	185.3	3.5.1.104	pgdA	N/A	N/A	22	244	222	428
+P52928	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	8.1e-128	422.0		spo0A	N/A	N/A	1	263	262	428
+P52929	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	1.5e-96	319.4		spo0A	N/A	N/A	1	212	211	428
+P52931	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	1.4e-96	319.5		spo0A	N/A	N/A	1	210	209	428
+P52932	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	1e-96	320.0		spo0A	N/A	N/A	1	212	211	428
+P52933	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	6.1e-88	291.2		spo0A	N/A	N/A	1	191	190	428
+P52936	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	3.5e-125	413.3		spo0A	N/A	N/A	1	272	271	428
+P52938	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	1.4e-123	408.1		spo0A	N/A	N/A	5	272	267	428
+P52939	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	1.1e-96	319.8		spo0A	N/A	N/A	1	271	270	428
+P52940	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	3e-122	403.7		spo0A	N/A	N/A	1	272	271	428
+P52941	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	2.6e-122	403.9		spo0A	N/A	N/A	1	255	254	428
+P52942	Two-component system, response regulator, stage 0 sporulation protein F	K02490	KOFam_prokaryote_KEGG	1.5e-54	181.4		spo0F	N/A	N/A	1	120	119	428
+P55339	ABC-2 type transport system ATP-binding protein	K25158	KOFam_prokaryote_KEGG	1e-124	411.1		ecsA	N/A	N/A	3	243	240	428
+P55340	ABC-2 type transport system permease protein	K25157	KOFam_prokaryote_KEGG	2.8e-133	441.1		ecsB	N/A	N/A	2	405	403	428
+P56953	Hypothetical							N/A	N/A				
+P56955	Hypothetical							N/A	N/A				
+P56956	Hypothetical							N/A	N/A				
+P58253	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	1.1e-126	418.2		spo0A	N/A	N/A	1	280	279	428
+P59174	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	1.2e-234	777.3	5.4.2.12		N/A	N/A	1	512	511	428
+P62179	RNA polymerase sporulation-specific sigma factor	K03091	KOFam_prokaryote_KEGG	1.3e-80	268.0		sigH	N/A	N/A	15	238	223	428
+P62181	RNA polymerase sporulation-specific sigma factor	K03091	KOFam_prokaryote_KEGG	2e-83	277.2		sigH	N/A	N/A	10	234	224	428
+P71031	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	9.4e-22	73.8		sspO, cotK	N/A	N/A	1	48	47	428
+P71044	Stage II sporulation protein Q	K06386	KOFam_prokaryote_KEGG	1.8e-108	359.1		spoIIQ	N/A	N/A	1	279	278	428
+P71073	PucR family transcriptional regulator, proline-responsive transcriptional activator	K23253	KOFam_prokaryote_KEGG	3.2e-67	224.0		putR	N/A	N/A	23	420	397	428
+P84583	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	3.5e-38	126.4		sspC	N/A	N/A	1	67	66	428
+P84584	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	2.8e-38	126.7		sspC	N/A	N/A	1	69	68	428
+P84585	Small acid-soluble spore protein E (minor gamma-type SASP)	K06422	KOFam_prokaryote_KEGG	9.7e-30	61.1		sspE	N/A	N/A	5	53	48	428
+P96315	Hypothetical							N/A	N/A				
+Q03415	G-D-glutamyl-meso-diaminopimelate peptidase	K01308	KOFam_prokaryote_KEGG	6e-135	447.6	3.4.19.11	yqgT	N/A	N/A	21	396	375	428
+Q03744	Hypothetical							N/A	N/A				
+Q03745	Hypothetical							N/A	N/A				
+Q03746	Hypothetical							N/A	N/A				
+Q03748	Hypothetical							N/A	N/A				
+Q03749	Hypothetical							N/A	N/A				
+Q04470	Hypothetical							N/A	N/A				
+Q04810	Dipicolinate synthase subunit B	K06411	KOFam_prokaryote_KEGG	1.5e-98	324.5		spoVFB	N/A	N/A	3	196	193	428
+Q07765	CRISPR-associated protein Cst2	K19075	KOFam_prokaryote_KEGG	6.9e-49	163.4		cst2, cas7	N/A	N/A	5	277	272	428
+Q07766	CRISPR-associated protein Cas5t	K19090	KOFam_prokaryote_KEGG	2e-22	76.3		cas5t	N/A	N/A	1	197	196	428
+Q08430	kinB; two-component system, sporulation sensor kinase B	K07697	KOFam_prokaryote_FOAM	2.3e-132	438.5	2.7.13.3		N/A	N/A	2	424	422	428
+Q182S9	Inositol-phosphate phosphatase / L-galactose 1-phosphate phosphatase / histidinol-phosphatase	K18649	KOFam_prokaryote_KEGG	6e-27	91.1	3.1.3.25 3.1.3.93 3.1.3.15	IMPL2	N/A	N/A	165	292	127	428
+Q2JDA6	Hypothetical							N/A	N/A				
+Q45058	Spore coat protein M	K06335	KOFam_prokaryote_KEGG	2.3e-50	166.4		cotM	N/A	N/A	7	128	121	428
+Q45358	Hypothetical							N/A	N/A				
+Q45535	Spore coat protein H	K06330	KOFam_prokaryote_KEGG	4.8e-104	345.5		cotH	N/A	N/A	4	359	355	428
+Q45704	Hypothetical							N/A	N/A				
+Q45705	Hypothetical							N/A	N/A				
+Q45706	Hypothetical							N/A	N/A				
+Q45707	Hypothetical							N/A	N/A				
+Q45708	Hypothetical							N/A	N/A				
+Q45709	Hypothetical							N/A	N/A				
+Q45712	Hypothetical							N/A	N/A				
+Q45715	Hypothetical							N/A	N/A				
+Q45716	Hypothetical							N/A	N/A				
+Q45718	Hypothetical							N/A	N/A				
+Q45730	Hypothetical							N/A	N/A				
+Q45733	Hypothetical							N/A	N/A				
+Q45738	Hypothetical							N/A	N/A				
+Q45739	Hypothetical							N/A	N/A				
+Q45743	Hypothetical							N/A	N/A				
+Q45744	Hypothetical							N/A	N/A				
+Q45746	Hypothetical							N/A	N/A				
+Q45747	Hypothetical							N/A	N/A				
+Q45748	Hypothetical							N/A	N/A				
+Q45752	Hypothetical							N/A	N/A				
+Q45753	Hypothetical							N/A	N/A				
+Q45754	Hypothetical							N/A	N/A				
+Q45755	Hypothetical							N/A	N/A				
+Q45760	Hypothetical							N/A	N/A				
+Q45774	Hypothetical							N/A	N/A				
+Q45882	Hypothetical							N/A	N/A				
+Q47N25	Hypothetical							N/A	N/A				
+Q57458	Hypothetical							N/A	N/A				
+Q5KVB2	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	3.4e-63	209.5		racA	N/A	N/A	1	172	171	428
+Q5WC42	L,D-transpeptidase ErfK/SrfK	K16291	KOFam_prokaryote_KEGG	8e-56	186.6		erfK	N/A	N/A	5	164	159	428
+Q5WDK8	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	1.2e-242	803.7	5.4.2.12		N/A	N/A	1	508	507	428
+Q631M1	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	1.6e-245	813.2	5.4.2.12		N/A	N/A	3	509	506	428
+Q65DU9	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	4.3e-51	169.8		racA	N/A	N/A	1	186	185	428
+Q65EN1	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	9.9e-248	820.5	5.4.2.12		N/A	N/A	4	511	507	428
+Q65K99	L,D-transpeptidase ErfK/SrfK	K16291	KOFam_prokaryote_KEGG	4.9e-52	174.1		erfK	N/A	N/A	4	163	159	428
+Q6B4J5	Morphogenetic protein associated with SpoVID	K06370	KOFam_prokaryote_KEGG	2.4e-55	150.2		safA	N/A	N/A	1	242	241	428
+Q6HBF2	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	1.6e-245	813.2	5.4.2.12		N/A	N/A	3	509	506	428
+Q72XY4	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	1.3e-244	810.2	5.4.2.12		N/A	N/A	3	509	506	428
+Q815K7	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	1.6e-245	813.2	5.4.2.12		N/A	N/A	3	509	506	428
+Q81DD1	Hypothetical							N/A	N/A				
+Q81QD6	Hypothetical							N/A	N/A				
+Q8CX61	ald; alanine dehydrogenase	K00259	KOFam_prokaryote_FOAM	9.9e-170	561.2	1.4.1.1		N/A	N/A	1	372	371	428
+Q939S9	Hypothetical							N/A	N/A				
+Q939T0	Hypothetical							N/A	N/A				
+Q99027	comP; two-component system, NarL family, sensor histidine kinase ComP	K07680	KOFam_prokaryote_FOAM	4.7e-246	815.1	2.7.13.3		N/A	N/A	6	769	763	428
+Q99031	Hypothetical							N/A	N/A				
+Q9K5N0	Chromosome partitioning protein	K03496	KOFam_prokaryote_KEGG	5.2e-106	351.8		parA, soj	N/A	N/A	3	251	248	428
+Q9K716	gpmI; 2,3-bisphosphoglycerate-independent phosphoglycerate mutase	K15633	KOFam_prokaryote_FOAM	3.4e-244	808.9	5.4.2.12		N/A	N/A	1	510	509	428
+Q9RMG3	Hypothetical							N/A	N/A				
+Q9S515	Hypothetical							N/A	N/A				
+Q9S597	Hypothetical							N/A	N/A				
+Q9X597	Hypothetical							N/A	N/A				
+Q9X682	Hypothetical							N/A	N/A				
+Q9XDL1	Hypothetical							N/A	N/A				
+Q9ZAZ5	Hypothetical							N/A	N/A				
+Q9ZAZ6	Hypothetical							N/A	N/A				
+Q9ZIU5	Hypothetical							N/A	N/A				
+Q9ZNL9	Hypothetical							N/A	N/A				
+A0RAQ6	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	4.3e-95	312.8		hpr	N/A	N/A	5	184	179	428
+A0RHX9	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	6.4e-94	311.5	2.3.2.13	tgl	N/A	N/A	17	245	228	428
+A4FB46	Hypothetical							N/A	N/A				
+A4IKI9	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	3.6e-35	116.5		sspK	N/A	N/A	1	52	51	428
+A4IKT9	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	7.7e-102	334.7		hpr	N/A	N/A	4	184	180	428
+A4IMM1	Small acid-soluble spore protein P (minor)	K06433	KOFam_prokaryote_KEGG	1.9e-26	89.0		sspP, cotL	N/A	N/A	1	48	47	428
+A4IMM3	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	9.6e-30	99.4		sspO, cotK	N/A	N/A	1	49	48	428
+A4IN31	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	1e-20	70.6		sspH	N/A	N/A	1	59	58	428
+A4IN74	Small acid-soluble spore protein N (minor)	K06431	KOFam_prokaryote_KEGG	6.1e-22	74.2		sspN	N/A	N/A	1	47	46	428
+A4IN75	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	1.8e-38	127.2		tlp	N/A	N/A	3	74	71	428
+A4IPX4	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	1.7e-25	86.0		sspH	N/A	N/A	1	59	58	428
+A4ISB5	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	2.4e-21	72.6		sspH	N/A	N/A	1	61	60	428
+A4X5B6	Hypothetical							N/A	N/A				
+A6TQ57	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	5.9e-25	84.3		sspH	N/A	N/A	1	59	58	428
+A6WCJ4	Hypothetical							N/A	N/A				
+A7GJW0	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	1.4e-45	151.3		spoVG	N/A	N/A	1	88	87	428
+A7GKY7	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	4.3e-25	84.3		sspK	N/A	N/A	1	52	51	428
+A7GL73	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	1.5e-21	73.3		sspH	N/A	N/A	1	59	58	428
+A7GLZ1	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	7.4e-96	315.3		hpr	N/A	N/A	5	184	179	428
+A7GNL0	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	3.6e-24	81.8		sspH	N/A	N/A	1	59	58	428
+A7GQU9	Hypothetical							N/A	N/A				
+A7GQV6	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	2e-28	95.2		sspO, cotK	N/A	N/A	1	49	48	428
+A7GQV9	Small acid-soluble spore protein P (minor)	K06433	KOFam_prokaryote_KEGG	6.7e-22	74.4		sspP, cotL	N/A	N/A	1	47	46	428
+A7GRZ1	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	4.6e-92	305.4	2.3.2.13	tgl	N/A	N/A	19	250	231	428
+A7Z0H2	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	2.3e-45	150.6		spoVG	N/A	N/A	1	92	91	428
+A7Z2J3	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	8e-22	74.2		sspH	N/A	N/A	1	59	58	428
+A7Z2M2	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	1.4e-31	105.0		sspK	N/A	N/A	2	50	48	428
+A7Z311	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	2.6e-93	306.9		hpr	N/A	N/A	6	184	178	428
+A7Z565	Small acid-soluble spore protein P (minor)	K06433	KOFam_prokaryote_KEGG	2.4e-26	88.6		sspP, cotL	N/A	N/A	1	48	47	428
+A7Z566	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	2.3e-21	72.6		sspO, cotK	N/A	N/A	1	48	47	428
+A7Z570	Hypothetical							N/A	N/A				
+A7Z571	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	1e-36	121.6		tlp	N/A	N/A	1	78	77	428
+A8F916	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	6.4e-46	152.4		spoVG	N/A	N/A	1	90	89	428
+A8FB65	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	2.9e-27	91.2		sspK	N/A	N/A	1	49	48	428
+A8FBL1	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	3.1e-95	313.1		hpr	N/A	N/A	4	184	180	428
+A8FDQ8	Small acid-soluble spore protein P (minor)	K06433	KOFam_prokaryote_KEGG	5.1e-25	84.4		sspP, cotL	N/A	N/A	1	48	47	428
+A8FDQ9	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	1.6e-21	73.0		sspO, cotK	N/A	N/A	1	48	47	428
+A8FDR3	Small acid-soluble spore protein N (minor)	K06431	KOFam_prokaryote_KEGG	8.8e-22	73.7		sspN	N/A	N/A	1	48	47	428
+A8FGT0	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	7.1e-93	308.0	2.3.2.13	tgl	N/A	N/A	1	243	242	428
+A9VI69	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	7.8e-96	315.2		hpr	N/A	N/A	5	184	179	428
+A9VN61	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	1.4e-45	151.3		spoVG	N/A	N/A	1	88	87	428
+A9VNW3	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	3.7e-28	94.3		sspO, cotK	N/A	N/A	1	49	48	428
+A9VSR6	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	7.5e-24	80.3		sspK	N/A	N/A	1	52	51	428
+A9VUC4	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	1.5e-94	313.5	2.3.2.13	tgl	N/A	N/A	17	249	232	428
+B1HVK6	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	3.7e-92	303.3		hpr	N/A	N/A	5	178	173	428
+B1YK88	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	5e-86	283.1		hpr	N/A	N/A	4	176	172	428
+B7GI77	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	1.7e-29	98.6		sspO, cotK	N/A	N/A	1	49	48	428
+B7GKT2	Small acid-soluble spore protein N (minor)	K06431	KOFam_prokaryote_KEGG	4.3e-21	71.5		sspN	N/A	N/A	1	47	46	428
+B7H546	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	2.7e-55	183.7		racA	N/A	N/A	1	179	178	428
+B7H6V0	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	2.4e-94	312.9	2.3.2.13	tgl	N/A	N/A	17	251	234	428
+B7H9R2	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	4.3e-25	84.3		sspK	N/A	N/A	1	52	51	428
+B7HAY1	Hypothetical							N/A	N/A				
+B7HC95	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	1.6e-27	92.3		sspO, cotK	N/A	N/A	1	49	48	428
+B7HG19	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	1.3e-95	314.5		hpr	N/A	N/A	5	184	179	428
+B7HIL6	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	2.6e-45	150.4		spoVG	N/A	N/A	1	88	87	428
+B7HME8	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	1.5e-93	310.3	2.3.2.13	tgl	N/A	N/A	16	245	229	428
+B7HPV9	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	2.6e-45	150.4		spoVG	N/A	N/A	1	88	87	428
+B7HQ80	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	1.6e-55	184.4		racA	N/A	N/A	1	179	178	428
+B7HU54	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	4.3e-25	84.3		sspK	N/A	N/A	1	52	51	428
+B7HZH8	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	4.3e-95	312.8		hpr	N/A	N/A	5	184	179	428
+B7I057	Hypothetical							N/A	N/A				
+B7I063	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	1.9e-26	88.8		sspO, cotK	N/A	N/A	1	49	48	428
+B7IKC1	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	1.3e-95	314.5		hpr	N/A	N/A	5	184	179	428
+B7IRQ5	Hypothetical							N/A	N/A				
+B7ISF6	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	4.9e-27	90.7		sspO, cotK	N/A	N/A	1	49	48	428
+B7ISV8	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	2.6e-45	150.4		spoVG	N/A	N/A	1	88	87	428
+B7IVK0	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	1.6e-94	313.5	2.3.2.13	tgl	N/A	N/A	17	251	234	428
+B7IW10	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	4.3e-25	84.3		sspK	N/A	N/A	1	52	51	428
+B7JCX5	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	4.3e-95	312.8		hpr	N/A	N/A	5	184	179	428
+B7JI38	Hypothetical							N/A	N/A				
+B7JI46	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	1.7e-26	89.0		sspO, cotK	N/A	N/A	1	49	48	428
+B7JK55	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	2.6e-45	150.4		spoVG	N/A	N/A	1	88	87	428
+B7JKT7	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	9.6e-94	310.9	2.3.2.13	tgl	N/A	N/A	17	246	229	428
+B7JML4	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	7.8e-57	188.7		racA	N/A	N/A	1	179	178	428
+B7JNF2	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	4.3e-25	84.3		sspK	N/A	N/A	1	52	51	428
+B9IT66	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	4.3e-95	312.8		hpr	N/A	N/A	5	184	179	428
+B9IUC1	Hypothetical							N/A	N/A				
+B9IUC7	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	1.9e-26	88.8		sspO, cotK	N/A	N/A	1	49	48	428
+B9IW43	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	1.5e-93	310.3	2.3.2.13	tgl	N/A	N/A	16	245	229	428
+B9IZT9	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	1.6e-55	184.4		racA	N/A	N/A	1	179	178	428
+B9J2V0	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	4.3e-25	84.3		sspK	N/A	N/A	1	52	51	428
+C0H3Y8	Hypothetical							N/A	N/A				
+C0SP79	Hypothetical							N/A	N/A				
+C0SPA3	Hypothetical							N/A	N/A				
+C1EKG1	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	4.3e-95	312.8		hpr	N/A	N/A	5	184	179	428
+C1EN49	Hypothetical							N/A	N/A				
+C1EN57	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	1.7e-26	89.0		sspO, cotK	N/A	N/A	1	49	48	428
+C1EPX7	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	6.4e-94	311.5	2.3.2.13	tgl	N/A	N/A	17	245	228	428
+C1ESX8	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	2.6e-45	150.4		spoVG	N/A	N/A	1	88	87	428
+C1ETF1	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	7.8e-57	188.7		racA	N/A	N/A	1	179	178	428
+C1EWF4	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	4.3e-25	84.3		sspK	N/A	N/A	1	52	51	428
+C3L9B6	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	1.7e-26	89.0		sspO, cotK	N/A	N/A	1	49	48	428
+C3L9C4	Hypothetical							N/A	N/A				
+C3LCW8	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	4.3e-95	312.8		hpr	N/A	N/A	5	184	179	428
+C3LHB3	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	4.3e-25	84.3		sspK	N/A	N/A	1	52	51	428
+C3LI29	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	1.1e-93	310.8	2.3.2.13	tgl	N/A	N/A	17	245	228	428
+C3LJ21	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	2.6e-45	150.4		spoVG	N/A	N/A	1	88	87	428
+C3LJH8	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	7.8e-57	188.7		racA	N/A	N/A	1	179	178	428
+C3P2U9	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	4.3e-95	312.8		hpr	N/A	N/A	5	184	179	428
+C3P450	Hypothetical							N/A	N/A				
+C3P458	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	1.7e-26	89.0		sspO, cotK	N/A	N/A	1	49	48	428
+C3P6X0	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	1.1e-93	310.8	2.3.2.13	tgl	N/A	N/A	17	245	228	428
+C3P8Z9	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	7.8e-57	188.7		racA	N/A	N/A	1	179	178	428
+C3P9J4	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	2.6e-45	150.4		spoVG	N/A	N/A	1	88	87	428
+C3PCY0	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	4.3e-25	84.3		sspK	N/A	N/A	1	52	51	428
+C5D2I2	Small acid-soluble spore protein N (minor)	K06431	KOFam_prokaryote_KEGG	3.2e-21	71.9		sspN	N/A	N/A	1	47	46	428
+C5D5S3	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	1.4e-33	111.4		sspK	N/A	N/A	1	52	51	428
+C5D6L6	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	1.6e-102	336.8		hpr	N/A	N/A	4	184	180	428
+C5D9Z3	Small acid-soluble spore protein P (minor)	K06433	KOFam_prokaryote_KEGG	3.8e-27	91.2		sspP, cotL	N/A	N/A	1	48	47	428
+L8EBJ6	Hypothetical							N/A	N/A				
+O06716	Spore germination protein PF	K06304	KOFam_prokaryote_KEGG	1.3e-31	105.2		gerPF	N/A	N/A	1	71	70	428
+O06717	Spore germination protein PE	K06303	KOFam_prokaryote_KEGG	3.8e-42	140.0		gerPE	N/A	N/A	1	129	128	428
+O06718	Spore germination protein PD	K06302	KOFam_prokaryote_KEGG	1.3e-32	107.8		gerPD	N/A	N/A	1	57	56	428
+O06719	Spore germination protein PC	K06301	KOFam_prokaryote_KEGG	2.8e-73	243.7		gerPC	N/A	N/A	1	204	203	428
+O06720	Spore germination protein PB	K06300	KOFam_prokaryote_KEGG	7.8e-33	109.2		gerPB	N/A	N/A	1	76	75	428
+O06721	Spore germination protein PA	K06299	KOFam_prokaryote_KEGG	1.5e-34	114.5		gerPA	N/A	N/A	1	72	71	428
+O06722	Hypothetical							N/A	N/A				
+O06996	Uncharacterized protein	K06900	KOFam_prokaryote_KEGG	4.6e-19	64.6			N/A	N/A	3	219	216	428
+O06997	Glycolate oxidase	K00104	KOFam_prokaryote_KEGG	1.2e-24	81.2	1.1.3.15	glcD	N/A	N/A	30	208	178	428
+O07520	Hypothetical							N/A	N/A				
+O07544	Hypothetical							N/A	N/A				
+O31552	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	3.3e-27	91.5		sspH	N/A	N/A	1	59	58	428
+O31622	Hypothetical							N/A	N/A				
+O31623	Hypothetical							N/A	N/A				
+O31625	Hypothetical							N/A	N/A				
+O31681	Spore maturation protein CgeB	K06320	KOFam_prokaryote_KEGG	1.7e-65	218.0		cgeB	N/A	N/A	1	347	346	428
+O31700	Sigma-E controlled sporulation protein	K06437	KOFam_prokaryote_KEGG	5.7e-131	433.2		yknT	N/A	N/A	1	320	319	428
+O31725	Hypothetical							N/A	N/A				
+O31819	Hypothetical							N/A	N/A				
+O32123	Spore coat protein I	K06331	KOFam_prokaryote_KEGG	1.9e-20	69.3		cotI	N/A	N/A	54	291	237	428
+O32131	Hypothetical							N/A	N/A				
+O32322	Hypothetical							N/A	N/A				
+O32720	Stage II sporulation protein AA (anti-sigma F factor antagonist)	K06378	KOFam_prokaryote_KEGG	2.1e-42	141.9		spoIIAA	N/A	N/A	3	114	111	428
+O32723	Stage II sporulation protein AA (anti-sigma F factor antagonist)	K06378	KOFam_prokaryote_KEGG	2.4e-28	95.9		spoIIAA	N/A	N/A	4	111	107	428
+O32726	Stage II sporulation protein AA (anti-sigma F factor antagonist)	K06378	KOFam_prokaryote_KEGG	1.3e-39	132.8		spoIIAA	N/A	N/A	4	115	111	428
+O34412	Hypothetical							N/A	N/A				
+O34505	Cytochrome bd ubiquinol oxidase subunit II	K00426	KOFam_prokaryote_KEGG	4.4e-34	114.4	7.1.1.7	cydB	N/A	N/A	8	338	330	428
+O34656	Spore coat protein I	K06331	KOFam_prokaryote_KEGG	1.1e-155	514.1		cotI	N/A	N/A	27	357	330	428
+O34765	Hypothetical							N/A	N/A				
+O34806	Hypothetical							N/A	N/A				
+O66042	Adapter protein MecA 1/2	K16511	KOFam_prokaryote_KEGG	4.3e-60	200.2		mecA1_2	N/A	N/A	1	216	215	428
+O68685	Spore germination protein PC	K06301	KOFam_prokaryote_KEGG	1.2e-62	208.8		gerPC	N/A	N/A	1	200	199	428
+O68687	Spore germination protein PE	K06303	KOFam_prokaryote_KEGG	3.6e-38	127.1		gerPE	N/A	N/A	1	123	122	428
+P02958	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	8.1e-45	147.6		sspC	N/A	N/A	1	72	71	428
+P02967	Hypothetical							N/A	N/A				
+P04831	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	1.5e-37	124.4		sspC	N/A	N/A	1	69	68	428
+P04832	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	6.9e-37	122.2		sspC	N/A	N/A	4	65	61	428
+P04834	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	2e-36	120.7		sspC	N/A	N/A	1	66	65	428
+P04835	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	9.7e-34	112.0		sspC	N/A	N/A	1	66	65	428
+P06552	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	3.2e-37	123.3		sspC	N/A	N/A	1	67	66	428
+P06553	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	1.4e-36	121.2		sspC	N/A	N/A	1	67	66	428
+P07372	Stage II sporulation protein D	K06381	KOFam_prokaryote_KEGG	7.4e-100	332.1		spoIID	N/A	N/A	24	336	312	428
+P07785	Small acid-soluble spore protein E (minor gamma-type SASP)	K06422	KOFam_prokaryote_KEGG	9.7e-30	61.1		sspE	N/A	N/A	5	53	48	428
+P07786	Hypothetical							N/A	N/A				
+P07787	Hypothetical							N/A	N/A				
+P0A374	Hypothetical							N/A	N/A				
+P0A378	Hypothetical							N/A	N/A				
+P0A383	Hypothetical							N/A	N/A				
+P0A3T7	Spore germination protein PB	K06300	KOFam_prokaryote_KEGG	3.9e-26	87.8		gerPB	N/A	N/A	1	58	57	428
+P0A3T9	Spore germination protein PD	K06302	KOFam_prokaryote_KEGG	1.8e-27	91.3		gerPD	N/A	N/A	1	58	57	428
+P0A3V0	cwlJ, sleB; N-acetylmuramoyl-L-alanine amidase	K01449	KOFam_prokaryote_FOAM	8.1e-91	300.9	3.5.1.28		N/A	N/A	5	259	254	428
+P0A4F2	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	7.5e-33	109.3		sspC	N/A	N/A	3	67	64	428
+P0A4F3	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	7.5e-33	109.3		sspC	N/A	N/A	3	67	64	428
+P0A4F4	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	2.2e-34	114.2		sspC	N/A	N/A	2	62	60	428
+P0A4F5	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	2.2e-34	114.2		sspC	N/A	N/A	2	62	60	428
+P0A4F6	Small acid-soluble spore protein F (minor alpha/beta-type SASP)	K06423	KOFam_prokaryote_KEGG	3e-32	108.2		sspF	N/A	N/A	1	59	58	428
+P0A4F7	Small acid-soluble spore protein F (minor alpha/beta-type SASP)	K06423	KOFam_prokaryote_KEGG	3e-32	108.2		sspF	N/A	N/A	1	59	58	428
+P10570	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	4.3e-36	119.7		sspC	N/A	N/A	1	66	65	428
+P10571	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	3.5e-36	119.8		sspC	N/A	N/A	1	66	65	428
+P10572	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	3.6e-27	91.1		sspC	N/A	N/A	4	62	58	428
+P11863	Spore coat protein T	K06339	KOFam_prokaryote_KEGG	2.1e-32	107.9		cotT	N/A	N/A	1	80	79	428
+P12690	Hypothetical							N/A	N/A				
+P13251	Stage II sporulation protein D	K06381	KOFam_prokaryote_KEGG	2.3e-100	333.9		spoIID	N/A	N/A	27	337	310	428
+P15281	Putative DeoR family transcriptional regulator, stage III sporulation protein D	K06283	KOFam_prokaryote_KEGG	1.3e-49	163.2		spoIIID	N/A	N/A	1	85	84	428
+P19471	Hypothetical							N/A	N/A				
+P21341	Transcriptional regulator	K07734	KOFam_prokaryote_KEGG	4.5e-75	249.3		paiB	N/A	N/A	1	202	201	428
+P22065	Small acid-soluble spore protein A (major alpha-type SASP)	K06418	KOFam_prokaryote_KEGG	1.8e-30	101.5		SASP-A, sspA	N/A	N/A	3	69	66	428
+P22066	Small acid-soluble spore protein A (major alpha-type SASP)	K06418	KOFam_prokaryote_KEGG	2.5e-28	94.7		SASP-A, sspA	N/A	N/A	2	64	62	428
+P23261	Spore coat protein F	K06329	KOFam_prokaryote_KEGG	3.8e-55	182.8		cotF	N/A	N/A	1	160	159	428
+P26764	RNA polymerase sigma-B factor	K03090	KOFam_prokaryote_KEGG	8e-79	262.1		sigB	N/A	N/A	21	251	230	428
+P26767	Stage II sporulation protein GA (sporulation sigma-E factor processing peptidase)	K06383	KOFam_prokaryote_KEGG	2.9e-51	170.9	3.4.23.-	spoIIGA	N/A	N/A	1	157	156	428
+P26777	Stage II sporulation protein AA (anti-sigma F factor antagonist)	K06378	KOFam_prokaryote_KEGG	2.9e-42	141.4		spoIIAA	N/A	N/A	3	115	112	428
+P27643	Stage V sporulation protein K	K06413	KOFam_prokaryote_KEGG	2.3e-139	461.9		spoVK	N/A	N/A	12	319	307	428
+P27755	Hypothetical							N/A	N/A				
+P28015	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	1.3e-44	148.1		spoVG	N/A	N/A	1	85	84	428
+P28016	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	1.3e-44	148.1		spoVG	N/A	N/A	1	85	84	428
+P31845	Stage V sporulation protein AF	K06408	KOFam_prokaryote_KEGG	4.8e-228	754.6		spoVAF	N/A	N/A	5	492	487	428
+P33657	RNA polymerase sporulation-specific sigma factor	K03091	KOFam_prokaryote_KEGG	7.8e-77	255.5		sigH	N/A	N/A	17	235	218	428
+P33658	RNA polymerase sigma-B factor	K03090	KOFam_prokaryote_KEGG	8.2e-71	235.7		sigB	N/A	N/A	24	255	231	428
+P35142	Hypothetical							N/A	N/A				
+P35145	RNA polymerase sigma-B factor	K03090	KOFam_prokaryote_KEGG	6.9e-78	259.0		sigB	N/A	N/A	20	250	230	428
+P35147	Stage II sporulation protein AA (anti-sigma F factor antagonist)	K06378	KOFam_prokaryote_KEGG	1.5e-41	139.1		spoIIAA	N/A	N/A	3	115	112	428
+P35157	Spore maturation protein A	K06373	KOFam_prokaryote_KEGG	1.2e-91	302.5		spmA	N/A	N/A	1	192	191	428
+P35158	Spore maturation protein B	K06374	KOFam_prokaryote_KEGG	8.1e-81	266.7		spmB	N/A	N/A	1	175	174	428
+P37541	Hypothetical							N/A	N/A				
+P37549	Small acid-soluble spore protein F (minor alpha/beta-type SASP)	K06423	KOFam_prokaryote_KEGG	1.9e-34	115.4		sspF	N/A	N/A	1	60	59	428
+P37875	Stage V sporulation protein R	K06415	KOFam_prokaryote_KEGG	1.4e-184	610.9		spoVR	N/A	N/A	6	466	460	428
+P39066	Acetoin utilization protein AcuB	K04767	KOFam_prokaryote_KEGG	7.8e-72	238.5		acuB	N/A	N/A	1	205	204	428
+P39067	Acetoin utilization protein AcuC	K04768	KOFam_prokaryote_KEGG	8e-172	569.8		acuC	N/A	N/A	3	385	382	428
+P39072	Germination protein M	K06298	KOFam_prokaryote_KEGG	5.8e-93	308.8		gerM	N/A	N/A	7	366	359	428
+P39801	Hypothetical							N/A	N/A				
+P40419	Glucose uptake protein	K05340	KOFam_prokaryote_KEGG	3.4e-106	352.2		glcU	N/A	N/A	1	285	284	428
+P40420	Glucose uptake protein	K05340	KOFam_prokaryote_KEGG	1.9e-109	362.9		glcU	N/A	N/A	1	286	285	428
+P40866	Stage V sporulation protein AA	K06403	KOFam_prokaryote_KEGG	1.5e-83	276.1		spoVAA	N/A	N/A	2	203	201	428
+P40869	Stage V sporulation protein AD	K06406	KOFam_prokaryote_KEGG	7.7e-158	521.1		spoVAD	N/A	N/A	2	334	332	428
+P41028	Similar to stage IV sporulation protein	K06438	KOFam_prokaryote_KEGG	2.7e-134	445.1		yqfD	N/A	N/A	1	391	390	428
+P42062	ABC.PE.P; peptide/nickel transport system permease protein	K02033	KOFam_prokaryote_FOAM	3.4e-129	428.3			N/A	N/A	1	315	314	428
+P42063	ABC.PE.P1; peptide/nickel transport system permease protein	K02034	KOFam_prokaryote_FOAM	8.3e-125	414.5			N/A	N/A	18	300	282	428
+P45693	Stage V sporulation protein S	K06416	KOFam_prokaryote_KEGG	1.1e-52	174.3		spoVS	N/A	N/A	1	86	85	428
+P45707	Hypothetical							N/A	N/A				
+P45857	Acyl-CoA dehydrogenase	K18244	KOFam_prokaryote_KEGG	6.5e-189	624.8	1.3.99.-	mmgC	N/A	N/A	3	377	374	428
+P46914	Spore coat-associated protein S	K06337	KOFam_prokaryote_KEGG	2.3e-172	569.4		cotS	N/A	N/A	9	348	339	428
+P46915	Spore coat protein SA	K06338	KOFam_prokaryote_KEGG	6.3e-149	493.1		cotSA	N/A	N/A	1	375	374	428
+P49784	Stage III sporulation protein AG	K06396	KOFam_prokaryote_KEGG	5.8e-72	238.8		spoIIIAG	N/A	N/A	8	228	220	428
+P50734	Adapter protein MecA 1/2	K16511	KOFam_prokaryote_KEGG	2.3e-65	217.4		mecA1_2	N/A	N/A	1	193	192	428
+P52930	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	6.6e-64	212.3		spo0A	N/A	N/A	1	150	149	428
+P52937	Two-component system, response regulator, stage 0 sporulation protein A	K07699	KOFam_prokaryote_KEGG	2.6e-65	216.9		spo0A	N/A	N/A	1	161	160	428
+P52968	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	1.6e-33	111.4		sspC	N/A	N/A	2	66	64	428
+P52969	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	1e-33	112.1		sspC	N/A	N/A	4	64	60	428
+P52971	Small acid-soluble spore protein F (minor alpha/beta-type SASP)	K06423	KOFam_prokaryote_KEGG	6.3e-29	97.4		sspF	N/A	N/A	1	55	54	428
+P56957	Hypothetical							N/A	N/A				
+P57091	Hypothetical							N/A	N/A				
+P57092	Hypothetical							N/A	N/A				
+P59104	cwlJ, sleB; N-acetylmuramoyl-L-alanine amidase	K01449	KOFam_prokaryote_FOAM	2.6e-28	95.9	3.5.1.28		N/A	N/A	7	139	132	428
+P59105	cwlJ, sleB; N-acetylmuramoyl-L-alanine amidase	K01449	KOFam_prokaryote_FOAM	1.4e-87	290.4	3.5.1.28		N/A	N/A	9	276	267	428
+P62164	Spore germination protein PA	K06299	KOFam_prokaryote_KEGG	1.5e-33	111.3		gerPA	N/A	N/A	1	71	70	428
+P62165	Spore germination protein PA	K06299	KOFam_prokaryote_KEGG	1.5e-33	111.3		gerPA	N/A	N/A	1	71	70	428
+P62177	RNA polymerase sporulation-specific sigma factor	K03091	KOFam_prokaryote_KEGG	1.3e-80	268.0		sigH	N/A	N/A	15	238	223	428
+P62178	RNA polymerase sporulation-specific sigma factor	K03091	KOFam_prokaryote_KEGG	1.3e-80	268.0		sigH	N/A	N/A	15	238	223	428
+P62180	RNA polymerase sporulation-specific sigma factor	K03091	KOFam_prokaryote_KEGG	2e-83	277.2		sigH	N/A	N/A	10	234	224	428
+P62182	RNA polymerase sporulation-specific sigma factor	K03091	KOFam_prokaryote_KEGG	2e-83	277.2		sigH	N/A	N/A	10	234	224	428
+P62183	Spore germination protein PF	K06304	KOFam_prokaryote_KEGG	7.7e-35	115.6		gerPF	N/A	N/A	1	70	69	428
+P62185	Spore germination protein PF	K06304	KOFam_prokaryote_KEGG	7.7e-35	115.6		gerPF	N/A	N/A	1	70	69	428
+P62186	Spore germination protein PF	K06304	KOFam_prokaryote_KEGG	7.7e-35	115.6		gerPF	N/A	N/A	1	70	69	428
+P70877	Stage II sporulation protein AA (anti-sigma F factor antagonist)	K06378	KOFam_prokaryote_KEGG	3.8e-43	144.3		spoIIAA	N/A	N/A	4	115	111	428
+P71032	Small acid-soluble spore protein P (minor)	K06433	KOFam_prokaryote_KEGG	3.3e-26	88.2		sspP, cotL	N/A	N/A	1	48	47	428
+P71088	Sporulation-control protein	K06377	KOFam_prokaryote_KEGG	9.6e-87	287.7		spo0M	N/A	N/A	3	257	254	428
+P84613	Hypothetical							N/A	N/A				
+P94446	Spore cortex protein	K06345	KOFam_prokaryote_KEGG	2.4e-53	177.9		coxA	N/A	N/A	1	197	196	428
+P94497	Hypothetical							N/A	N/A				
+P94537	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	1.8e-34	114.5		sspI	N/A	N/A	1	68	67	428
+P94594	Hypothetical							N/A	N/A				
+P96619	Hypothetical							N/A	N/A				
+P96698	Hypothetical							N/A	N/A				
+Q00213	Small acid-soluble spore protein C (minor alpha/beta-type SASP)	K06420	KOFam_prokaryote_KEGG	9.1e-37	121.7		sspC	N/A	N/A	4	65	61	428
+Q00758	Stage V sporulation protein B	K06409	KOFam_prokaryote_KEGG	2.1e-181	600.7		spoVB	N/A	N/A	1	517	516	428
+Q06823	HSP20 family protein	K13993	KOFam_prokaryote_KEGG	7.6e-45	150.5		HSP20	N/A	N/A	8	160	152	428
+Q08311	Spore coat protein Y	K06343	KOFam_prokaryote_KEGG	5.5e-81	266.8		cotY	N/A	N/A	1	158	157	428
+Q08312	Spore coat protein Z	K06344	KOFam_prokaryote_KEGG	1.3e-61	203.9		cotZ	N/A	N/A	3	145	142	428
+Q186G8	Hypothetical							N/A	N/A				
+Q18C29	Hypothetical							N/A	N/A				
+Q2J7H0	Hypothetical							N/A	N/A				
+Q45060	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	1.7e-36	120.9		tlp	N/A	N/A	9	81	72	428
+Q45710	Hypothetical							N/A	N/A				
+Q45723	Hypothetical							N/A	N/A				
+Q45729	Hypothetical							N/A	N/A				
+Q45758	Hypothetical							N/A	N/A				
+Q45790	Hypothetical							N/A	N/A				
+Q45832	Stage II sporulation protein GA (sporulation sigma-E factor processing peptidase)	K06383	KOFam_prokaryote_KEGG	2.3e-67	223.8	3.4.23.-	spoIIGA	N/A	N/A	1	262	261	428
+Q5KY22	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	1e-25	86.8		sspH	N/A	N/A	1	59	58	428
+Q5KZP1	Small acid-soluble spore protein N (minor)	K06431	KOFam_prokaryote_KEGG	1.1e-21	73.4		sspN	N/A	N/A	1	47	46	428
+Q5KZT7	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	6.3e-19	64.8		sspH	N/A	N/A	1	59	58	428
+Q5L0A5	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	1.6e-30	101.9		sspO, cotK	N/A	N/A	1	49	48	428
+Q5L0A7	Small acid-soluble spore protein P (minor)	K06433	KOFam_prokaryote_KEGG	5e-27	90.8		sspP, cotL	N/A	N/A	1	48	47	428
+Q5L293	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	4.7e-102	335.4		hpr	N/A	N/A	4	184	180	428
+Q5L2U0	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	5.1e-35	116.0		sspK	N/A	N/A	1	52	51	428
+Q5WAC9	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	3.5e-45	150.0		spoVG	N/A	N/A	1	89	88	428
+Q5WD36	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	9.4e-24	80.0		tlp	N/A	N/A	2	75	73	428
+Q5WGB8	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	4.6e-47	156.9		racA	N/A	N/A	1	171	170	428
+Q5WHU1	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	4.6e-86	283.3		hpr	N/A	N/A	8	182	174	428
+Q5WIG0	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	1.4e-19	66.6		sspK	N/A	N/A	1	49	48	428
+Q635W3	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	6.4e-94	311.5	2.3.2.13	tgl	N/A	N/A	17	245	228	428
+Q63BQ9	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	7.8e-57	188.7		racA	N/A	N/A	1	179	178	428
+Q63EV6	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	4.3e-95	312.8		hpr	N/A	N/A	5	184	179	428
+Q63G33	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	1.2e-23	80.0		sspH	N/A	N/A	1	59	58	428
+Q63HI5	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	2.6e-45	150.4		spoVG	N/A	N/A	1	88	87	428
+Q65FN2	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	4.2e-88	292.3	2.3.2.13	tgl	N/A	N/A	1	243	242	428
+Q65GP2	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	3e-26	88.4		sspH	N/A	N/A	1	59	58	428
+Q65J23	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	7.5e-38	125.2		tlp	N/A	N/A	1	76	75	428
+Q65J24	Small acid-soluble spore protein N (minor)	K06431	KOFam_prokaryote_KEGG	6.6e-19	64.5		sspN	N/A	N/A	1	47	46	428
+Q65J28	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	6.9e-21	71.0		sspO, cotK	N/A	N/A	1	48	47	428
+Q65J29	Small acid-soluble spore protein P (minor)	K06433	KOFam_prokaryote_KEGG	8.3e-27	90.1		sspP, cotL	N/A	N/A	1	48	47	428
+Q65LS8	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	8.6e-98	321.5		hpr	N/A	N/A	5	185	180	428
+Q65MA1	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	8.3e-30	99.3		sspK	N/A	N/A	1	49	48	428
+Q65NA4	Hypothetical							N/A	N/A				
+Q65PH2	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	3.5e-45	149.9		spoVG	N/A	N/A	1	85	84	428
+Q6HEJ9	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	1.1e-93	310.8	2.3.2.13	tgl	N/A	N/A	17	245	228	428
+Q6HJ78	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	7.8e-57	188.7		racA	N/A	N/A	1	179	178	428
+Q6HMB8	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	4.3e-95	312.8		hpr	N/A	N/A	5	184	179	428
+Q6HNK1	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	1.6e-23	79.7		sspH	N/A	N/A	1	59	58	428
+Q6HPW9	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	2.6e-45	150.4		spoVG	N/A	N/A	1	88	87	428
+Q733L9	Small acid-soluble spore protein P (minor)	K06433	KOFam_prokaryote_KEGG	2.8e-19	66.1		sspP, cotL	N/A	N/A	5	44	39	428
+Q733M2	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	1.7e-26	89.0		sspO, cotK	N/A	N/A	1	49	48	428
+Q733M9	Hypothetical							N/A	N/A				
+Q738S2	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	1.6e-55	184.4		racA	N/A	N/A	1	179	178	428
+Q73CB7	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	4.3e-95	312.8		hpr	N/A	N/A	5	184	179	428
+Q73DN1	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	1.6e-23	79.7		sspH	N/A	N/A	1	59	58	428
+Q73DY6	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	4.3e-25	84.3		sspK	N/A	N/A	1	52	51	428
+Q73FG0	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	2.6e-45	150.4		spoVG	N/A	N/A	1	88	87	428
+Q7WY58	Small acid-soluble spore protein J (minor)	K06427	KOFam_prokaryote_KEGG	7e-33	109.3		sspJ	N/A	N/A	1	46	45	428
+Q7WY59	Small acid-soluble spore protein G (minor)	K06424	KOFam_prokaryote_KEGG	7.8e-34	112.4		sspG	N/A	N/A	1	48	47	428
+Q7WY63	Hypothetical							N/A	N/A				
+Q7WY65	Hypothetical							N/A	N/A				
+Q7WY66	Hypothetical							N/A	N/A				
+Q7WY69	Hypothetical							N/A	N/A				
+Q7WY75	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	5.6e-30	99.9		sspK	N/A	N/A	2	50	48	428
+Q813W6	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	1.3e-95	314.5		hpr	N/A	N/A	5	184	179	428
+Q819L3	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	2.4e-94	312.9	2.3.2.13	tgl	N/A	N/A	17	251	234	428
+Q81AF2	Small acid-soluble spore protein P (minor)	K06433	KOFam_prokaryote_KEGG	5.1e-19	65.2		sspP, cotL	N/A	N/A	7	44	37	428
+Q81AF5	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	1.4e-26	89.3		sspO, cotK	N/A	N/A	1	49	48	428
+Q81AG1	Hypothetical							N/A	N/A				
+Q81DD0	Hypothetical							N/A	N/A				
+Q81DW0	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	2.7e-55	183.7		racA	N/A	N/A	1	179	178	428
+Q81FB5	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	7.3e-23	77.5		sspH	N/A	N/A	1	58	57	428
+Q81FS9	Adapter protein MecA 1/2	K16511	KOFam_prokaryote_KEGG	8.7e-65	215.5		mecA1_2	N/A	N/A	1	200	199	428
+Q81GK5	Adapter protein MecA 1/2	K16511	KOFam_prokaryote_KEGG	3.1e-64	213.7		mecA1_2	N/A	N/A	1	226	225	428
+Q81I11	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	2.5e-23	79.0		sspH	N/A	N/A	1	59	58	428
+Q81I94	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	4.3e-25	84.3		sspK	N/A	N/A	1	52	51	428
+Q81J99	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	2.6e-45	150.4		spoVG	N/A	N/A	1	88	87	428
+Q81JG1	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	4.3e-95	312.8		hpr	N/A	N/A	5	184	179	428
+Q81MS1	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	1.1e-93	310.8	2.3.2.13	tgl	N/A	N/A	17	245	228	428
+Q81QD4	Hypothetical							N/A	N/A				
+Q81QX8	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	7.8e-57	188.7		racA	N/A	N/A	1	179	178	428
+Q81SD1	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	1.2e-22	76.9		sspH	N/A	N/A	1	58	57	428
+Q81SY4	Adapter protein MecA 1/2	K16511	KOFam_prokaryote_KEGG	3.3e-65	216.9		mecA1_2	N/A	N/A	1	200	199	428
+Q81TR3	Adapter protein MecA 1/2	K16511	KOFam_prokaryote_KEGG	4.2e-64	213.3		mecA1_2	N/A	N/A	1	226	225	428
+Q81V87	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	1.2e-23	80.0		sspH	N/A	N/A	1	59	58	428
+Q81VZ2	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	2.6e-45	150.4		spoVG	N/A	N/A	1	88	87	428
+Q81Y79	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	1.7e-26	89.0		sspO, cotK	N/A	N/A	1	49	48	428
+Q81Y87	Hypothetical							N/A	N/A				
+Q81YW1	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	4.3e-25	84.3		sspK	N/A	N/A	1	52	51	428
+Q8CUT7	Hypothetical							N/A	N/A				
+Q8ETS4	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	5.2e-27	90.5		tlp	N/A	N/A	1	73	72	428
+Q9K5W7	Protein-glutamine gamma-glutamyltransferase	K00686	KOFam_prokaryote_KEGG	1.9e-94	313.0	2.3.2.13	tgl	N/A	N/A	4	277	273	428
+Q9K6A3	cwlJ, sleB; N-acetylmuramoyl-L-alanine amidase	K01449	KOFam_prokaryote_FOAM	2.4e-27	92.7	3.5.1.28		N/A	N/A	7	140	133	428
+Q9K8Z3	Adapter protein MecA 1/2	K16511	KOFam_prokaryote_KEGG	8.7e-58	192.6		mecA1_2	N/A	N/A	1	211	210	428
+Q9KAI6	Small acid-soluble spore protein P (minor)	K06433	KOFam_prokaryote_KEGG	1.4e-21	73.5		sspP, cotL	N/A	N/A	1	45	44	428
+Q9KAI7	Small acid-soluble spore protein O (minor)	K06432	KOFam_prokaryote_KEGG	1.9e-20	69.5		sspO, cotK	N/A	N/A	1	53	52	428
+Q9KAJ2	Small acid-soluble spore protein N (minor)	K06431	KOFam_prokaryote_KEGG	2.6e-22	75.4		sspN	N/A	N/A	1	46	45	428
+Q9KAK0	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	5.9e-21	71.0		tlp	N/A	N/A	2	72	70	428
+Q9KB75	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	7.2e-25	84.0		sspH	N/A	N/A	2	60	58	428
+Q9KC68	Chromosome-anchoring protein RacA	K11686	KOFam_prokaryote_KEGG	2.6e-50	167.5		racA	N/A	N/A	4	174	170	428
+Q9KCE0	cwlJ, sleB; N-acetylmuramoyl-L-alanine amidase	K01449	KOFam_prokaryote_FOAM	1.5e-86	287.0	3.5.1.28		N/A	N/A	12	330	318	428
+Q9KCF1	Adapter protein MecA 1/2	K16511	KOFam_prokaryote_KEGG	4.1e-58	193.7		mecA1_2	N/A	N/A	1	198	197	428
+Q9KDL8	Cytochrome c-type biogenesis protein	K06196	KOFam_prokaryote_KEGG	3.5e-72	240.0		ccdA	N/A	N/A	6	230	224	428
+Q9KDM7	MarR family transcriptional regulator, protease production regulatory protein HPr	K09682	KOFam_prokaryote_KEGG	1.6e-89	294.5		hpr	N/A	N/A	3	182	179	428
+Q9KEC6	Small acid-soluble spore protein K (minor)	K06428	KOFam_prokaryote_KEGG	4.3e-22	74.6		sspK	N/A	N/A	1	46	45	428
+Q9KGJ7	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	4e-46	153.1		spoVG	N/A	N/A	1	91	90	428
+A0RH02	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	1.5e-27	92.2		tlp	N/A	N/A	2	64	62	428
+A3DEN2	Hypothetical							N/A	N/A				
+A5HZY2	Hypothetical							N/A	N/A				
+A5I174	Hypothetical							N/A	N/A				
+A6M0F0	Hypothetical							N/A	N/A				
+A7FS46	Hypothetical							N/A	N/A				
+A7FTB7	Hypothetical							N/A	N/A				
+A7GBI7	Hypothetical							N/A	N/A				
+A7GCS6	Hypothetical							N/A	N/A				
+A7GTL2	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	4.9e-34	113.2		sspI	N/A	N/A	1	69	68	428
+A7Z7F5	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	6.7e-34	112.8		sspI	N/A	N/A	1	68	67	428
+A8FDR4	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	3.9e-30	100.5		tlp	N/A	N/A	6	78	72	428
+A9VJM6	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	2e-34	114.4		sspI	N/A	N/A	1	69	68	428
+B7HAY0	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	3.3e-27	91.1		tlp	N/A	N/A	2	64	62	428
+B7HRK4	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	1.4e-34	114.9		sspI	N/A	N/A	1	69	68	428
+B7I056	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	1.5e-27	92.2		tlp	N/A	N/A	2	64	62	428
+B7IJW2	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	6.6e-35	116.0		sspI	N/A	N/A	1	69	68	428
+B7JI37	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	1.5e-27	92.2		tlp	N/A	N/A	2	64	62	428
+B7JR69	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	1.4e-34	114.9		sspI	N/A	N/A	1	69	68	428
+B9IUC0	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	1.5e-27	92.2		tlp	N/A	N/A	2	64	62	428
+B9J065	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	1.4e-34	114.9		sspI	N/A	N/A	1	69	68	428
+C0H3X8	Similar to spore coat protein	K06439	KOFam_prokaryote_KEGG	3.7e-21	71.5		yraD	N/A	N/A	36	89	53	428
+C0H450	Stage V sporulation protein AE	K06407	KOFam_prokaryote_KEGG	3.3e-37	123.8		spoVAE	N/A	N/A	1	116	115	428
+C1EN48	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	1.5e-27	92.2		tlp	N/A	N/A	2	64	62	428
+C1EU02	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	1.4e-34	114.9		sspI	N/A	N/A	1	69	68	428
+C3L8U0	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	1.4e-34	114.9		sspI	N/A	N/A	1	69	68	428
+C3L9C5	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	1.5e-27	92.2		tlp	N/A	N/A	2	64	62	428
+C3P449	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	1.5e-27	92.2		tlp	N/A	N/A	2	64	62	428
+C3PAF1	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	1.4e-34	114.9		sspI	N/A	N/A	1	69	68	428
+C5D2I1	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	3.2e-38	126.4		tlp	N/A	N/A	1	76	75	428
+C5D630	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	3.1e-33	110.6		sspI	N/A	N/A	1	69	68	428
+O06010	Similar to spore coat protein	K06439	KOFam_prokaryote_KEGG	2e-43	143.2		yraD	N/A	N/A	1	98	97	428
+O06723	Hypothetical							N/A	N/A				
+O07919	Similar to spore coat protein	K06440	KOFam_prokaryote_KEGG	6.4e-37	121.9		yraG	N/A	N/A	1	71	70	428
+O07949	Similar to spore coat protein	K06439	KOFam_prokaryote_KEGG	2.4e-31	104.4		yraD	N/A	N/A	10	99	89	428
+O31686	Stage V sporulation protein B	K06409	KOFam_prokaryote_KEGG	4.8e-103	341.8		spoVB	N/A	N/A	2	433	431	428
+P06630	Hypothetical							N/A	N/A				
+P07789	Spore coat protein B	K06325	KOFam_prokaryote_KEGG	4.1e-99	322.6		cotB	N/A	N/A	2	379	377	428
+P07790	Spore coat protein C	K06326	KOFam_prokaryote_KEGG	9.4e-21	71.0		cotC	N/A	N/A	1	66	65	428
+P07791	Spore coat protein D	K06327	KOFam_prokaryote_KEGG	7.1e-28	94.8		cotD	N/A	N/A	2	73	71	428
+P0A3T6	Spore germination protein PB	K06300	KOFam_prokaryote_KEGG	3.9e-26	87.8		gerPB	N/A	N/A	1	58	57	428
+P0A3T8	Spore germination protein PD	K06302	KOFam_prokaryote_KEGG	1.8e-27	91.3		gerPD	N/A	N/A	1	58	57	428
+P27642	Hypothetical							N/A	N/A				
+P37874	Hypothetical							N/A	N/A				
+P37968	Stage II sporulation protein P	K06385	KOFam_prokaryote_KEGG	9.9e-112	371.0		spoIIP	N/A	N/A	15	399	384	428
+P39151	Stage II sporulation protein R	K06387	KOFam_prokaryote_KEGG	1.7e-89	296.2		spoIIR	N/A	N/A	1	223	222	428
+P40867	Stage V sporulation protein AB	K06404	KOFam_prokaryote_KEGG	2e-52	174.0		spoVAB	N/A	N/A	1	138	137	428
+P40868	Stage V sporulation protein AC	K06405	KOFam_prokaryote_KEGG	4.2e-69	227.9		spoVAC	N/A	N/A	4	147	143	428
+P40870	Stage V sporulation protein AE	K06407	KOFam_prokaryote_KEGG	2e-43	143.8		spoVAE	N/A	N/A	30	189	159	428
+P49780	Stage III sporulation protein AC	K06392	KOFam_prokaryote_KEGG	1.8e-30	101.6		spoIIIAC	N/A	N/A	1	67	66	428
+P49781	Stage III sporulation protein AD	K06393	KOFam_prokaryote_KEGG	1.2e-54	180.4		spoIIIAD	N/A	N/A	3	130	127	428
+P49783	Stage III sporulation protein AF	K06395	KOFam_prokaryote_KEGG	1.4e-56	188.6		spoIIIAF	N/A	N/A	1	203	202	428
+P54379	Hypothetical							N/A	N/A				
+P54469	Similar to stage IV sporulation protein	K06438	KOFam_prokaryote_KEGG	7.4e-135	447.0		yqfD	N/A	N/A	1	395	394	428
+P54601	Hypothetical							N/A	N/A				
+P59106	Spore germination protein	K06313	KOFam_prokaryote_KEGG	1.8e-157	521.5		ypeB	N/A	N/A	3	442	439	428
+P94496	Hypothetical							N/A	N/A				
+Q01367	Stage III sporulation protein AA	K06390	KOFam_prokaryote_KEGG	3.8e-128	423.7		spoIIIAA	N/A	N/A	1	300	299	428
+Q01368	Stage III sporulation protein AB	K06391	KOFam_prokaryote_KEGG	2.2e-67	223.0		spoIIIAB	N/A	N/A	1	171	170	428
+Q04811	Hypothetical							N/A	N/A				
+Q08309	Spore coat protein V	K06340	KOFam_prokaryote_KEGG	9.7e-66	216.2		cotV	N/A	N/A	1	128	127	428
+Q08310	Spore coat protein W	K06341	KOFam_prokaryote_KEGG	8.3e-28	93.4		cotW	N/A	N/A	1	105	104	428
+Q08313	Spore coat protein X	K06342	KOFam_prokaryote_KEGG	7.2e-50	165.6		cotX	N/A	N/A	5	167	162	428
+Q5KWD9	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	4.5e-33	110.1		sspI	N/A	N/A	1	69	68	428
+Q5KZP0	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	1.4e-37	124.4		tlp	N/A	N/A	3	73	70	428
+Q5WEJ3	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	3.9e-30	100.7		sspI	N/A	N/A	1	68	67	428
+Q633N2	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	1.4e-34	114.9		sspI	N/A	N/A	1	69	68	428
+Q637L7	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	1.5e-27	92.2		tlp	N/A	N/A	2	64	62	428
+Q65GD0	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	1.1e-34	115.3		sspI	N/A	N/A	1	69	68	428
+Q6HCW5	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	1.4e-34	114.9		sspI	N/A	N/A	1	69	68	428
+Q6HFI9	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	1.5e-27	92.2		tlp	N/A	N/A	2	64	62	428
+Q72ZH9	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	1.4e-34	114.9		sspI	N/A	N/A	1	69	68	428
+Q733N0	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	1.5e-27	92.2		tlp	N/A	N/A	2	64	62	428
+Q73AH3	Small acid-soluble spore protein H (minor)	K06425	KOFam_prokaryote_KEGG	1.2e-22	76.9		sspH	N/A	N/A	1	58	57	428
+Q817I4	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	6.6e-35	116.0		sspI	N/A	N/A	1	69	68	428
+Q81AG2	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	3.3e-27	91.1		tlp	N/A	N/A	2	64	62	428
+Q81L28	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	1.4e-34	114.9		sspI	N/A	N/A	1	69	68	428
+Q81Y88	Small acid-soluble spore protein (thioredoxin-like protein)	K06434	KOFam_prokaryote_KEGG	1.5e-27	92.2		tlp	N/A	N/A	2	64	62	428
+Q8EPH2	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	6.8e-33	109.4		sspI	N/A	N/A	1	69	68	428
+Q8RB27	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	1.7e-23	79.4		sspI	N/A	N/A	1	65	64	428
+Q9K893	Small acid-soluble spore protein I (minor)	K06426	KOFam_prokaryote_KEGG	3e-32	107.4		sspI	N/A	N/A	1	68	67	428
+Q9RC82	Spore germination protein	K06313	KOFam_prokaryote_KEGG	3.7e-166	550.1		ypeB	N/A	N/A	1	444	443	428
+P37526	Hypothetical							N/A	N/A				
+P37531	Spore germination protein	K06306	KOFam_prokaryote_KEGG	3.2e-149	494.6		yaaH	N/A	N/A	1	429	428	428
+P37471	Cell division protein DivIC	K13052	KOFam_prokaryote_KEGG	3.9e-33	111.7		divIC, divA	N/A	N/A	7	124	117	428
+P37561	Hypothetical							N/A	N/A				
+P37562	K08884; serine/threonine protein kinase, bacterial	K08884	KOFam_prokaryote_FOAM	2.7e-25	85.5	2.7.11.1		N/A	N/A	13	300	287	428
+P37569	Protein arginine kinase activator	K19411	KOFam_prokaryote_KEGG	9.8e-65	214.9		mcsA	N/A	N/A	1	184	183	428
+P37570	Protein arginine kinase	K19405	KOFam_prokaryote_KEGG	2.7e-154	509.9	2.7.14.1	mcsB	N/A	N/A	1	352	351	428
+P37571	ATP-dependent Clp protease ATP-binding subunit ClpC	K03696	KOFam_prokaryote_KEGG	0.0	1268.1		clpC	N/A	N/A	2	805	803	428
+P37573	Diadenylate cyclase	K07067	KOFam_prokaryote_KEGG	3.7e-148	490.2	2.7.7.85	disA	N/A	N/A	11	359	348	428
+P50862	Hypothetical							N/A	N/A				
+P50864	amiABC; N-acetylmuramoyl-L-alanine amidase	K01448	KOFam_prokaryote_FOAM	3e-56	187.8	3.5.1.28		N/A	N/A	30	232	202	428
+P40407	Hypothetical							N/A	N/A				
+P54426	Hypothetical							N/A	N/A				
+O31442	Hypothetical							N/A	N/A				
+O31451	Hypothetical							N/A	N/A				
+P94381	L-lysine exporter family protein LysE/ArgO	K06895	KOFam_prokaryote_KEGG	6.9e-30	101.0		lysE, argO	N/A	N/A	1	205	204	428
+P94382	Uncharacterized protein	K09190	KOFam_prokaryote_KEGG	1.9e-92	306.7			N/A	N/A	14	244	230	428
+P94383	Aromatic amino acid permease	K16237	KOFam_prokaryote_KEGG	1.4e-142	471.9		aroP	N/A	N/A	3	440	437	428
+O31473	Uncharacterized protein	K09967	KOFam_prokaryote_KEGG	7.9e-76	252.3			N/A	N/A	3	197	194	428
+P94389	Uncharacterized protein	K07074	KOFam_prokaryote_KEGG	5.2e-84	278.8			N/A	N/A	1	257	256	428
+P42401	Hypothetical							N/A	N/A				
+P42402	Hypothetical							N/A	N/A				
+P94409	Hypothetical							N/A	N/A				
+P42968	IclR family transcriptional regulator, KDG regulon repressor	K19333	KOFam_prokaryote_KEGG	1.9e-84	280.5		kdgR	N/A	N/A	2	249	247	428
+P96617	Rhomboid protease GluP	K19225	KOFam_prokaryote_KEGG	1.5e-51	172.5	3.4.21.105	gluP	N/A	N/A	15	195	180	428
+P96652	Lrp/AsnC family transcriptional regulator, leucine-responsive regulatory protein	K03719	KOFam_prokaryote_KEGG	6.2e-31	104.6		lrp	N/A	N/A	2	134	132	428
+P96653	Lrp/AsnC family transcriptional regulator, leucine-responsive regulatory protein	K03719	KOFam_prokaryote_KEGG	1.4e-35	119.8		lrp	N/A	N/A	1	139	138	428
+O31496	Hypothetical							N/A	N/A				
+C0H3W2	Hypothetical							N/A	N/A				
+P96696	Hypothetical							N/A	N/A				
+P96697	Hypothetical							N/A	N/A				
+P96699	Hypothetical							N/A	N/A				
+O05497	Hypothetical							N/A	N/A				
+P19405	Amicoumacin phosphatase	K23984	KOFam_prokaryote_KEGG	4.3e-170	562.9	3.1.3.107	amiO	N/A	N/A	11	454	443	428
+O34592	Non-heme chloroperoxidase	K00433	KOFam_prokaryote_KEGG	3.8e-70	233.8	1.11.1.10	cpo	N/A	N/A	1	266	265	428
+O34803	Hypothetical							N/A	N/A				
+C0H3X3	Hypothetical							N/A	N/A				
+Q45536	Spore coat protein JA	K06332	KOFam_prokaryote_KEGG	2.8e-34	113.8		cotJA	N/A	N/A	5	76	71	428
+Q45537	Spore coat protein JB	K06333	KOFam_prokaryote_KEGG	3.9e-37	123.8		cotJB	N/A	N/A	1	86	85	428
+Q45538	Spore coat protein JC	K06334	KOFam_prokaryote_KEGG	3.3e-105	346.7		cotJC	N/A	N/A	1	189	188	428
+O31513	Hypothetical							N/A	N/A				
+O31514	Hypothetical							N/A	N/A				
+P39130	Galacturan 1,4-alpha-galacturonidase	K22933	KOFam_prokaryote_KEGG	1.5e-210	696.3	3.2.1.67	lplD	N/A	N/A	4	442	438	428
+O31533	Hypothetical							N/A	N/A				
+O08394	cypD_E, CYP102A, CYP505; cytochrome P450 / NADPH-cytochrome P450 reductase	K14338	KOFam_prokaryote_FOAM	0.0	1411.8	1.14.14.1 1.6.2.4		N/A	N/A	3	1059	1056	428
+O06486	rfbF; glucose-1-phosphate cytidylyltransferase	K00978	KOFam_prokaryote_FOAM	2.2e-106	351.8	2.7.7.33		N/A	N/A	1	254	253	428
+O06485	CDP-glucose 4,6-dehydratase	K01709	KOFam_prokaryote_KEGG	6.3e-113	374.1	4.2.1.45	rfbG	N/A	N/A	2	321	319	428
+O06484	Hypothetical							N/A	N/A				
+O06483	fcbD; chondroitin synthase	K13500	KOFam_prokaryote_FOAM	1.1e-30	100.6	2.4.1.175 2.4.1.226		N/A	N/A	3	258	255	428
+O31542	Hypothetical							N/A	N/A				
+O34409	Hydroxyacylglutathione hydrolase	K01069	KOFam_prokaryote_KEGG	9.7e-28	93.9	3.1.2.6	gloB, gloC, HAGH	N/A	N/A	31	242	211	428
+O34345	Hypothetical							N/A	N/A				
+O34840	Ca2+:H+ antiporter	K07300	KOFam_prokaryote_KEGG	1.8e-115	382.7		chaA, CAX	N/A	N/A	7	349	342	428
+O34579	Hypothetical							N/A	N/A				
+O31572	Hypothetical							N/A	N/A				
+O31573	Hypothetical							N/A	N/A				
+O31585	Hypothetical							N/A	N/A				
+P71079	Enoyl-[acyl-carrier protein] reductase III	K10780	KOFam_prokaryote_KEGG	5.5e-113	373.6	1.3.1.104	fabL	N/A	N/A	3	249	246	428
+O31586	Hypothetical							N/A	N/A				
+Q796Y5	Glycolate oxidase	K00104	KOFam_prokaryote_KEGG	1.4e-19	64.1	1.1.3.15	glcD	N/A	N/A	17	229	212	428
+O31589	Hypothetical							N/A	N/A				
+P39134	Serine protein kinase	K07180	KOFam_prokaryote_KEGG	4.2e-278	920.8		prkA	N/A	N/A	2	631	629	428
+P45742	Uncharacterized protein	K09786	KOFam_prokaryote_KEGG	1.9e-162	537.8			N/A	N/A	6	386	380	428
+P54597	Hypothetical							N/A	N/A				
+P54599	Hypothetical							N/A	N/A				
+P54604	23S rRNA pseudouridine1911/1915/1917 synthase	K06180	KOFam_prokaryote_KEGG	2.6e-99	330.0	5.4.99.23	rluD	N/A	N/A	11	297	286	428
+P54606	Acetoin utilization protein AcuB	K04767	KOFam_prokaryote_KEGG	1.2e-36	123.0		acuB	N/A	N/A	3	119	116	428
+O07530	Hypothetical							N/A	N/A				
+O07531	Hypothetical							N/A	N/A				
+O07547	Hypothetical							N/A	N/A				
+O07539	5-amino-6-(5-phospho-D-ribitylamino)uracil phosphatase	K21064	KOFam_prokaryote_KEGG	6.8e-54	179.8	3.1.3.104	ycsE, yitU, ywtE	N/A	N/A	1	277	276	428
+C0H3Y3	Hypothetical							N/A	N/A				
+O07599	Hypothetical							N/A	N/A				
+P38050	pbp2A; penicillin-binding protein 2A	K12555	KOFam_prokaryote_FOAM	2.3e-260	862.6	2.4.1.129 3.4.16.4		N/A	N/A	10	629	619	428
+O07611	Hypothetical							N/A	N/A				
+P40769	STE24 endopeptidase	K06013	KOFam_prokaryote_KEGG	7.3e-87	289.4	3.4.24.84	STE24	N/A	N/A	21	416	395	428
+O07622	puuB, ordL; gamma-glutamylputrescine oxidase	K09471	KOFam_prokaryote_FOAM	3e-56	187.5	1.4.3.-		N/A	N/A	7	391	384	428
+P40397	3-oxoacyl-[acyl-carrier protein] reductase	K00059	KOFam_prokaryote_KEGG	3.4e-77	256.7	1.1.1.100	fabG, OAR1	N/A	N/A	35	283	248	428
+O07571	Hypothetical							N/A	N/A				
+O07572	Hypothetical							N/A	N/A				
+O06727	Hypothetical							N/A	N/A				
+O06728	15-cis-phytoene synthase	K02291	KOFam_prokaryote_KEGG	2.8e-51	171.3	2.5.1.32	crtB	N/A	N/A	4	256	252	428
+O06734	Non-heme chloroperoxidase	K00433	KOFam_prokaryote_KEGG	1.1e-87	291.6	1.11.1.10	cpo	N/A	N/A	4	266	262	428
+O06735	cysC; adenylylsulfate kinase	K00860	KOFam_prokaryote_FOAM	6.5e-101	334.4	2.7.1.25		N/A	N/A	4	198	194	428
+O06736	sat, met3; sulfate adenylyltransferase	K00958	KOFam_prokaryote_FOAM	1.2e-175	582.4	2.7.7.4		N/A	N/A	5	374	369	428
+O06737	cysH; phosphoadenosine phosphosulfate reductase	K00390	KOFam_prokaryote_FOAM	7e-89	294.7	1.8.4.8 1.8.4.10		N/A	N/A	24	235	211	428
+O06738	2-phosphosulfolactate phosphatase	K05979	KOFam_prokaryote_KEGG	2.1e-42	142.1	3.1.3.71	comB	N/A	N/A	4	217	213	428
+O06739	Phosphosulfolactate synthase	K08097	KOFam_prokaryote_KEGG	8.7e-101	333.3	4.4.1.19	comA	N/A	N/A	1	251	250	428
+O06740	Hypothetical							N/A	N/A				
+O06741	D-galactarolactone cycloisomerase	K18983	KOFam_prokaryote_KEGG	3.7e-97	322.2	5.5.1.27	gci	N/A	N/A	1	369	368	428
+Q796Q1	yitG, ymfD, yfmO; MFS transporter, ACDE family, multidrug resistance protein	K08221	KOFam_prokaryote_FOAM	3.3e-127	421.1			N/A	N/A	8	407	399	428
+O06752	Hypothetical							N/A	N/A				
+C0H3Y5	Hypothetical							N/A	N/A				
+O34585	Hypothetical							N/A	N/A				
+O35001	Hypothetical							N/A	N/A				
+O34959	Hypothetical							N/A	N/A				
+O34891	Hypothetical							N/A	N/A				
+O31596	Hypothetical							N/A	N/A				
+O31597	Hypothetical							N/A	N/A				
+O31603	Hypothetical							N/A	N/A				
+O31605	Oligoendopeptidase F	K08602	KOFam_prokaryote_KEGG	1.1e-245	813.9	3.4.24.-	pepF, pepB	N/A	N/A	6	668	662	428
+C0H3Y6	Hypothetical							N/A	N/A				
+C0H3Y7	Hypothetical							N/A	N/A				
+O31649	Hypothetical							N/A	N/A				
+O34554	Hypothetical							N/A	N/A				
+O34736	allD; ureidoglycolate dehydrogenase (NAD+)	K00073	KOFam_prokaryote_FOAM	1.3e-150	498.1	1.1.1.350		N/A	N/A	1	336	335	428
+O35045	rspB; L-gulonate 5-dehydrogenase	K08322	KOFam_prokaryote_FOAM	9.8e-117	386.2	1.1.1.380		N/A	N/A	1	338	337	428
+O34346	uxuA; mannonate dehydratase	K01686	KOFam_prokaryote_FOAM	1.8e-143	475.4	4.2.1.8		N/A	N/A	1	353	352	428
+O34896	Glucose 1-dehydrogenase	K00034	KOFam_prokaryote_KEGG	6.5e-63	208.5	1.1.1.47	gdh	N/A	N/A	6	276	270	428
+O34456	exuT; MFS transporter, ACS family, hexuronate transporter	K08191	KOFam_prokaryote_FOAM	2.2e-114	379.3			N/A	N/A	9	415	406	428
+Q9JMQ1	LacI family transcriptional regulator, purine nucleotide synthesis repressor	K03604	KOFam_prokaryote_KEGG	6.2e-107	354.7		purR	N/A	N/A	1	332	331	428
+O34354	uxaB; tagaturonate reductase	K00041	KOFam_prokaryote_FOAM	1.1e-207	687.8	1.1.1.58		N/A	N/A	1	473	472	428
+O34673	uxaA; altronate hydrolase	K01685	KOFam_prokaryote_FOAM	7.3e-203	671.3	4.2.1.7		N/A	N/A	1	496	495	428
+O34578	Uncharacterized protein	K07090	KOFam_prokaryote_KEGG	2e-41	139.2			N/A	N/A	5	254	249	428
+O34423	Mn-containing catalase	K07217	KOFam_prokaryote_KEGG	1.7e-112	372.6			N/A	N/A	1	254	253	428
+O31653	Hypothetical							N/A	N/A				
+P49853	Hypothetical							N/A	N/A				
+O34405	Hypothetical							N/A	N/A				
+C0SPB9	ugtP; processive 1,2-diacylglycerol beta-glucosyltransferase	K03429	KOFam_prokaryote_FOAM	1.5e-85	284.2	2.4.1.315		N/A	N/A	1	360	359	428
+O34495	Hypothetical							N/A	N/A				
+O35040	Uncharacterized protein	K07098	KOFam_prokaryote_KEGG	5.3e-62	206.6			N/A	N/A	8	268	260	428
+O34830	Hypothetical							N/A	N/A				
+O34755	Polyisoprenyl-phosphate glycosyltransferase	K20534	KOFam_prokaryote_KEGG	1.5e-127	423.0	2.4.-.-	gtrB, csbB	N/A	N/A	1	318	317	428
+O34859	DNA end-binding protein Ku	K10979	KOFam_prokaryote_KEGG	1e-118	393.2		ku	N/A	N/A	10	307	297	428
+O34997	Hypothetical							N/A	N/A				
+C0H402	Hypothetical							N/A	N/A				
+O31659	Hypothetical							N/A	N/A				
+O31674	Hypothetical							N/A	N/A				
+O31682	Spore germination protein	K06306	KOFam_prokaryote_KEGG	5e-51	170.4		yaaH	N/A	N/A	16	220	204	428
+C0H404	Spore germination protein	K06306	KOFam_prokaryote_KEGG	5.2e-18	61.7		yaaH	N/A	N/A	2	79	77	428
+P37955	Transcriptional regulator of the spore photoproduct lyase operon	K06315	KOFam_prokaryote_KEGG	2.5e-35	116.9		splA	N/A	N/A	2	74	72	428
+Q796K9	Hypothetical							N/A	N/A				
+O34783	Hypothetical							N/A	N/A				
+Q45492	Hypothetical							N/A	N/A				
+C0H409	Hypothetical							N/A	N/A				
+O07635	PhoH-like ATPase	K07175	KOFam_prokaryote_KEGG	1e-189	629.1		phoH2	N/A	N/A	1	442	441	428
+O07637	glsA, GLS; glutaminase	K01425	KOFam_prokaryote_FOAM	8.9e-119	394.4	3.5.1.2		N/A	N/A	9	309	300	428
+P12946	Heme a synthase	K02259	KOFam_prokaryote_KEGG	4.6e-41	137.6	1.17.99.9	COX15, ctaA	N/A	N/A	3	298	295	428
+O34682	CBS domain-containing protein	K07182	KOFam_prokaryote_KEGG	2e-26	89.4			N/A	N/A	2	126	124	428
+O34586	Hypothetical							N/A	N/A				
+O34880	Hypothetical							N/A	N/A				
+O34958	Hypothetical							N/A	N/A				
+O34549	Prespore-specific regulator	K06314	KOFam_prokaryote_KEGG	3.7e-66	219.5		rsfA	N/A	N/A	1	187	186	428
+P37585	murG; UDP-N-acetylglucosamine--N-acetylmuramyl-(pentapeptide) pyrophosphoryl-undecaprenol N-acetylglucosamine transferase	K02563	KOFam_prokaryote_FOAM	9.9e-126	416.8	2.4.1.227		N/A	N/A	1	361	360	428
+P18579	murB; UDP-N-acetylmuramate dehydrogenase	K00075	KOFam_prokaryote_FOAM	5.6e-103	342.0	1.3.1.98		N/A	N/A	10	300	290	428
+Q45544	Hypothetical							N/A	N/A				
+P28265	Hypothetical							N/A	N/A				
+Q45478	Hypothetical							N/A	N/A				
+O34431	ATP2C; P-type Ca2+ transporter type 2C	K01537	KOFam_prokaryote_FOAM	0.0	1108.8	7.2.2.10		N/A	N/A	10	880	870	428
+P51835	Fused signal recognition particle receptor	K03110	KOFam_prokaryote_KEGG	9e-150	495.6		ftsY	N/A	N/A	16	325	309	428
+O31737	Hypothetical							N/A	N/A				
+Q04797	asd; aspartate-semialdehyde dehydrogenase	K00133	KOFam_prokaryote_FOAM	1.2e-145	483.1	1.2.1.11		N/A	N/A	6	343	337	428
+Q04795	lysC; aspartate kinase	K00928	KOFam_prokaryote_FOAM	5.6e-118	391.5	2.7.2.4		N/A	N/A	1	403	402	428
+Q04796	dapA; 4-hydroxy-tetrahydrodipicolinate synthase	K01714	KOFam_prokaryote_FOAM	1.2e-116	386.6	4.3.3.7		N/A	N/A	1	283	282	428
+Q99171	Hypothetical							N/A	N/A				
+C0H413	Hypothetical							N/A	N/A				
+O31762	yitG, ymfD, yfmO; MFS transporter, ACDE family, multidrug resistance protein	K08221	KOFam_prokaryote_FOAM	1.2e-123	409.4			N/A	N/A	2	391	389	428
+O31768	Hypothetical							N/A	N/A				
+O31771	Cytoskeleton protein RodZ	K15539	KOFam_prokaryote_KEGG	6.3e-40	134.4		rodZ	N/A	N/A	1	272	271	428
+tr	polA; DNA polymerase I	K02335	KOFam_prokaryote_FOAM	0.0	1048.1	2.7.7.7		N/A	N/A	3	881	878	428
+O31779	Hypothetical							N/A	N/A				
+O31793	Hypothetical							N/A	N/A				
+P94494	Alanine racemase	K01775	KOFam_prokaryote_KEGG	6.1e-132	437.2	5.1.1.1	alr	N/A	N/A	10	383	373	428
+P94495	Hypothetical							N/A	N/A				
+O31802	Hypothetical							N/A	N/A				
+O31805	Hypothetical							N/A	N/A				
+O31815	Hypothetical							N/A	N/A				
+O31816	Hypothetical							N/A	N/A				
+C0H418	Hypothetical							N/A	N/A				
+Q45069	Hypothetical							N/A	N/A				
+O31824	Uncharacterized protein	K07097	KOFam_prokaryote_KEGG	1.6e-109	363.5			N/A	N/A	1	397	396	428
+O31825	Methylmalonyl-CoA decarboxylase subunit alpha	K01604	KOFam_prokaryote_KEGG	3e-240	794.7	7.2.4.3	mmdA	N/A	N/A	7	511	504	428
+O34893	AUH; methylglutaconyl-CoA hydratase	K05607	KOFam_prokaryote_FOAM	1.9e-109	363.1	4.2.1.18		N/A	N/A	10	259	249	428
+O34873	E4.1.3.4, HMGCL, hmgL; hydroxymethylglutaryl-CoA lyase	K01640	KOFam_prokaryote_FOAM	3.2e-133	441.2	4.1.3.4		N/A	N/A	3	292	289	428
+C0H419	Glutaconyl-CoA/methylmalonyl-CoA decarboxylase subunit gamma	K23351	KOFam_prokaryote_KEGG	5.8e-23	78.8		gcdC, mmdC	N/A	N/A	3	71	68	428
+O34544	E6.4.1.4A; 3-methylcrotonyl-CoA carboxylase alpha subunit	K01968	KOFam_prokaryote_FOAM	2e-224	744.4	6.4.1.4		N/A	N/A	1	443	442	428
+O31826	Medium-chain acyl-CoA ligase, mitochondrial	K23617	KOFam_prokaryote_KEGG	4.6e-219	725.8	6.2.1.2	ACSF2	N/A	N/A	3	547	544	428
+O34421	ACADS, bcd; butyryl-CoA dehydrogenase	K00248	KOFam_prokaryote_FOAM	4.3e-167	553.7	1.3.8.1		N/A	N/A	5	380	375	428
+O34356	Hypothetical							N/A	N/A				
+O35015	Hypothetical							N/A	N/A				
+O34506	Hypothetical							N/A	N/A				
+Q7WY68	Hypothetical							N/A	N/A				
+C0SPC0	4-hydroxyphenylacetate 3-monooxygenase	K00483	KOFam_prokaryote_KEGG	4.7e-189	625.8	1.14.14.9	hpaB	N/A	N/A	3	480	477	428
+O34906	Hypothetical							N/A	N/A				
+O34767	Oxalate decarboxylase	K01569	KOFam_prokaryote_KEGG	1.4e-182	603.8	4.1.1.2	oxdD	N/A	N/A	15	389	374	428
+O31831	Hypothetical							N/A	N/A				
+C0H421	Hypothetical							N/A	N/A				
+O31832	Hypothetical							N/A	N/A				
+O34611	Vancomycin resistance protein VanW	K18346	KOFam_prokaryote_KEGG	3e-58	194.5		vanW	N/A	N/A	99	285	186	428
+O34701	LysR family transcriptional regulator, transcriptional activator of the cysJI operon	K21900	KOFam_prokaryote_KEGG	2.5e-56	187.9		cysL	N/A	N/A	2	286	284	428
+O34541	Hypothetical							N/A	N/A				
+O34363	MAO, aofH; monoamine oxidase	K00274	KOFam_prokaryote_FOAM	1.8e-80	268.3	1.4.3.4		N/A	N/A	11	475	464	428
+O34976	Hypothetical							N/A	N/A				
+C0H429	Hypothetical							N/A	N/A				
+O31846	Hypothetical							N/A	N/A				
+O34855	Hypothetical							N/A	N/A				
+Q796C3	Sporulenol synthase	K18115	KOFam_prokaryote_KEGG	4e-261	864.2	4.2.1.137	sqhC	N/A	N/A	3	626	623	428
+O35023	SOD2; superoxide dismutase, Fe-Mn family	K04564	KOFam_prokaryote_FOAM	1.7e-93	310.5	1.15.1.1		N/A	N/A	53	275	222	428
+O31854	Diadenylate cyclase	K18672	KOFam_prokaryote_KEGG	6.4e-55	183.7	2.7.7.85	dacA	N/A	N/A	65	206	141	428
+Q7WY67	Hypothetical							N/A	N/A				
+O31861	Hypothetical							N/A	N/A				
+O34954	ubiE; demethylmenaquinone methyltransferase / 2-methoxy-6-polyprenyl-1,4-benzoquinol methylase	K03183	KOFam_prokaryote_FOAM	1.4e-22	76.8	2.1.1.163 2.1.1.201		N/A	N/A	25	159	134	428
+O34654	Hypothetical							N/A	N/A				
+C0H432	Hypothetical							N/A	N/A				
+O30472	Hypothetical							N/A	N/A				
+O31863	Hypothetical							N/A	N/A				
+C0H433	Hypothetical							N/A	N/A				
+O31864	Hypothetical							N/A	N/A				
+C0H434	Hypothetical							N/A	N/A				
+O34676	kamA; lysine 2,3-aminomutase	K01843	KOFam_prokaryote_FOAM	8.8e-178	588.4	5.4.3.2		N/A	N/A	12	465	453	428
+O34895	Beta-lysine N6-acetyltransferase	K21935	KOFam_prokaryote_KEGG	2.5e-100	332.2	2.3.1.264	ablB	N/A	N/A	5	275	270	428
+O34984	argE; acetylornithine deacetylase	K01438	KOFam_prokaryote_FOAM	1.4e-104	347.9	3.5.1.16		N/A	N/A	15	430	415	428
+O34466	OXCT; 3-oxoacid CoA-transferase	K01027	KOFam_prokaryote_FOAM	8e-96	318.4	2.8.3.5		N/A	N/A	6	212	206	428
+O34317	Acetate CoA/acetoacetate CoA-transferase alpha subunit	K01034	KOFam_prokaryote_KEGG	2.9e-98	324.2	2.8.3.8 2.8.3.9	atoD	N/A	N/A	5	221	216	428
+O34662	spuC; putrescine---pyruvate transaminase	K12256	KOFam_prokaryote_FOAM	1.2e-126	420.3	2.6.1.113		N/A	N/A	16	443	427	428
+C0H435	Hypothetical							N/A	N/A				
+P42093	Spore maturation protein CgeE	K06323	KOFam_prokaryote_KEGG	2.8e-125	413.8		cgeE	N/A	N/A	1	258	257	428
+P42092	Spore maturation protein CgeD	K06322	KOFam_prokaryote_KEGG	5.9e-220	727.0		cgeD	N/A	N/A	1	425	424	428
+P42091	Spore maturation protein CgeC	K06321	KOFam_prokaryote_KEGG	4.7e-57	186.9		cgeC	N/A	N/A	1	101	100	428
+P42089	Spore maturation protein CgeA	K06319	KOFam_prokaryote_KEGG	4.4e-55	181.6		cgeA	N/A	N/A	6	133	127	428
+P42090	Spore maturation protein CgeB	K06320	KOFam_prokaryote_KEGG	1.1e-59	198.8		cgeB	N/A	N/A	1	304	303	428
+O34850	Hypothetical							N/A	N/A				
+O32007	Hypothetical							N/A	N/A				
+P54165	Hypothetical							N/A	N/A				
+P54164	Ribonuclease H / adenosylcobalamin/alpha-ribazole phosphatase	K22316	KOFam_prokaryote_KEGG	1e-18	64.1	3.1.26.4 3.1.3.73	rhnA-cobC	N/A	N/A	71	205	134	428
+C0H443	Hypothetical							N/A	N/A				
+P54158	Methyltransferase	K16168	KOFam_prokaryote_KEGG	9.6e-71	235.3		bpsB, srsB	N/A	N/A	3	165	162	428
+P54157	Alkylresorcinol/alkylpyrone synthase	K16167	KOFam_prokaryote_KEGG	1.5e-137	455.2		bpsA, srsA, pks11, pks10	N/A	N/A	2	363	361	428
+P50841	Hypothetical							N/A	N/A				
+C0H444	Hypothetical							N/A	N/A				
+P50836	Hypothetical							N/A	N/A				
+P50835	Hypothetical							N/A	N/A				
+P50832	Hypothetical							N/A	N/A				
+P39791	Hypothetical							N/A	N/A				
+P54393	Hypothetical							N/A	N/A				
+C0H445	Hypothetical							N/A	N/A				
+P50742	Uncharacterized protein	K05739	KOFam_prokaryote_KEGG	6.7e-138	455.0		seaA	N/A	N/A	1	292	291	428
+P50741	Hypothetical							N/A	N/A				
+C0H446	Hypothetical							N/A	N/A				
+P38492	Hypothetical							N/A	N/A				
+O32012	Hypothetical							N/A	N/A				
+O32013	Hypothetical							N/A	N/A				
+P23630	lysA; diaminopimelate decarboxylase	K01586	KOFam_prokaryote_FOAM	1.6e-161	535.6	4.1.1.20		N/A	N/A	12	430	418	428
+P38422	dacC, dacA, dacD; serine-type D-Ala-D-Ala carboxypeptidase (penicillin-binding protein 5/6)	K07258	KOFam_prokaryote_FOAM	3.1e-119	395.9	3.4.16.4		N/A	N/A	1	380	379	428
+P54540	MCEE, epi; methylmalonyl-CoA/ethylmalonyl-CoA epimerase	K05606	KOFam_prokaryote_FOAM	5.8e-44	147.2	5.1.99.1		N/A	N/A	1	134	133	428
+P54539	L,D-transpeptidase ErfK/SrfK	K16291	KOFam_prokaryote_KEGG	1.8e-40	136.0		erfK	N/A	N/A	28	153	125	428
+P54528	Methylisocitrate lyase	K03417	KOFam_prokaryote_KEGG	6.6e-122	402.8	4.1.3.30	prpB	N/A	N/A	11	295	284	428
+P49779	Hypothetical							N/A	N/A				
+P54515	Hypothetical							N/A	N/A				
+P54514	Hypothetical							N/A	N/A				
+P54513	NTE family protein	K07001	KOFam_prokaryote_KEGG	4.2e-50	167.2			N/A	N/A	6	284	278	428
+P54509	ATP-dependent helicase HepA	K03580	KOFam_prokaryote_KEGG	8.1e-102	172.9	3.6.4.-	hepA	N/A	N/A	254	512	258	428
+P54508	Hypothetical							N/A	N/A				
+O32019	Hypothetical							N/A	N/A				
+O32020	Hypothetical							N/A	N/A				
+P54492	Hypothetical							N/A	N/A				
+P54487	yqgE; MFS transporter, YQGE family, putative transporter	K08222	KOFam_prokaryote_FOAM	3.1e-161	533.4			N/A	N/A	2	412	410	428
+P54483	Hypothetical							N/A	N/A				
+P54482	(E)-4-hydroxy-3-methylbut-2-enyl-diphosphate synthase	K03526	KOFam_prokaryote_KEGG	2.4e-162	537.6	1.17.7.1 1.17.7.3	gcpE, ispG	N/A	N/A	6	362	356	428
+P54481	Hypothetical							N/A	N/A				
+P54477	Hypothetical							N/A	N/A				
+P54474	Hypothetical							N/A	N/A				
+P54468	Hypothetical							N/A	N/A				
+P38425	Hypothetical							N/A	N/A				
+P22322	Spore protease	K06012	KOFam_prokaryote_KEGG	3.8e-144	476.2	3.4.24.78	gpr	N/A	N/A	9	367	358	428
+P39696	Competence protein ComER	K02239	KOFam_prokaryote_KEGG	1.2e-127	421.2		comER	N/A	N/A	1	272	271	428
+P54448	PGD, gnd, gntZ; 6-phosphogluconate dehydrogenase	K00033	KOFam_prokaryote_FOAM	5.1e-100	332.2	1.1.1.44 1.1.1.343		N/A	N/A	2	272	270	428
+P17867	Site-specific DNA recombinase	K06400	KOFam_prokaryote_KEGG	6.9e-100	332.2		spoIVCA	N/A	N/A	2	491	489	428
+P45945	Hypothetical							N/A	N/A				
+P45944	Uncharacterized protein	K09190	KOFam_prokaryote_KEGG	7.1e-93	308.4			N/A	N/A	4	244	240	428
+P45912	Hypothetical							N/A	N/A				
+P45911	Hypothetical							N/A	N/A				
+C0H455	Hypothetical							N/A	N/A				
+P54430	Hypothetical							N/A	N/A				
+O08469	Pimeloyl-[acyl-carrier protein] synthase	K16593	KOFam_prokaryote_KEGG	4.1e-125	414.4	1.14.14.46	bioI, CYP107H	N/A	N/A	10	410	400	428
+O06012	fdhA; glutathione-independent formaldehyde dehydrogenase	K00148	KOFam_prokaryote_FOAM	3e-98	324.2	1.2.1.46		N/A	N/A	1	378	377	428
+O06011	Similar to spore coat protein	K06440	KOFam_prokaryote_KEGG	1.4e-28	95.3		yraG	N/A	N/A	2	64	62	428
+O32030	Hypothetical							N/A	N/A				
+O32031	Hypothetical							N/A	N/A				
+O34472	Putative permease	K03548	KOFam_prokaryote_KEGG	2.2e-61	204.4		perM	N/A	N/A	16	346	330	428
+O34677	ABC.PA.A; polar amino acid transport system ATP-binding protein	K02028	KOFam_prokaryote_FOAM	1.4e-140	466.1	7.4.2.1		N/A	N/A	1	241	240	428
+O34563	peb1A, glnH; aspartate/glutamate/glutamine transport system substrate-binding protein	K10039	KOFam_prokaryote_FOAM	1.1e-114	378.9			N/A	N/A	2	266	264	428
+O34671	peb1B, glnP, glnM; aspartate/glutamate/glutamine transport system permease protein	K10040	KOFam_prokaryote_FOAM	2e-96	319.6			N/A	N/A	2	215	213	428
+O34606	peb1B, glnP, glnM; aspartate/glutamate/glutamine transport system permease protein	K10040	KOFam_prokaryote_FOAM	1.5e-88	293.7			N/A	N/A	10	217	207	428
+C0H461	Hypothetical							N/A	N/A				
+C0H462	Hypothetical							N/A	N/A				
+O34402	Hypothetical							N/A	N/A				
+O32040	Hypothetical							N/A	N/A				
+O32050	Hypothetical							N/A	N/A				
+O32051	Hypothetical							N/A	N/A				
+O05390	yitG, ymfD, yfmO; MFS transporter, ACDE family, multidrug resistance protein	K08221	KOFam_prokaryote_FOAM	2.8e-22	75.0			N/A	N/A	26	406	380	428
+O32060	Alanine or glycine:cation symporter, AGCS family	K03310	KOFam_prokaryote_KEGG	6.5e-174	576.1		TC.AGCS	N/A	N/A	2	479	477	428
+P37964	Hypothetical							N/A	N/A				
+P42425	ATP-dependent Lon protease	K04076	KOFam_prokaryote_KEGG	2.6e-167	478.4	3.4.21.53	lonB	N/A	N/A	126	540	414	428
+P94563	Hypothetical							N/A	N/A				
+P06569	Hypothetical							N/A	N/A				
+P23545	resE; two-component system, OmpR family, sensor histidine kinase ResE	K07651	KOFam_prokaryote_FOAM	4.2e-123	408.6	2.7.13.3		N/A	N/A	6	577	571	428
+P13792	Two-component system, OmpR family, alkaline phosphatase synthesis response regulator PhoP	K07658	KOFam_prokaryote_KEGG	9.1e-111	366.8		phoB1, phoP	N/A	N/A	1	235	234	428
+O34811	Hypothetical							N/A	N/A				
+O34991	Putative permease	K03548	KOFam_prokaryote_KEGG	8.4e-34	113.8		perM	N/A	N/A	16	356	340	428
+O34460	Hypothetical							N/A	N/A				
+O34917	Hypothetical							N/A	N/A				
+O34970	TetR/AcrR family transcriptional regulator, regulator of cefoperazone and chloramphenicol sensitivity	K23777	KOFam_prokaryote_KEGG	1.1e-26	91.5		cecR	N/A	N/A	4	146	142	428
+O32066	Hypothetical							N/A	N/A				
+O34371	wlbA, bplA; UDP-N-acetyl-2-amino-2-deoxyglucuronate dehydrogenase	K13020	KOFam_prokaryote_FOAM	1.2e-39	112.9	1.1.1.335		N/A	N/A	29	211	182	428
+O34881	Hypothetical							N/A	N/A				
+O34712	GntR family transcriptional regulator	K07979	KOFam_prokaryote_KEGG	2.2e-54	180.1		ytrA	N/A	N/A	1	128	127	428
+O32073	Hypothetical							N/A	N/A				
+C0SP84	ABC.SN.S; NitT/TauT family transport system substrate-binding protein	K02051	KOFam_prokaryote_FOAM	4.1e-52	174.8			N/A	N/A	7	329	322	428
+O34314	ABC.SN.A; NitT/TauT family transport system ATP-binding protein	K02049	KOFam_prokaryote_FOAM	2.8e-91	303.7			N/A	N/A	3	252	249	428
+O34649	Sulfonate transport system permease protein	K15554	KOFam_prokaryote_KEGG	6.5e-63	209.7		ssuC	N/A	N/A	31	267	236	428
+O35013	Hypothetical							N/A	N/A				
+O34883	Hypothetical							N/A	N/A				
+C0H3Q2	Hypothetical							N/A	N/A				
+P42408	DnaK suppressor protein	K06204	KOFam_prokaryote_KEGG	1.5e-27	94.0		dksA	N/A	N/A	3	190	187	428
+P42407	Glucose-1-phosphate thymidylyltransferase	K00973	KOFam_prokaryote_KEGG	1.7e-42	141.6	2.7.7.24	rfbA, rmlA, rffH	N/A	N/A	4	261	257	428
+O34862	UGDH, ugd; UDPglucose 6-dehydrogenase	K00012	KOFam_prokaryote_FOAM	8.7e-158	523.0	1.1.1.22		N/A	N/A	1	427	426	428
+O34886	GAE, cap1J; UDP-glucuronate 4-epimerase	K08679	KOFam_prokaryote_FOAM	5.2e-103	342.1	5.1.3.6		N/A	N/A	1	308	307	428
+O34413	Spore coat protein SA	K06338	KOFam_prokaryote_KEGG	6.7e-136	450.0		cotSA	N/A	N/A	1	381	380	428
+P46916	Hypothetical							N/A	N/A				
+P39123	PYG, glgP; glycogen phosphorylase	K00688	KOFam_prokaryote_FOAM	0.0	1069.6	2.4.1.1		N/A	N/A	8	796	788	428
+P39125	glgA; starch synthase	K00703	KOFam_prokaryote_FOAM	5.7e-187	619.5	2.4.1.21		N/A	N/A	1	475	474	428
+P39124	glgC; glucose-1-phosphate adenylyltransferase	K00975	KOFam_prokaryote_FOAM	5.3e-71	134.5	2.7.7.27		N/A	N/A	157	334	177	428
+P39122	glgC; glucose-1-phosphate adenylyltransferase	K00975	KOFam_prokaryote_FOAM	1.3e-146	485.6	2.7.7.27		N/A	N/A	3	370	367	428
+P39118	GBE1, glgB; 1,4-alpha-glucan branching enzyme	K00700	KOFam_prokaryote_FOAM	6.7e-265	878.1	2.4.1.18		N/A	N/A	9	618	609	428
+O32076	Flotillin	K07192	KOFam_prokaryote_KEGG	2.7e-144	478.5		FLOT	N/A	N/A	17	486	469	428
+P71014	Hypothetical							N/A	N/A				
+O32085	CDO1; cysteine dioxygenase	K00456	KOFam_prokaryote_FOAM	1.5e-27	93.4	1.13.11.20		N/A	N/A	36	155	119	428
+O05242	IMA, malL; oligo-1,6-glucosidase	K01182	KOFam_prokaryote_FOAM	6.9e-249	824.5	3.2.1.10		N/A	N/A	2	551	549	428
+O05241	Putative hemolysin	K03699	KOFam_prokaryote_KEGG	2.6e-143	475.0		tlyC	N/A	N/A	4	425	421	428
+O05248	Uncharacterized protein	K06973	KOFam_prokaryote_KEGG	1.5e-96	319.8			N/A	N/A	4	223	219	428
+C0H3Q4	Hypothetical							N/A	N/A				
+Q5BU39	Hypothetical							N/A	N/A				
+Q795M8	Voltage-gated potassium channel	K10716	KOFam_prokaryote_KEGG	2.6e-37	125.1		kch, trkA, mthK, pch	N/A	N/A	10	277	267	428
+O32087	Uncharacterized protein	K09779	KOFam_prokaryote_KEGG	2.7e-38	128.0			N/A	N/A	1	71	70	428
+O05235	mhpC; 2-hydroxy-6-oxonona-2,4-dienedioate hydrolase	K05714	KOFam_prokaryote_FOAM	9.8e-49	163.0	3.7.1.14		N/A	N/A	8	273	265	428
+Q08429	Kinase-associated protein B	K06347	KOFam_prokaryote_KEGG	1.3e-56	186.7		kapB	N/A	N/A	2	125	123	428
+O05257	Hypothetical							N/A	N/A				
+O32089	Hypothetical							N/A	N/A				
+O32094	Spore germination protein PA	K06299	KOFam_prokaryote_KEGG	6.5e-27	90.0		gerPA	N/A	N/A	1	72	71	428
+O32096	Hypothetical							N/A	N/A				
+O32097	Hypothetical							N/A	N/A				
+O32108	Hypothetical							N/A	N/A				
+O05267	ndh; NADH:ubiquinone reductase (H+-translocating)	K03885	KOFam_prokaryote_FOAM	4e-123	408.5	7.1.1.2		N/A	N/A	5	382	377	428
+O32124	Hypothetical							N/A	N/A				
+O32128	Hypothetical							N/A	N/A				
+O32132	Hypothetical							N/A	N/A				
+O32160	Hypothetical							N/A	N/A				
+O32166	Hypothetical							N/A	N/A				
+C0H3R0	Hypothetical							N/A	N/A				
+O32179	PRODH, fadM, putB; proline dehydrogenase	K00318	KOFam_prokaryote_FOAM	9.9e-59	196.2	1.5.5.2		N/A	N/A	11	295	284	428
+C0H3R1	Hypothetical							N/A	N/A				
+O32180	Hypothetical							N/A	N/A				
+O32189	Hypothetical							N/A	N/A				
+O32217	Hypothetical							N/A	N/A				
+O32218	Hypothetical							N/A	N/A				
+O32224	FMN-dependent NADH-azoreductase	K01118	KOFam_prokaryote_KEGG	8.4e-67	222.4	1.7.1.17	acpD, azoR	N/A	N/A	1	207	206	428
+O32225	Hypothetical							N/A	N/A				
+O32234	mhpC; 2-hydroxy-6-oxonona-2,4-dienedioate hydrolase	K05714	KOFam_prokaryote_FOAM	8.6e-34	113.8	3.7.1.14		N/A	N/A	11	253	242	428
+O32236	HTH-type transcriptional regulator, competence development regulator	K22299	KOFam_prokaryote_KEGG	4.6e-37	124.4		rghR	N/A	N/A	1	132	131	428
+O07002	Basic amino acid/polyamine antiporter, APA family	K03294	KOFam_prokaryote_KEGG	8.1e-71	235.7		TC.APA	N/A	N/A	6	443	437	428
+O06998	Hypothetical							N/A	N/A				
+O34986	3',5'-cyclic-AMP phosphodiesterase	K03651	KOFam_prokaryote_KEGG	5.1e-28	94.4	3.1.4.53	cpdA	N/A	N/A	916	1132	216	428
+O34876	ftsX; cell division transport system permease protein	K09811	KOFam_prokaryote_FOAM	1.9e-77	257.9			N/A	N/A	6	295	289	428
+O34814	ftsE; cell division transport system ATP-binding protein	K09812	KOFam_prokaryote_FOAM	5.2e-118	391.2			N/A	N/A	1	225	224	428
+O32267	Teichuronic acid biosynthesis glycosyltransferase TuaH	K16699	KOFam_prokaryote_KEGG	3.3e-124	411.7	2.4.-.-	tuaH	N/A	N/A	5	389	384	428
+O32268	Teichuronic acid biosynthesis glycosyltransferase TuaG	K16698	KOFam_prokaryote_KEGG	8.1e-113	373.6	2.4.-.-	tuaG	N/A	N/A	4	251	247	428
+O32269	Teichuronic acid biosynthesis protein TuaF	K16706	KOFam_prokaryote_KEGG	7e-109	359.5		tuaF	N/A	N/A	1	226	225	428
+O05224	Arsenical pump membrane protein	K03893	KOFam_prokaryote_KEGG	2e-116	386.6		arsB	N/A	N/A	2	440	438	428
+O05223	Hypothetical							N/A	N/A				
+O05215	Chromate transporter	K07240	KOFam_prokaryote_KEGG	1.4e-46	155.7		chrA	N/A	N/A	6	173	167	428
+P96724	Deoxyribonuclease V	K05982	KOFam_prokaryote_KEGG	2.4e-68	227.3	3.1.21.7	E3.1.21.7, nfi	N/A	N/A	14	231	217	428
+P96723	Hypothetical							N/A	N/A				
+P96722	Toxin YqcG	K21491	KOFam_prokaryote_KEGG	5.8e-147	487.4	3.1.-.-	yqcG	N/A	N/A	3	420	417	428
+P96721	Hypothetical							N/A	N/A				
+P96720	Hypothetical							N/A	N/A				
+P39751	Rod shape-determining protein MreB and related proteins	K03569	KOFam_prokaryote_KEGG	3.8e-164	543.5		mreB	N/A	N/A	1	329	328	428
+O32276	Required for translation of spoIIID	K06435	KOFam_prokaryote_KEGG	9.9e-30	98.9		usd	N/A	N/A	1	36	35	428
+P94574	mmr; MFS transporter, DHA2 family, methylenomycin A resistance protein	K08166	KOFam_prokaryote_FOAM	3.3e-74	246.4			N/A	N/A	6	448	442	428
+P94573	Ureidoacrylate peracid hydrolase	K09020	KOFam_prokaryote_KEGG	3.6e-48	161.5	3.5.1.110	rutB	N/A	N/A	5	187	182	428
+P71045	Hypothetical							N/A	N/A				
+P71042	Hypothetical							N/A	N/A				
+O32277	Hypothetical							N/A	N/A				
+P70958	Hypothetical							N/A	N/A				
+P45874	Hypothetical							N/A	N/A				
+P45865	Cardiolipin synthase A/B	K06131	KOFam_prokaryote_KEGG	8.7e-115	381.3	2.7.8.-	clsA_B	N/A	N/A	17	396	379	428
+P45864	UV DNA damage endonuclease	K13281	KOFam_prokaryote_KEGG	1.8e-106	353.2	3.-.-.-	uvsE, UVE1	N/A	N/A	4	302	298	428
+P70997	Penicillin-binding protein 2D	K21464	KOFam_prokaryote_KEGG	3.5e-286	947.6	2.4.1.129 3.4.16.4	pbpG	N/A	N/A	3	686	683	428
+P39632	Hypothetical							N/A	N/A				
+Q7WY56	DTDP-4-dehydrorhamnose 3,5-epimerase	K01790	KOFam_prokaryote_KEGG	8.9e-42	139.9	5.1.3.13	rfbC, rmlC	N/A	N/A	2	147	145	428
+P39631	DTDP-4-dehydrorhamnose reductase	K00067	KOFam_prokaryote_KEGG	1e-109	364.3	1.1.1.133	rfbD, rmlD	N/A	N/A	2	277	275	428
+P39630	DTDP-glucose 4,6-dehydratase	K01710	KOFam_prokaryote_KEGG	5.7e-151	500.4	4.2.1.46	rfbB, rmlB, rffG	N/A	N/A	5	314	309	428
+P39629	Glucose-1-phosphate thymidylyltransferase	K00973	KOFam_prokaryote_KEGG	7.4e-92	305.2	2.7.7.24	rfbA, rmlA, rffH	N/A	N/A	1	237	236	428
+P39627	UDP-2,4-diacetamido-2,4,6-trideoxy-beta-L-altropyranose hydrolase	K15897	KOFam_prokaryote_KEGG	6.2e-59	196.5	3.6.1.57	pseG	N/A	N/A	1	331	330	428
+P39626	Spore coat polysaccharide biosynthesis protein SpsF	K07257	KOFam_prokaryote_KEGG	4.8e-76	253.0		spsF	N/A	N/A	3	234	231	428
+P39625	N,N'-diacetyllegionaminate synthase	K18430	KOFam_prokaryote_KEGG	1.1e-99	327.2	2.5.1.101	legI, neuB2	N/A	N/A	15	364	349	428
+P39624	DTDP-4-amino-4,6-dideoxy-D-galactose acyltransferase	K16704	KOFam_prokaryote_KEGG	2.4e-45	152.0	2.3.1.210	rffC, wecD	N/A	N/A	43	287	244	428
+P39623	Perosamine synthetase	K13010	KOFam_prokaryote_KEGG	4.7e-137	454.6	2.6.1.102	per, rfbE	N/A	N/A	6	386	380	428
+P39622	Hypothetical							N/A	N/A				
+P39621	Spore maturation protein CgeD	K06322	KOFam_prokaryote_KEGG	4.2e-91	302.4		cgeD	N/A	N/A	2	229	227	428
+P39603	Hypothetical							N/A	N/A				
+P39600	Hypothetical							N/A	N/A				
+P39599	Cation/acetate symporter	K14393	KOFam_prokaryote_KEGG	3.1e-203	673.8		actP	N/A	N/A	3	510	507	428
+P39585	Hypothetical							N/A	N/A				
+P39584	celB, chbC; cellobiose PTS system EIIC component	K02761	KOFam_prokaryote_FOAM	1.2e-157	522.2			N/A	N/A	1	435	434	428
+P25149	Hypothetical							N/A	N/A				
+P94377	katE, CAT, catB, srpA; catalase	K03781	KOFam_prokaryote_FOAM	5.5e-223	739.6	1.11.1.6		N/A	N/A	19	527	508	428
+P42317	butA, budC; meso-butanediol dehydrogenase / (S,S)-butanediol dehydrogenase / diacetyl reductase	K03366	KOFam_prokaryote_FOAM	7e-83	274.5	1.1.1.- 1.1.1.76 1.1.1.304		N/A	N/A	2	256	254	428
+P42316	E2.8.3.5B, scoB; 3-oxoacid CoA-transferase subunit B	K01029	KOFam_prokaryote_FOAM	1.8e-119	395.0	2.8.3.5		N/A	N/A	1	213	212	428
+P42315	E2.8.3.5A, scoA; 3-oxoacid CoA-transferase subunit A	K01028	KOFam_prokaryote_FOAM	1.4e-131	435.1	2.8.3.5		N/A	N/A	1	232	231	428
+P42314	Gluconate:H+ symporter, GntP family	K03299	KOFam_prokaryote_KEGG	4.1e-19	65.0		TC.GNTP	N/A	N/A	5	468	463	428
+P42308	Citrate-Mg2+:H+ or citrate-Ca2+:H+ symporter, CitMHS family	K03300	KOFam_prokaryote_KEGG	9.8e-211	697.0		TC.CITMHS	N/A	N/A	1	426	425	428
+P54944	Hypothetical							N/A	N/A				
+P54943	Hypothetical							N/A	N/A				
+Q45605	Hypothetical							N/A	N/A				
+Q45606	Hypothetical							N/A	N/A				
+Q45607	Hypothetical							N/A	N/A				
+O32293	Hypothetical							N/A	N/A				
+P39668	Serine protease DegQ	K04772	KOFam_prokaryote_KEGG	1.8e-88	294.1	3.4.21.-	degQ, hhoA	N/A	N/A	29	393	364	428
+P37479	Hypothetical							N/A	N/A				
+O32296	Hypothetical							N/A	N/A				
+P37488	Hypothetical							N/A	N/A				
+P37495	Hypothetical							N/A	N/A				
+P37512	Uncharacterized protein	K06888	KOFam_prokaryote_KEGG	0.0	1015.9			N/A	N/A	7	684	677	428
+P37517	LacI family transcriptional regulator, repressor for deo operon, udp, cdd, tsx, nupC, and nupG	K05499	KOFam_prokaryote_KEGG	1.4e-58	195.4		cytR	N/A	N/A	1	295	294	428
+P37454	Exodeoxyribonuclease III	K01142	KOFam_prokaryote_KEGG	1.8e-115	383.6	3.1.11.2	E3.1.11.2, xthA	N/A	N/A	1	251	250	428
+P37520	Hypothetical							N/A	N/A				
+P37521	Hypothetical							N/A	N/A				
+Q01620	SpoIIIJ-associated protein	K06346	KOFam_prokaryote_KEGG	4.2e-68	226.7		jag	N/A	N/A	1	207	206	428
+Q01625	YidC/Oxa1 family membrane protein insertase	K03217	KOFam_prokaryote_KEGG	1.2e-86	287.6		yidC, spoIIIJ, OXA1, ccfA	N/A	N/A	37	254	217	428
+P05648	Chromosomal replication initiator protein	K02313	KOFam_prokaryote_KEGG	6.3e-207	685.2		dnaA	N/A	N/A	5	446	441	428
+P05649	dnaN; DNA polymerase III subunit beta	K02338	KOFam_prokaryote_FOAM	2.9e-120	399.1	2.7.7.7		N/A	N/A	1	377	376	428
+P37527	Pyridoxal 5'-phosphate synthase pdxS subunit	K06215	KOFam_prokaryote_KEGG	1.1e-162	537.8	4.3.3.6	pdxS, pdx1	N/A	N/A	4	293	289	428
+P37468	16S rRNA (adenine1518-N6/adenine1519-N6)-dimethyltransferase	K02528	KOFam_prokaryote_KEGG	2.1e-107	356.0	2.1.1.182	ksgA	N/A	N/A	7	287	280	428
+P37550	4-diphosphocytidyl-2-C-methyl-D-erythritol kinase	K00919	KOFam_prokaryote_KEGG	1.9e-99	329.7	2.7.1.148	ispE	N/A	N/A	5	273	268	428
+P37551	Purine operon repressor	K09685	KOFam_prokaryote_KEGG	7.8e-130	427.9		purR	N/A	N/A	1	270	269	428
+P37552	2-iminobutanoate/2-iminopropanoate deaminase	K09022	KOFam_prokaryote_KEGG	2.5e-62	207.7	3.5.99.10	ridA, tdcF, RIDA	N/A	N/A	1	124	123	428
+P37470	Peptidyl-tRNA hydrolase, PTH1 family	K01056	KOFam_prokaryote_KEGG	2.5e-81	270.3	3.1.1.29	PTH1, pth, spoVC	N/A	N/A	1	187	186	428
+P37474	Transcription-repair coupling factor (superfamily II helicase)	K03723	KOFam_prokaryote_KEGG	0.0	1462.6	3.6.4.-	mfd	N/A	N/A	14	1170	1156	428
+P37560	S1 RNA binding domain protein	K07571	KOFam_prokaryote_KEGG	1.8e-67	222.6			N/A	N/A	1	127	126	428
+P16450	Spore germination protein D	K06294	KOFam_prokaryote_KEGG	2.4e-68	226.4		gerD	N/A	N/A	2	183	181	428
+P55190	Bile acid:Na+ symporter, BASS family	K03453	KOFam_prokaryote_KEGG	1.9e-45	152.0		TC.BASS	N/A	N/A	2	293	291	428
+P40406	nagZ; beta-N-acetylhexosaminidase	K01207	KOFam_prokaryote_FOAM	3.9e-179	594.3	3.2.1.52		N/A	N/A	15	637	622	428
+O05213	Serine-type D-Ala-D-Ala carboxypeptidase	K21469	KOFam_prokaryote_KEGG	2.6e-154	511.5	3.4.16.4	pbp4b	N/A	N/A	39	440	401	428
+Q797S1	scrA, sacP, sacX, ptsS; sucrose PTS system EIIBCA or EIIBC component	K02810	KOFam_prokaryote_FOAM	8.6e-173	572.8	2.7.1.211		N/A	N/A	6	451	445	428
+P37878	alkA; DNA-3-methyladenine glycosylase II	K01247	KOFam_prokaryote_FOAM	5.1e-58	193.7	3.2.2.21		N/A	N/A	97	302	205	428
+O31435	K08884; serine/threonine protein kinase, bacterial	K08884	KOFam_prokaryote_FOAM	4.6e-40	134.4	2.7.11.1		N/A	N/A	17	202	185	428
+P39790	Glutamyl endopeptidase	K01318	KOFam_prokaryote_KEGG	5.8e-90	299.3	3.4.21.19	sspA	N/A	N/A	15	313	298	428
+O34538	Hypothetical							N/A	N/A				
+O34364	IMA, malL; oligo-1,6-glucosidase	K01182	KOFam_prokaryote_FOAM	4e-260	861.9	3.2.1.10		N/A	N/A	3	559	556	428
+P12921	Hypothetical							N/A	N/A				
+P94408	Proton-dependent oligopeptide transporter, POT family	K03305	KOFam_prokaryote_KEGG	9.1e-163	539.4		TC.POT	N/A	N/A	14	491	477	428
+O31479	Hypothetical							N/A	N/A				
+P49939	Spore germination protein KA	K06295	KOFam_prokaryote_KEGG	2.9e-229	760.0		gerKA	N/A	N/A	21	528	507	428
+P49941	Spore germination protein KC	K06297	KOFam_prokaryote_KEGG	2.2e-109	363.3		gerKC	N/A	N/A	4	402	398	428
+P49940	Spore germination protein KB	K06296	KOFam_prokaryote_KEGG	8.3e-113	374.4		gerKB	N/A	N/A	1	370	369	428
+P94415	Response regulator aspartate phosphatase C	K06361	KOFam_prokaryote_KEGG	1.5e-137	455.1	3.1.-.-	rapC	N/A	N/A	1	378	377	428
+P96604	Putative permease	K03548	KOFam_prokaryote_KEGG	6.3e-27	88.8		perM	N/A	N/A	16	334	318	428
+P96613	murF; UDP-N-acetylmuramoyl-tripeptide--D-alanyl-D-alanine ligase	K01929	KOFam_prokaryote_FOAM	2.7e-171	567.7	6.3.2.10		N/A	N/A	1	452	451	428
+P96633	Hypothetical							N/A	N/A				
+P96649	Response regulator aspartate phosphatase I	K06367	KOFam_prokaryote_KEGG	2.3e-166	550.0	3.1.-.-	rapI	N/A	N/A	7	380	373	428
+P96700	Hypothetical							N/A	N/A				
+O34904	Hypothetical							N/A	N/A				
+Q7BVT7	Hypothetical							N/A	N/A				
+O31526	Rhamnogalacturonan endolyase	K18197	KOFam_prokaryote_KEGG	0.0	1064.8	4.2.2.23	yesW	N/A	N/A	8	619	611	428
+P55069	Mg2+/citrate complex secondary transporter	K11639	KOFam_prokaryote_KEGG	3.8e-206	682.0		citM	N/A	N/A	1	431	430	428
+O34573	Spore germination protein	K06309	KOFam_prokaryote_KEGG	6.4e-135	446.4		yfkT	N/A	N/A	1	351	350	428
+O35036	Hypothetical							N/A	N/A				
+O35028	Spore germination protein	K06308	KOFam_prokaryote_KEGG	5.5e-95	315.3		yfkR	N/A	N/A	1	383	382	428
+O34486	Spore germination protein	K06307	KOFam_prokaryote_KEGG	8.3e-213	703.6		yfkQ	N/A	N/A	20	503	483	428
+O34475	Nitroreductase / dihydropteridine reductase	K10679	KOFam_prokaryote_KEGG	1.7e-34	115.7	1.-.-.- 1.5.1.34	nfnB, nfsB	N/A	N/A	7	217	210	428
+O31550	Pyruvate dehydrogenase E2 component (dihydrolipoamide acetyltransferase)	K00627	KOFam_prokaryote_KEGG	8.2e-138	457.6	2.3.1.12	DLAT, aceF, pdhC	N/A	N/A	1	396	395	428
+O31556	Hypothetical							N/A	N/A				
+O31581	Epoxide hydrolase 4	K22369	KOFam_prokaryote_KEGG	9.4e-113	374.1	3.3.-.-	EPHX4	N/A	N/A	7	285	278	428
+O31583	Inner membrane protein	K07038	KOFam_prokaryote_KEGG	1.5e-32	109.6			N/A	N/A	1	302	301	428
+P71080	Hypothetical							N/A	N/A				
+P71083	Hypothetical							N/A	N/A				
+P26901	katE, CAT, catB, srpA; catalase	K03781	KOFam_prokaryote_FOAM	7e-264	875.0	1.11.1.6		N/A	N/A	5	476	471	428
+P97030	Epoxyqueuosine reductase	K18979	KOFam_prokaryote_KEGG	2e-126	419.5	1.17.99.6	queG	N/A	N/A	5	366	361	428
+O31590	trmL, cspR; tRNA (cytidine/uridine-2'-O-)-methyltransferase	K03216	KOFam_prokaryote_FOAM	4.3e-72	238.1	2.1.1.207		N/A	N/A	5	159	154	428
+O31593	Membrane fusion protein, multidrug efflux system	K03543	KOFam_prokaryote_KEGG	6.6e-59	145.0		emrA	N/A	N/A	95	219	124	428
+P54585	MFS transporter, DHA2 family, lincomycin resistance protein	K18926	KOFam_prokaryote_KEGG	3.6e-158	523.2		lmrB	N/A	N/A	10	514	504	428
+P54586	NAD(P)H dehydrogenase (quinone)	K03809	KOFam_prokaryote_KEGG	4.7e-47	157.7	1.6.5.2	wrbA	N/A	N/A	1	174	173	428
+P54587	Hypothetical							N/A	N/A				
+P54598	Spore cortex protein	K06345	KOFam_prokaryote_KEGG	2.3e-35	118.8		coxA	N/A	N/A	4	188	184	428
+P18157	Glycerol kinase	K00864	KOFam_prokaryote_KEGG	7.3e-233	770.9	2.7.1.30	glpK, GK	N/A	N/A	3	494	491	428
+P18159	pgm; phosphoglucomutase	K01835	KOFam_prokaryote_FOAM	1.8e-143	476.4	5.4.2.2		N/A	N/A	35	572	537	428
+O07527	K02480; two-component system, NarL family, sensor kinase	K02480	KOFam_prokaryote_FOAM	4.8e-61	203.6	2.7.13.3		N/A	N/A	11	372	361	428
+O07528	Two-component system, NarL family, response regulator LiaR	K11618	KOFam_prokaryote_KEGG	3.1e-75	249.6		liaR	N/A	N/A	1	208	207	428
+P19406	Amicoumacin phosphatase	K23984	KOFam_prokaryote_KEGG	5.6e-168	556.0	3.1.3.107	amiO	N/A	N/A	16	458	442	428
+Q796V8	Oxygen-independent coproporphyrinogen III oxidase	K02495	KOFam_prokaryote_KEGG	2.4e-91	303.3	1.3.98.3	hemN, hemZ	N/A	N/A	89	480	391	428
+O07535	TrkA domain protein	K07228	KOFam_prokaryote_KEGG	5e-57	188.6			N/A	N/A	1	156	155	428
+O07534	Hypothetical							N/A	N/A				
+O07521	3'-5' exoribonuclease	K03698	KOFam_prokaryote_KEGG	2.8e-136	451.5	3.1.-.-	cbf, cbf1	N/A	N/A	8	311	303	428
+P32398	TetR/AcrR family transcriptional regulator, regulator of autoinduction and epiphytic fitness	K19736	KOFam_prokaryote_KEGG	3.3e-31	106.3		aefR	N/A	N/A	5	176	171	428
+O07614	phnO; (aminoalkyl)phosphonate N-acetyltransferase	K09994	KOFam_prokaryote_FOAM	1.3e-19	67.3	2.3.1.280		N/A	N/A	1	135	134	428
+O07566	3-dehydro-glucose-6-phosphate---glutamate transaminase	K18653	KOFam_prokaryote_KEGG	7.9e-225	743.1	2.6.1.104	ntdA	N/A	N/A	1	436	435	428
+O31613	23S rRNA pseudouridine1911/1915/1917 synthase	K06180	KOFam_prokaryote_KEGG	4e-95	316.1	5.4.99.23	rluD	N/A	N/A	10	279	269	428
+O31648	[ribosomal protein S5]-alanine N-acetyltransferase	K03790	KOFam_prokaryote_KEGG	4.5e-24	82.3	2.3.1.267	rimJ	N/A	N/A	4	154	150	428
+O34633	Hypothetical							N/A	N/A				
+P49852	Nitric oxide dioxygenase	K05916	KOFam_prokaryote_KEGG	1.9e-173	574.3	1.14.12.17	hmp, YHB1	N/A	N/A	1	395	394	428
+O34911	Energy-coupling factor transport system substrate-specific component	K24620	KOFam_prokaryote_KEGG	2.7e-80	265.4		ykoF	N/A	N/A	7	198	191	428
+O34311	Diguanylate cyclase	K21023	KOFam_prokaryote_KEGG	3.1e-220	523.2	2.7.7.65	mucR	N/A	N/A	362	793	431	428
+O31657	Heat shock protein HtpX	K03799	KOFam_prokaryote_KEGG	3.7e-69	230.1	3.4.24.-	htpX	N/A	N/A	12	297	285	428
+O31680	Meso-butanediol dehydrogenase / (S,S)-butanediol dehydrogenase / diacetyl reductase	K18009	KOFam_prokaryote_KEGG	1.9e-74	247.0	1.1.1.- 1.1.1.76 1.1.1.304	budC	N/A	N/A	1	246	245	428
+P16524	patA; aminotransferase	K00841	KOFam_prokaryote_FOAM	2e-168	556.7	2.6.1.-		N/A	N/A	4	385	381	428
+O34857	Hypothetical							N/A	N/A				
+O31707	ATP-binding cassette, subfamily B, multidrug efflux pump	K18889	KOFam_prokaryote_KEGG	6.3e-224	741.8		mdlA, smdA	N/A	N/A	1	573	572	428
+O31708	ATP-binding cassette, subfamily B, multidrug efflux pump	K18890	KOFam_prokaryote_KEGG	6.7e-261	864.5		mdlB, smdB	N/A	N/A	17	601	584	428
+Q45495	Peptide deformylase	K01462	KOFam_prokaryote_KEGG	6.3e-49	163.5	3.5.1.88	PDF, def	N/A	N/A	6	171	165	428
+O31719	Hypothetical							N/A	N/A				
+O07634	Hypothetical							N/A	N/A				
+O34731	NTE family protein	K07001	KOFam_prokaryote_KEGG	1.8e-74	247.6			N/A	N/A	4	251	247	428
+P17865	Cell division protein FtsZ	K03531	KOFam_prokaryote_KEGG	3.2e-169	560.1		ftsZ	N/A	N/A	12	380	368	428
+O34764	sat, met3; sulfate adenylyltransferase	K00958	KOFam_prokaryote_FOAM	7.8e-173	573.1	2.7.7.4		N/A	N/A	1	376	375	428
+Q7WY72	Extracellular matrix regulatory protein A	K09777	KOFam_prokaryote_KEGG	2.7e-45	149.6		remA	N/A	N/A	1	81	80	428
+O34507	prkC, stkP; eukaryotic-like serine/threonine-protein kinase	K12132	KOFam_prokaryote_FOAM	3.9e-105	348.5	2.7.11.1		N/A	N/A	9	372	363	428
+O34664	Thiamine pyrophosphokinase	K00949	KOFam_prokaryote_KEGG	3.2e-42	141.8	2.7.6.2	thiN, TPK1, THI80	N/A	N/A	5	210	205	428
+P51831	3-oxoacyl-[acyl-carrier protein] reductase	K00059	KOFam_prokaryote_KEGG	7e-113	374.2	1.1.1.100	fabG, OAR1	N/A	N/A	2	246	244	428
+P51834	Chromosome segregation protein	K03529	KOFam_prokaryote_KEGG	0.0	1121.7		smc	N/A	N/A	1	1181	1180	428
+P39779	Transcriptional pleiotropic repressor	K03706	KOFam_prokaryote_KEGG	1.6e-123	407.8		codY	N/A	N/A	1	257	256	428
+O31754	Regulator of sigma E protease	K11749	KOFam_prokaryote_KEGG	4.7e-128	424.2	3.4.24.-	rseP	N/A	N/A	3	421	418	428
+P50850	Peptidoglycan-N-acetylglucosamine deacetylase	K22278	KOFam_prokaryote_KEGG	6e-60	200.3	3.5.1.104	pgdA	N/A	N/A	130	312	182	428
+Q04805	Zinc protease	K07263	KOFam_prokaryote_KEGG	1.4e-92	307.9	3.4.24.-	pqqL	N/A	N/A	3	396	393	428
+O31767	3-oxoacyl-[acyl-carrier protein] reductase	K00059	KOFam_prokaryote_KEGG	1.4e-76	254.7	1.1.1.100	fabG, OAR1	N/A	N/A	2	241	239	428
+O31775	2',3'-cyclic-nucleotide 2'-phosphodiesterase	K09769	KOFam_prokaryote_KEGG	3.3e-125	413.5	3.1.4.16	ymdB	N/A	N/A	1	259	258	428
+O31790	Lipoyl-dependent peroxiredoxin	K04063	KOFam_prokaryote_KEGG	2.7e-19	66.4	1.11.1.28	osmC, ohr	N/A	N/A	20	144	124	428
+O31794	Hypothetical							N/A	N/A				
+O31795	TRNA dimethylallyltransferase	K00791	KOFam_prokaryote_KEGG	5.6e-122	404.8	2.5.1.75	miaA, TRIT1	N/A	N/A	5	291	286	428
+P31844	Hypothetical							N/A	N/A				
+O31807	Hypothetical							N/A	N/A				
+O31808	Spore germination protein	K06310	KOFam_prokaryote_KEGG	8.3e-223	736.9		yndD	N/A	N/A	18	519	501	428
+O31809	Spore germination protein	K06311	KOFam_prokaryote_KEGG	6.3e-124	410.3		yndE	N/A	N/A	3	361	358	428
+O31810	Spore germination protein	K06312	KOFam_prokaryote_KEGG	3.5e-163	539.5		yndF	N/A	N/A	1	402	401	428
+P31080	Repressor LexA	K01356	KOFam_prokaryote_KEGG	1.3e-85	284.2	3.4.21.88	lexA	N/A	N/A	1	203	202	428
+O34841	IseA protein	K23598	KOFam_prokaryote_KEGG	6.5e-55	182.8		iseA	N/A	N/A	1	181	180	428
+O07509	proB; glutamate 5-kinase	K00931	KOFam_prokaryote_FOAM	1.3e-131	436.9	2.7.2.11		N/A	N/A	6	365	359	428
+P0CI77	proC; pyrroline-5-carboxylate reductase	K00286	KOFam_prokaryote_FOAM	1.9e-95	317.6	1.5.1.2		N/A	N/A	11	283	272	428
+P14802	butA, budC; meso-butanediol dehydrogenase / (S,S)-butanediol dehydrogenase / diacetyl reductase	K03366	KOFam_prokaryote_FOAM	6.3e-71	235.1	1.1.1.- 1.1.1.76 1.1.1.304		N/A	N/A	3	219	216	428
+O34930	Response regulator aspartate phosphatase K	K06369	KOFam_prokaryote_KEGG	1.2e-178	590.8	3.1.-.-	rapK	N/A	N/A	1	370	369	428
+P80872	DnaK suppressor protein	K06204	KOFam_prokaryote_KEGG	4.6e-29	99.2		dksA	N/A	N/A	3	157	154	428
+O34321	HSP20 family protein	K13993	KOFam_prokaryote_KEGG	1.1e-18	64.4		HSP20	N/A	N/A	22	156	134	428
+O31853	Macrolide glycosyltransferase	K21251	KOFam_prokaryote_KEGG	3.7e-75	249.8		mgt, oleD	N/A	N/A	2	398	396	428
+O31862	Gnt-I system high-affinity gluconate transporter	K06155	KOFam_prokaryote_KEGG	1.2e-165	548.3		gntT	N/A	N/A	1	442	441	428
+O34666	Carboxyl-terminal processing protease	K03797	KOFam_prokaryote_KEGG	4.9e-126	418.7	3.4.21.102	E3.4.21.102, prc, ctpA	N/A	N/A	4	463	459	428
+O34414	Hypothetical							N/A	N/A				
+P54161	5'-3' exonuclease	K23786	KOFam_prokaryote_KEGG	7.9e-128	422.2	3.1.11.-	exoA	N/A	N/A	1	290	289	428
+P0CI75	BirA family transcriptional regulator, biotin operon repressor / biotin---[acetyl-CoA-carboxylase] ligase	K03524	KOFam_prokaryote_KEGG	3.4e-80	267.0	6.3.4.15	birA	N/A	N/A	68	324	256	428
+P42977	cca; tRNA nucleotidyltransferase (CCA-adding enzyme)	K00974	KOFam_prokaryote_FOAM	7.6e-99	328.5	2.7.7.72 3.1.3.- 3.1.4.-		N/A	N/A	10	387	377	428
+P42982	L-malate glycosyltransferase	K00754	KOFam_prokaryote_KEGG	1.8e-102	340.5	2.4.1.-	bshA	N/A	N/A	2	375	373	428
+P42981	N-acetylglucosamine malate deacetylase 1	K01463	KOFam_prokaryote_KEGG	1.1e-75	251.4	3.5.1.-	bshB1	N/A	N/A	3	227	224	428
+P42980	Methylglyoxal synthase	K01734	KOFam_prokaryote_KEGG	1.3e-64	214.1	4.2.3.3	mgsA	N/A	N/A	2	127	125	428
+P42976	dapB; 4-hydroxy-tetrahydrodipicolinate reductase	K00215	KOFam_prokaryote_FOAM	3e-80	266.8	1.17.1.8		N/A	N/A	3	266	263	428
+P42979	Hypothetical							N/A	N/A				
+P54392	Hypothetical							N/A	N/A				
+P54389	OGT; protein O-GlcNAc transferase	K09667	KOFam_prokaryote_FOAM	8.7e-32	88.0	2.4.1.255		N/A	N/A	129	404	275	428
+P31103	ndk, NME; nucleoside-diphosphate kinase	K00940	KOFam_prokaryote_FOAM	7.4e-76	251.6	2.7.4.6		N/A	N/A	2	149	147	428
+P31113	ubiE; demethylmenaquinone methyltransferase / 2-methoxy-6-polyprenyl-1,4-benzoquinol methylase	K03183	KOFam_prokaryote_FOAM	2.5e-99	329.6	2.1.1.163 2.1.1.201		N/A	N/A	3	233	230	428
+P50733	Uncharacterized protein	K07098	KOFam_prokaryote_KEGG	2.3e-55	184.6			N/A	N/A	12	256	244	428
+P35160	Cytochrome c biogenesis protein CcmG, thiol:disulfide interchange protein DsbE	K02199	KOFam_prokaryote_KEGG	2.3e-40	135.5		ccmG, dsbE	N/A	N/A	2	167	165	428
+P35156	Hypothetical							N/A	N/A				
+P11998	ribH, RIB4; 6,7-dimethyl-8-ribityllumazine synthase	K00794	KOFam_prokaryote_FOAM	2.3e-74	246.6	2.5.1.78		N/A	N/A	1	152	151	428
+P17616	Hypothetical							N/A	N/A				
+P28628	Signal peptidase I	K03100	KOFam_prokaryote_KEGG	2.2e-57	191.0	3.4.21.89	lepB	N/A	N/A	9	181	172	428
+P46352	Integrase/recombinase XerD	K04763	KOFam_prokaryote_KEGG	9.5e-105	348.3		xerD	N/A	N/A	4	295	291	428
+P54569	1-deoxyxylulose-5-phosphate synthase	K23107	KOFam_prokaryote_KEGG	3.2e-81	269.8	1.1.-.-	yajO	N/A	N/A	1	298	297	428
+P54518	Xaa-Pro dipeptidase	K01271	KOFam_prokaryote_KEGG	2.8e-110	366.2	3.4.13.9	pepQ	N/A	N/A	2	352	350	428
+P54516	Hypothetical							N/A	N/A				
+P54377	gcvPB; glycine dehydrogenase subunit 2	K00283	KOFam_prokaryote_FOAM	2.4e-258	855.0	1.4.4.2		N/A	N/A	3	486	483	428
+P54376	gcvPA; glycine dehydrogenase subunit 1	K00282	KOFam_prokaryote_FOAM	1.2e-208	690.0	1.4.4.2		N/A	N/A	1	444	443	428
+P54378	gcvT, AMT; aminomethyltransferase	K00605	KOFam_prokaryote_FOAM	1.8e-163	542.2	2.1.2.10		N/A	N/A	2	362	360	428
+P23308	Antagonist of SinR	K06372	KOFam_prokaryote_KEGG	6e-24	80.5		sinI	N/A	N/A	1	57	56	428
+P40949	TasA anchoring/assembly protein	K19433	KOFam_prokaryote_KEGG	4.7e-111	365.5		tapA	N/A	N/A	1	253	252	428
+P54497	G-D-glutamyl-meso-diaminopimelate peptidase	K01308	KOFam_prokaryote_KEGG	1.3e-114	380.5	3.4.19.11	yqgT	N/A	N/A	38	374	336	428
+P54478	Hypothetical							N/A	N/A				
+P54476	Deoxyribonuclease IV	K01151	KOFam_prokaryote_KEGG	8.6e-117	386.8	3.1.21.2	nfo	N/A	N/A	1	286	285	428
+P06224	RNA polymerase primary sigma factor	K03086	KOFam_prokaryote_KEGG	6.1e-175	580.1		rpoD	N/A	N/A	15	371	356	428
+P54463	Phosphate:Na+ symporter	K03324	KOFam_prokaryote_KEGG	4.8e-92	306.2		yjbB	N/A	N/A	3	306	303	428
+P54304	Oxygen-independent coproporphyrinogen III oxidase	K02495	KOFam_prokaryote_KEGG	1.7e-120	399.7	1.3.98.3	hemN, hemZ	N/A	N/A	3	376	373	428
+P45947	Arsenate reductase (thioredoxin)	K03741	KOFam_prokaryote_KEGG	1.3e-49	165.8	1.20.4.4	arsC	N/A	N/A	6	134	128	428
+P45946	Arsenite transporter	K03325	KOFam_prokaryote_KEGG	1.1e-143	476.0		ACR3, arsB	N/A	N/A	3	341	338	428
+P45949	ArsR family transcriptional regulator, arsenate/arsenite/antimonite-responsive transcriptional repressor	K03892	KOFam_prokaryote_KEGG	1.8e-29	100.1		arsR	N/A	N/A	12	92	80	428
+P45899	Hypothetical							N/A	N/A				
+O05394	Cystathionine gamma-lyase / homocysteine desulfhydrase	K17217	KOFam_prokaryote_KEGG	9.8e-195	643.1	4.4.1.1 4.4.1.2	mccB	N/A	N/A	1	378	377	428
+O05393	Cystathionine beta-synthase (O-acetyl-L-serine)	K17216	KOFam_prokaryote_KEGG	1.2e-148	490.7	2.5.1.134	mccA	N/A	N/A	1	304	303	428
+Q9KWZ1	Quinolinate synthase	K03517	KOFam_prokaryote_KEGG	1.9e-121	402.7	2.5.1.72	nadA	N/A	N/A	14	367	353	428
+Q01464	Septum site-determining protein MinD	K03609	KOFam_prokaryote_KEGG	8.7e-94	311.4		minD	N/A	N/A	1	267	266	428
+Q01463	Septum site-determining protein MinC	K03610	KOFam_prokaryote_KEGG	7.7e-48	160.1		minC	N/A	N/A	6	212	206	428
+Q01465	Rod shape-determining protein MreB and related proteins	K03569	KOFam_prokaryote_KEGG	6.8e-170	562.5		mreB	N/A	N/A	2	332	330	428
+P94562	yedL; putative acetyltransferase	K03829	KOFam_prokaryote_FOAM	3.8e-76	252.5	2.3.1.-		N/A	N/A	1	151	150	428
+P94559	Uncharacterized protein	K07095	KOFam_prokaryote_KEGG	4.2e-38	127.4			N/A	N/A	1	154	153	428
+P94558	ITPA; inosine triphosphate pyrophosphatase	K01519	KOFam_prokaryote_FOAM	1.4e-78	260.7	3.6.1.-		N/A	N/A	4	196	192	428
+P28619	Ribonuclease PH	K00989	KOFam_prokaryote_KEGG	3.8e-137	454.5	2.7.7.56	rph	N/A	N/A	1	241	240	428
+P94556	murI; glutamate racemase	K01776	KOFam_prokaryote_FOAM	5.8e-102	338.1	5.1.1.3		N/A	N/A	3	267	264	428
+P97247	MarR family transcriptional regulator, 2-MHQ and catechol-resistance regulon repressor	K15973	KOFam_prokaryote_KEGG	3.8e-31	105.0		mhqR	N/A	N/A	17	144	127	428
+P11470	LuxR family transcriptional regulator, transcriptional regulator of spore coat protein	K01994	KOFam_prokaryote_KEGG	3.6e-40	132.8		gerE	N/A	N/A	1	73	72	428
+P42955	Hypothetical							N/A	N/A				
+P94536	Carbohydrate diacid regulator	K02647	KOFam_prokaryote_KEGG	3.9e-101	335.6		cdaR	N/A	N/A	1	365	364	428
+P07908	Replication initiation and membrane attachment protein	K03346	KOFam_prokaryote_KEGG	4.2e-136	451.2		dnaB	N/A	N/A	6	468	462	428
+O34425	GAPDH, gapA; glyceraldehyde 3-phosphate dehydrogenase	K00134	KOFam_prokaryote_FOAM	3.9e-152	504.9	1.2.1.12		N/A	N/A	1	335	334	428
+O34367	MFS transporter, DHA1 family, inner membrane transport protein	K19577	KOFam_prokaryote_KEGG	1.4e-120	400.0		ydhP	N/A	N/A	9	391	382	428
+O34600	Bifunctional oligoribonuclease and PAP phosphatase NrnA	K06881	KOFam_prokaryote_KEGG	2.2e-95	316.6	3.1.3.7 3.1.13.3	nrnA	N/A	N/A	3	312	309	428
+O34308	3-oxoacyl-[acyl-carrier protein] reductase	K00059	KOFam_prokaryote_KEGG	2.4e-65	217.7	1.1.1.100	fabG, OAR1	N/A	N/A	2	248	246	428
+P40779	Hypothetical							N/A	N/A				
+O34799	Diacylglycerol kinase (ATP)	K07029	KOFam_prokaryote_KEGG	1.7e-53	178.6	2.7.1.107	dagK	N/A	N/A	5	307	302	428
+O32067	Hypothetical							N/A	N/A				
+P54417	Glycine betaine transporter	K05020	KOFam_prokaryote_KEGG	4e-234	774.6		opuD, betL	N/A	N/A	5	499	494	428
+O34707	Tetraprenyl-beta-curcumene synthase	K16188	KOFam_prokaryote_KEGG	9.5e-172	567.4	4.2.3.130	ytpB	N/A	N/A	1	353	352	428
+O34705	pldB; lysophospholipase	K01048	KOFam_prokaryote_FOAM	4.9e-63	210.3	3.1.1.5		N/A	N/A	3	257	254	428
+O32078	Hypothetical							N/A	N/A				
+Q08432	patB, malY; cysteine-S-conjugate beta-lyase	K14155	KOFam_prokaryote_FOAM	1.8e-168	557.9	4.4.1.13		N/A	N/A	2	386	384	428
+O32106	Leucyl aminopeptidase	K01255	KOFam_prokaryote_KEGG	2.5e-169	561.8	3.4.11.1	CARP, pepA	N/A	N/A	10	493	483	428
+O32117	ndh; NADH:ubiquinone reductase (H+-translocating)	K03885	KOFam_prokaryote_FOAM	1.7e-82	274.4	7.1.1.2		N/A	N/A	2	342	340	428
+O32137	allB; allantoinase	K01466	KOFam_prokaryote_FOAM	3.1e-158	524.4	3.5.2.5		N/A	N/A	3	441	438	428
+O32141	Urate oxidase / 2-oxo-4-hydroxy-4-carboxy-5-ureidoimidazoline decarboxylase	K16838	KOFam_prokaryote_KEGG	5.4e-174	574.1	1.7.3.3 4.1.1.97	pucL	N/A	N/A	80	488	408	428
+Q8RMG1	PRODH, fadM, putB; proline dehydrogenase	K00318	KOFam_prokaryote_FOAM	4.3e-59	197.4	1.5.5.2		N/A	N/A	11	295	284	428
+P07868	Spore germination protein AA	K06288	KOFam_prokaryote_KEGG	9.2e-234	773.1		gerAA	N/A	N/A	1	480	479	428
+P07869	Spore germination protein AB	K06289	KOFam_prokaryote_KEGG	7.3e-136	449.4		gerAB	N/A	N/A	1	364	363	428
+P07870	Spore germination protein AC	K06290	KOFam_prokaryote_KEGG	4.1e-175	578.8		gerAC	N/A	N/A	1	373	372	428
+O32211	Hypothetical							N/A	N/A				
+O32245	Hypothetical							N/A	N/A				
+P27876	TPI, tpiA; triosephosphate isomerase (TIM)	K01803	KOFam_prokaryote_FOAM	3.1e-110	365.6	5.3.1.1		N/A	N/A	1	247	246	428
+P40924	PGK, pgk; phosphoglycerate kinase	K00927	KOFam_prokaryote_FOAM	1.7e-201	667.7	2.7.2.3		N/A	N/A	1	394	393	428
+P96711	GntR family transcriptional regulator, arabinose operon transcriptional repressor	K02103	KOFam_prokaryote_KEGG	1.2e-145	482.1		araR	N/A	N/A	1	361	360	428
+O06990	Arabinogalactan oligomer / maltooligosaccharide transport system permease protein	K15771	KOFam_prokaryote_KEGG	5.8e-148	490.3		ganP, mdxF	N/A	N/A	9	434	425	428
+O34752	Phosphatidylglycerol---prolipoprotein diacylglyceryl transferase	K13292	KOFam_prokaryote_KEGG	1.6e-89	297.2	2.5.1.145	lgt, umpA	N/A	N/A	8	263	255	428
+O34375	Hypothetical							N/A	N/A				
+Q05852	manB; phosphomannomutase	K01840	KOFam_prokaryote_FOAM	2.9e-53	178.1	5.4.2.8		N/A	N/A	2	211	209	428
+P39848	Mannosyl-glycoprotein endo-beta-N-acetylglucosaminidase	K23989	KOFam_prokaryote_KEGG	9e-170	559.5	3.2.1.96	lytD, lytB	N/A	N/A	1	879	878	428
+P39569	Spore germination protein BA	K06291	KOFam_prokaryote_KEGG	1.9e-253	837.8		gerBA	N/A	N/A	1	483	482	428
+P39570	Spore germination protein BB	K06292	KOFam_prokaryote_KEGG	2.3e-167	553.3		gerBB	N/A	N/A	1	367	366	428
+P39571	Spore germination protein BC	K06293	KOFam_prokaryote_KEGG	1.9e-178	589.6		gerBC	N/A	N/A	1	374	373	428
+P96718	UGDH, ugd; UDPglucose 6-dehydrogenase	K00012	KOFam_prokaryote_FOAM	4.8e-183	606.3	1.1.1.22		N/A	N/A	1	432	431	428
+P94583	Response regulator aspartate phosphatase D	K06362	KOFam_prokaryote_KEGG	1.7e-164	544.0	3.1.-.-	rapD	N/A	N/A	1	354	353	428
+P71043	L-amino acid N-acyltransferase	K24217	KOFam_prokaryote_KEGG	5.5e-45	150.8	2.3.1.-	mnaT	N/A	N/A	1	162	161	428
+P71041	Hypothetical							N/A	N/A				
+P71040	Cardiolipin synthase A/B	K06131	KOFam_prokaryote_KEGG	1.9e-154	512.5	2.7.8.-	clsA_B	N/A	N/A	11	482	471	428
+P39153	L-threonylcarbamoyladenylate synthase	K07566	KOFam_prokaryote_KEGG	3.3e-131	435.4	2.7.7.87	tsaC, rimN, SUA5	N/A	N/A	18	343	325	428
+P39152	Hypothetical							N/A	N/A				
+P45867	ACADS, bcd; butyryl-CoA dehydrogenase	K00248	KOFam_prokaryote_FOAM	5.6e-179	592.9	1.3.8.1		N/A	N/A	5	377	372	428
+P45866	Dimethylglycine catabolism B	K21834	KOFam_prokaryote_KEGG	7.7e-118	390.7		dgcB	N/A	N/A	226	696	470	428
+P71002	Response regulator aspartate phosphatase F	K06364	KOFam_prokaryote_KEGG	3.2e-147	487.0	3.1.-.-	rapF	N/A	N/A	1	374	373	428
+P70998	speE, SRM, SPE3; spermidine synthase	K00797	KOFam_prokaryote_FOAM	1.8e-87	290.6	2.5.1.16		N/A	N/A	15	273	258	428
+P39618	Xanthine permease XanP	K16345	KOFam_prokaryote_KEGG	1.2e-35	118.9		xanP	N/A	N/A	2	420	418	428
+P39616	4,4'-diapolycopenoate synthase	K25072	KOFam_prokaryote_KEGG	1.1e-194	644.0	1.2.99.10	crtNc	N/A	N/A	1	456	455	428
+P39588	Hypothetical							N/A	N/A				
+P94367	ATP-binding cassette, subfamily C, bacterial CydC	K16012	KOFam_prokaryote_KEGG	3.3e-190	630.1		cydC	N/A	N/A	8	567	559	428
+P42306	UMF1; MFS transporter, UMF1 family	K06902	KOFam_prokaryote_FOAM	3.9e-139	461.0			N/A	N/A	7	416	409	428
+P42305	deaD, cshA; ATP-dependent RNA helicase DeaD	K05592	KOFam_prokaryote_FOAM	2.7e-179	586.7	3.6.4.13		N/A	N/A	1	476	475	428
+P42304	Rhamnogalacturonan acetylesterase	K15530	KOFam_prokaryote_KEGG	4.4e-35	77.2	3.1.1.86	RGAE	N/A	N/A	173	262	89	428
+P39142	pdp; pyrimidine-nucleoside phosphorylase	K00756	KOFam_prokaryote_FOAM	2.3e-215	712.4	2.4.2.2		N/A	N/A	1	432	431	428
+P46337	DeoR family transcriptional regulator, myo-inositol catabolism operon repressor	K06608	KOFam_prokaryote_KEGG	1.8e-109	361.6		iolR	N/A	N/A	1	250	249	428
+O32294	Response regulator aspartate phosphatase G	K06365	KOFam_prokaryote_KEGG	3.1e-174	576.0	3.1.-.-	rapG	N/A	N/A	1	365	364	428
+P37509	Uncharacterized protein	K06888	KOFam_prokaryote_KEGG	5.6e-33	110.8			N/A	N/A	7	58	51	428
+P37519	Anaerobic dimethyl sulfoxide reductase subunit A	K07306	KOFam_prokaryote_KEGG	2e-123	407.0	1.8.5.3	dmsA	N/A	N/A	3	667	664	428
+P25812	TRNA uridine 5-carboxymethylaminomethyl modification enzyme	K03495	KOFam_prokaryote_KEGG	8.7e-291	963.3		gidA, mnmG, MTO1	N/A	N/A	7	622	615	428
+P25811	TRNA modification GTPase	K03650	KOFam_prokaryote_KEGG	1.5e-166	552.5	3.6.-.-	mnmE, trmE, MSS1	N/A	N/A	2	459	457	428
+Q18CA3	Nucleoid-associated protein EbfC	K09747	KOFam_prokaryote_KEGG	8.8e-48	159.2		ebfC	N/A	N/A	9	115	106	428
+Q18CD1	2-C-methyl-D-erythritol 4-phosphate cytidylyltransferase	K00991	KOFam_prokaryote_KEGG	5.3e-85	282.3	2.7.7.60	ispD	N/A	N/A	2	228	226	428
+Q18CD3	2-C-methyl-D-erythritol 2,4-cyclodiphosphate synthase	K01770	KOFam_prokaryote_KEGG	2.2e-82	273.9	4.6.1.12	ispF	N/A	N/A	1	155	154	428
+Q18CL0	glmM; phosphoglucosamine mutase	K03431	KOFam_prokaryote_FOAM	1.2e-198	658.1	5.4.2.10		N/A	N/A	2	445	443	428
+Q18BF1	Putative holliday junction resolvase	K07447	KOFam_prokaryote_KEGG	1.1e-57	192.2	3.1.-.-	ruvX	N/A	N/A	4	136	132	428
+Q186N3	Pyroglutamyl-peptidase	K01304	KOFam_prokaryote_KEGG	1e-51	172.7	3.4.19.3	pcp	N/A	N/A	2	199	197	428
+Q187D2	Uncharacterized protein	K09861	KOFam_prokaryote_KEGG	4.2e-66	220.0			N/A	N/A	1	246	245	428
+Q182C3	GTPase	K03595	KOFam_prokaryote_KEGG	4.7e-122	404.9		era, ERAL1	N/A	N/A	3	295	292	428
+Q182C6	Probable rRNA maturation factor	K07042	KOFam_prokaryote_KEGG	6.2e-48	160.4		ybeY, yqfG	N/A	N/A	9	151	142	428
+Q182X3	Transcriptional repressor NrdR	K07738	KOFam_prokaryote_KEGG	1.6e-67	224.3		nrdR	N/A	N/A	1	146	145	428
+Q182Z8	murE; UDP-N-acetylmuramoyl-L-alanyl-D-glutamate--2,6-diaminopimelate ligase	K01928	KOFam_prokaryote_FOAM	3.1e-187	620.7	6.3.2.13		N/A	N/A	1	483	482	428
+Q180P5	Cell division protein WhiA	K09762	KOFam_prokaryote_KEGG	8.2e-118	390.1		whiA	N/A	N/A	1	313	312	428
+Q180W5	F-type H+-transporting ATPase subunit beta	K02133	KOFam_prokaryote_KEGG	0.0	1012.7	7.1.2.2	ATPeF1B, ATP5B, ATP2	N/A	N/A	2	461	459	428
+Q181B5	Stage V sporulation protein G	K06412	KOFam_prokaryote_KEGG	6.1e-42	139.5		spoVG	N/A	N/A	1	84	83	428

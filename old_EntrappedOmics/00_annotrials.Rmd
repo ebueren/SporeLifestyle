@@ -1,0 +1,130 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+library(here)
+
+
+here::here()
+data_dir <- here("01_anno", "out_data")
+raw_dir <- here("01_anno", "raw_data")
+
+
+```
+
+##MERGE BY PHAGE GENE ID (BP START STOP?), NOT BY DATABASE HIT, (DUMBASS)
+
+```{r}
+metacerb.best <- read.delim2(here(raw_dir, "011425_METACERB_best_final_annotation_summary.tsv" )) 
+metacerb.all <- read.delim2(here(raw_dir, "011425_METACERB_filtered.tsv")) 
+
+dram.anno <- read.delim2(here(raw_dir, "011425_DRAM_annotations.tsv")) 
+
+phar.anno <- read.delim2(here(raw_dir, "011425_pharokka_cds_final_merged_output.tsv")) 
+
+spore.gene <- read.csv(here(raw_dir, "dram_spore_genes_DAN.csv"))
+
+
+## pharokka has start/stop flipped depending on if + or - strand. flip to always +
+
+
+phar.anno$start.og <- phar.anno$start
+phar.anno$stop.og <- phar.anno$stop
+
+phar.anno$start <- ifelse(phar.anno$frame=="-", phar.anno$stop.og, phar.anno$start.og)
+phar.anno$stop <- ifelse(phar.anno$frame=="-", phar.anno$start.og, phar.anno$stop.og)
+phar.anno <- phar.anno %>% unite("loc", c("start", "stop"), remove=FALSE, na.rm=FALSE, sep="-" )
+
+
+## remove CDS identifier & add in bp location ID
+phar.anno<- phar.anno %>% separate(gene, c("phage", "prot"), sep="_CDS_", remove=FALSE)
+phar.anno <- phar.anno %>% unite(prot.id, c("phage", "loc"), sep="_", remove=FALSE)
+
+
+## keep only relevant columns
+phar.keep <- c("prot.id", "loc", "frame", "score", "phrog", "annot", "category")
+phar <- phar.anno[,c(phar.keep)]
+phar$ID <- "phar"
+
+## for metacerb & dram, format bp to match pharokka like above startbp-stopbp, remove extra strings at end of phage name and add loc to the name.
+metacerb.best <- metacerb.best %>% unite("loc", c("ORF_start", "ORF_end"), remove=FALSE, na.rm=FALSE, sep="-" )
+metacerb.best<- metacerb.best %>% separate(target, c("phage", "prot"), sep="_genome_", remove=FALSE)
+metacerb.best <- metacerb.best %>% unite(prot.id, c("phage", "loc"), sep="_genome_", remove=FALSE)
+
+
+## keep only relevant columns
+meta.keep <- c("prot.id", "loc", "best_hit", "product", "evalue", "score")
+meta <- metacerb.best[,c(meta.keep)]
+meta$ID <- "meta"
+
+dram.anno <- dram.anno %>% unite("loc", c("start_position", "end_position"), remove=FALSE, na.rm=FALSE, sep="-" )
+dram.anno <- dram.anno %>% unite(prot.id, c("scaffold", "loc"), sep="_", remove=FALSE)
+
+
+## to match new dram up w/ dan's dram, create a ncbi_prot number col 
+dram.anno$scaff.id <- gsub(".*genomes_(.*)$", "\\1", dram.anno$X)
+
+dram.anno$scaff.id <- gsub("\\.[^.]*$", "", dram.anno$scaff.id)
+
+dram.anno <- dram.anno %>% unite(scaff.prot, c("scaff.id", "gene_position"), sep="_", remove=FALSE)
+#dram.anno <- merge(dram.anno, spore.gene, by.x="")
+
+
+dram <- dram.anno[,c(3, 5, 6, 7, 9:25)]
+dram$ID <- "dram"
+
+## add program to column prefix
+colnames(phar) <- paste0("phar_", colnames(phar))
+colnames(meta) <- paste0("meta_", colnames(meta))
+colnames(dram) <- paste0("dram_", colnames(dram))
+
+
+## merge
+all <- merge(phar, meta, by.x="phar_prot.id", by.y="meta_prot.id", all.x=TRUE, all.y=TRUE) %>%
+   merge(dram, by.x="phar_prot.id", by.y="dram_prot.id", all.x=TRUE, all.y=TRUE)
+
+```
+
+
+```{r}
+
+dan_dram <- read.delim2(here(raw_dir, "Dan_amg_summary_EB.tsv")) 
+dan_dram$gene_position <- gsub(".*_(\\d+)$", "\\1", dan_dram$gene)
+
+dan_dram <- dan_dram %>% unite(scaff.prot, c("scaffold.noperiod", "gene_position"), sep="_", remove=FALSE)
+
+
+
+lab.refseq <- read.csv(here(raw_dir, "LabPhage_RefseqID.csv")) 
+
+
+
+## based on Daniel's original AMG data, subsetted w/ our lab phages: these are the sporulation hits:
+lab.refseq <- merge(lab.refseq, dan_dram, by.y="scaffold.noperiod", by.x="refseq_name", all.x=TRUE, all.y=FALSE)
+
+
+lab.refseq$gene[is.na(lab.refseq$gene)] <- "missing_notrun"
+colnames(lab.refseq) <- paste0("dan_", colnames(lab.refseq))
+
+
+
+#write.csv(lab.refseq, here(data_dir, "20250113_OriginalDanielAMGHits_LabPhages.csv")) 
+
+
+```
+
+
+
+```{r}
+
+dan_run <- subset(lab.refseq, lab.refseq$dan_gene!="missing_notrun")
+
+
+
+dram.v.dram <- merge(dan_run, dram, by.x="dan_scaff.prot", by.y="dram_scaff.prot", all.x=TRUE, all.y=FALSE)
+
+
+```
+

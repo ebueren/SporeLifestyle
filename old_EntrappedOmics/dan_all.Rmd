@@ -1,0 +1,267 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(here)
+library(tidyverse)
+library(knitr)
+library(cowplot)
+library(ggrepel)
+
+here::here()
+data_dir <- here("ivigs")
+raw_dir <- here("ivigs")
+
+
+#metacerb.best <- read.delim2(here(raw_dir, "01272025_metacerb_GPD_final_annotation_summary.tsv" )) 
+metacerb.kegg <- read.delim2(here(raw_dir, "01272025_metacerb_annotation_summary_KOFam_all_KEGG.tsv" )) 
+
+enrich <- read.csv(here(raw_dir, "viral_sporGenes.csv" )) 
+hit <- enrich[,c(1,2)]
+hit$sporulation <- "sporulation_hit"
+
+metacerb.kegg <- merge(metacerb.kegg, hit, by.x="best_hit", by.y="gene_id", all.x=TRUE)
+metacerb.kegg$gene_name[is.na(metacerb.kegg$gene_name)] <- ""
+metacerb.kegg$sporulation[is.na(metacerb.kegg$sporulation)] <- "no_hit"
+
+
+dan.tax <- read.csv(here(raw_dir, "dan_fam_spor.csv" ), row.names=1) 
+phagescope <- read.delim2(here(raw_dir, "phagescope_metadata.tsv" )) 
+```
+
+```{r}
+#metacerb.all <- read.delim2(here(raw_dir, "01272025_metacerb_GPD_final_annotation_summary.tsv")) 
+
+metacerb.best  <- metacerb.kegg
+metacerb.best$phage<- gsub('_[^_]*$', '', metacerb.best$target) 
+
+ps <- subset(phagescope, phagescope$Phage_source=="GPD" | phagescope$Phage_source=="GVD")
+
+#ivigs <- subset(ps, grepl("ivig", Phage_ID)) ##1,435 (temperate), 1061 (virulent) JINKIES.
+
+
+
+#all <- merge(metacerb.best, gpd, by.x="phage", by.y="GPD_id", all.x=TRUE, all.y=FALSE)
+all <- merge(metacerb.best, ps, by.x="phage", by.y="Phage_ID", all.x=TRUE, all.y=FALSE) 
+all <- merge(all, dan.tax, by.x="phage", by.y="ID", all.x=TRUE, all.y=FALSE)
+
+all$gtdb_f[is.na(all$gtdb_f)] <- "Unknown"
+all$f_spor[is.na(all$f_spor)] <- "Unknown"
+all$GTDB_tax[is.na(all$GTDB_tax)] <- "Unknown"
+
+all.total <- all
+
+all <- subset(all, !grepl("ivig", phage))
+#all <- subset(all, all$Completeness=="Complete" | all$Completeness=="High-quality")
+
+spor <- subset(all, all$f_spor==TRUE)
+#spor <- subset(spor, spor$Completeness=="Complete" | spor$Completeness=="High-quality")
+spor.vir <- subset(spor, spor$Lifestyle=="virulent")
+spor.temp <-subset(spor, spor$Lifestyle=="temperate")
+
+
+nospor <- subset(all, all$f_spor==FALSE)
+nospor.vir <- subset(nospor, nospor$Lifestyle=="virulent")
+nospor.temp <-subset(nospor, nospor$Lifestyle=="temperate")
+
+
+## note, some CONTIGS 
+
+
+
+
+```
+
+
+```{r}
+p.signif <- 1e-3
+
+k_treshold <- 8
+```
+
+```{r}
+
+all.phage.count <- unique(all.total[,c(1,20, 22, 25, 27)])
+
+phage.count <- subset(all.phage.count, all.phage.count$f_spor=="TRUE")
+#phage.count <- subset(phage.count, phage.count$Completeness=="Complete" | phage.count$Completeness=="High-quality")
+
+d.host <- 
+  phage.count %>% 
+  group_by(Lifestyle) %>% 
+  summarise(n=n())
+
+total_temp <- 
+  d.host %>% 
+  filter(Lifestyle=="temperate") %>% 
+  pull(n) 
+
+total_vir <- 
+  d.host %>% 
+  filter(Lifestyle=="virulent") %>% 
+  pull(n) 
+
+d.host
+```
+
+
+```{r}
+
+
+
+# Summarise total number of sporulators and non sporulators
+d.amg.sum <- spor %>%
+  # filter(str_detect(header, regex("sporulation", ignore_case = T))) %>%
+  filter(!is.na(gene_name)) %>% 
+  filter(!is.na(Lifestyle)) %>% 
+  filter(!sporulation=="no_hit") %>% 
+  group_by(gene_name, Lifestyle) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n))
+
+d.amg.sum$rel <- ifelse(d.amg.sum$Lifestyle=="temperate", d.amg.sum$n/total_temp*100, d.amg.sum$n/total_vir*100)
+
+
+rel <- d.amg.sum %>%
+  ggplot(aes(gene_name, rel, color = Lifestyle))+
+  geom_point(shape=21, size=2)+
+  ylab( "normalized (%) occurence from all genes") +
+  coord_flip()+
+  theme_bw()
+rel
+#ggsave(here(data_dir, "lifestyle_relative_dots.jpg"))
+
+
+
+raw <- d.amg.sum %>%
+  ggplot(aes(gene_name, n, color = Lifestyle))+
+  geom_point(shape=21, size=2)+
+   ylab( "absolute count of target gene out of all predicted genes") +
+  #facet_wrap( scales = "free_y")+
+  coord_flip()+
+  theme_bw()
+raw
+#ggsave(here(data_dir, "lifestyle_raw_dots.jpg"))
+
+
+ggplot(d.amg.sum, aes(fill=Lifestyle, y=rel, x=gene_name)) + 
+    geom_bar(position="dodge", stat="identity") + coord_flip() + theme_bw()
+
+rel.bars <- ggplot(d.amg.sum, aes(fill=Lifestyle, y=rel, x=gene_name)) + 
+    geom_bar(position="stack", stat="identity") + ylab( "normalized (%) occurence") + coord_flip() + theme_bw()
+
+rel.bars
+#ggsave(here(data_dir, "lifestyle_relative_bars.jpg"))
+
+
+raw
+
+#ggsave()
+```
+
+
+```{r}
+spor$spor_host <- ifelse(spor$Lifestyle=="virulent", TRUE, FALSE)
+
+
+d_enrich <- 
+  spor %>% 
+  
+#   Summarize KOs by host sporulation
+    mutate(spor_host = case_when(
+    spor_host ~ "virulent",
+    !spor_host ~ "temperate"
+  )) %>% 
+  filter(!is.na(gene_name)) %>% 
+  filter(!gene_name=="") %>% 
+  group_by(gene_name, spor_host) %>% 
+  summarise(n=n(), .groups = "drop") %>% 
+  pivot_wider(values_from = n, names_from = spor_host, values_fill = 0) %>% 
+    
+    # q	: the number of white balls drawn without replacement 
+    # from an urn which contains both black and white balls.
+    # >>> AMG (specific gene) in viruses infecting sporulators
+    mutate(q = virulent) %>% 
+    
+    # m	:the number of white balls in the urn.
+    # >>> number of viruses infecting sporulators in the pool
+    mutate(m = total_temp) %>% 
+    
+    # n	:the number of black balls in the urn.
+    # >>> number of viruses infecting non-sporulators in the pool
+    mutate(n = total_vir) %>% 
+    
+    # k: the number of balls drawn from the urn, hence must be in 0,1,., m+n.
+    # >>> Total AMG (specific gene) detected in viruses
+    mutate(k = total_vir + total_temp) %>% 
+    
+    mutate(p.val = signif (phyper(q, m, n, k, lower.tail =F),5)) %>% 
+  # Adjust Pvalue for multiple testing
+    mutate(p.adj = signif (p.adjust(p.val, method = "BH"),5)) %>% 
+  # mark significantly enriched genes
+   mutate(significant = (p.adj < p.signif) & (k>k_treshold))
+
+```
+
+```{r}
+d_enrich %>% 
+  arrange(desc(gene_name), desc(significant), p.adj) #%>% 
+ # write_csv(here("enrichment/data","enrichment_stats.csv"))
+```
+
+
+# Plot enrichment results
+
+```{r}
+# labels for significant genes
+labels <- 
+  spor %>% 
+  select(best_hit) %>% 
+  distinct() #%>% 
+  #filter(gene_id %in% d_enrich$gene_id[d_enrich$significant]) %>% 
+  #mutate(lab = str_remove(product, "[;|\\[].*")) %>% 
+  #group_by(gene_id) %>% 
+  #summarise(p_lab = str_c(lab, collapse = "\n")) %>% 
+  #adjustment of one label
+  #mutate(p_lab = if_else(gene_id == "K00558", paste0(p_lab, "\n"), p_lab))
+
+d_enrich <-
+  left_join(d_enrich, labels,  by = "gene") 
+
+
+  #mark sporulation genes
+d_enrich <- d_enrich %>% 
+  mutate(spor_gene = if_else(gene_id %in% unique(spor_genes$gene_id.ko),
+         "Spoulation genes", "Other genes"))
+
+# plot
+p <-
+  d_enrich %>% 
+  filter(k>0) %>%
+  ggplot(aes(k,-log10(p.adj+1e-120)))+
+  geom_hline(yintercept = -log10(p.signif), linetype=2, color="grey", size = 1)+
+  geom_vline(xintercept = k_treshold, linetype=2, color="grey", size = 1)+
+  
+  geom_text_repel(aes(label = p_lab), size = 3, na.rm = T, point.padding = 2, min.segment.length = 0,seed = 123)+
+  
+  geom_jitter(aes(fill = significant),width = 0.05, height = 0.05,
+              shape=21, size=3, stroke = 1, show.legend = F)+
+  scale_fill_viridis_d(direction = -1, alpha = 0.5)+
+  theme_classic()+
+  facet_wrap(~ spor_gene %>% fct_rev(), ncol = 2) +
+  panel_border(color = "black")+
+  scale_x_continuous(trans = "log2", breaks = (2^(0:11)))+
+  xlab("Sample size\nNo. homologs detected (log2)")+
+  ylab("Enrichment (-log10 adj. P-value)")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "bold"))
+
+ggsave(here("enrichment/plots/enrichmnent.png"),
+       height =3 ,width = 6)
+p
+
+```
+

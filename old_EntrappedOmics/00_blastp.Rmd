@@ -1,0 +1,47 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+library(here)
+
+
+here::here()
+data_dir <- here("01_anno", "out_data")
+raw_dir <- here("01_anno", "raw_data")
+
+
+```
+
+
+```{r}
+blastp <- read.delim2(here(raw_dir, "01212025_labseq2UPspor.tsv"))
+blastp$evalue <- as.numeric(blastp$evalue)
+blastp$bitscore <- as.numeric(blastp$bitscore)
+
+uniprot <- read.delim2(here(raw_dir, "uniprotkb_reviewed_true_AND_keyword_KW_2025_01_15.tsv"))
+uniprot <- uniprot[,-c(2,10)] ##remove NA columns
+
+lab.refseq <- read.csv(here(raw_dir, "LabPhage_RefseqID.csv")) 
+
+
+
+## clean blastp, use \\ to escape from pipe |
+
+blastp<- blastp %>% separate(qseqid, c("sp", "Entry", "QName"), sep="\\|", remove=FALSE)
+blastp<- blastp %>% separate(sseqid, c("refseq_name", "contig.misc"), sep="\\.", remove=FALSE)
+blastp<- blastp %>% separate(contig.misc, c("contig.misc2", "prot"), sep="_CDS_", remove=FALSE)
+
+blastp <- blastp[,-c(2,7,8)]
+
+###  merge
+
+lab.blast <- merge(blastp, uniprot, by="Entry", all.x=TRUE, all.y=FALSE)
+
+lab.blast <- subset(lab.blast, lab.blast$bitscore>=50)
+blast.slice <- lab.blast %>% slice_max(bitscore, by="sseqid")
+  
+
+
+``` 

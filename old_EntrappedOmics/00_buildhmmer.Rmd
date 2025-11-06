@@ -1,0 +1,34 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(here)
+
+
+here::here()
+data_dir <- here("00_sporeIDs", "out_data")
+raw_dir <- here("00_sporeIDs", "input")
+
+spore.uni <- read.delim2(here(raw_dir, "uniprotkb_sporulation_AND_taxonomy_id_2_2025_01_27.tsv")) 
+pfam <- subset(spore.uni, spore.uni$Pfam!="")
+#pfam <- as.data.frame(pfam[,c(14)])
+pfam2 <- pfam[,c(14)]
+
+pfam2 <- gsub(";",",", pfam2)
+
+
+#write.csv(pfam2, here(data_dir, "messy_pfam_list_uniprotSPORULATION.csv")) 
+
+```
+
+
+``` {r}
+dups <- read.csv(here(data_dir, "pfam_list_uniprotSPORULATION_dups.csv"), header = FALSE) 
+uniq <- unique(dups)
+
+#write.csv(uniq, here(data_dir, "pfam_list_uniprotSPORULATION.csv"), row.names = FALSE)
+
+```
