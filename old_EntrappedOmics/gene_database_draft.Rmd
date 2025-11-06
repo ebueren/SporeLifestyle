@@ -1,0 +1,103 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(here)
+library(tidyverse)
+
+here::here()
+
+raw_dir <- here("gene_list")
+```
+
+
+```{r}
+### take all sporulation tagged genes on b.subti wiki, and extract the gene name most likely to be used 
+# https://subtiwiki.uni-goettingen.de/v4/exports
+subti <- read.csv(here(raw_dir, "geneCategories-2025-02-27.csv"))
+
+
+subti <-  subset(subti, grepl("SW.4.2", category.id))
+subti$gene.locus2 <- gsub("_", "", subti$gene.locus)
+subti <- subti[,c(-4)]
+df1 <- as.data.frame(subti$gene.locus)
+df2 <- as.data.frame(subti$gene.locus2)
+colnames(df1) <- "gene.locus"
+colnames(df2) <- "gene.locus"
+list <- rbind(df1, df2)
+
+
+#subti <- unique(subti[,c(5)])
+
+#write.table(list, here(raw_dir, "bsub_sporgenes.txt"), row.names=FALSE, col.names=FALSE, quote=FALSE)
+
+
+## can map IDS between bsubwiki and uniprot using Gene_Name (bsub000) → UniProtKB
+## BSU26559 BSU21670 new10770241077320c BSU26390 BSU19810 BSU25760 BSU23616 BSU07540 BSU04785 no hits
+
+
+bsub.prot <- read.delim(here(raw_dir, "uniprot_bsub_key.tsv"))
+
+bsub.prot$From <- ifelse(!grepl("_", bsub.prot$From), gsub("BSU","BSU_",bsub.prot$From), bsub.prot$From)
+
+bsub <- merge(subti, bsub.prot, by.y="From", by.x="gene.locus", all=TRUE )
+
+
+
+
+## use these as a list of all sporulation vetted bsub prots, combine these with all sporulation tagged uniprot proteins to get list of all sporulation prots
+
+
+
+```
+
+```{r}
+
+bsub.trunc <- as.data.frame(bsub[,c(5)])
+colnames(bsub.trunc) <- "Entry"
+
+uniprot <- read.delim(here(raw_dir, "uniprotkb_keyword_KW_0749_AND_reviewed_2025_02_27.tsv"))
+
+uniprot <- as.data.frame(uniprot[,c(1)])
+colnames(uniprot) <- "Entry"
+
+entry <- rbind(bsub.trunc, uniprot)
+entry <- unique(rbind(bsub.trunc, uniprot))
+
+
+#write.table(entry, here(raw_dir, "sporulation_uniprot_entries.txt"), row.names=FALSE, col.names=FALSE, quote=FALSE)
+
+```
+
+
+
+```{r}
+
+dan.meta <- read.csv(here(raw_dir, "dram_spore_genes_DAN.csv"))
+
+dan.meta<- dan.meta[c(1:4,7)]
+dan.meta$dan.t <- "dan"
+uniprot <- read.delim(here(raw_dir, "uniprot_combined_bsub_spor.tsv"))
+uniprot <- uniprot[,c(2,4,5,20)]
+uniprot$uni.t <- "uniprot"
+
+
+
+
+
+
+
+
+
+
+test <- merge(dan.meta, uniprot, by.x="gene_id.uniref90", by.y="Entry", all=TRUE)
+
+missing.in.dan <- subset(test, is.na(test$dan.t))
+
+missing.in.uniprot <- subset(test, is.na(test$uni.t))
+## put these ids into uniprot to see their metadata and why they didn't come up in uniprot as "sporulation" proteins despite having uniprot IDS (bad annotation? not reviewed? no keyword?)
+
+## alternative: https://amigo.geneontology.org/amigo/term/GO:0043934 ?
+```
+

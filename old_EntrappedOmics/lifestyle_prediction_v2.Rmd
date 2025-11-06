@@ -1,0 +1,441 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(here)
+library(tidyverse)
+library(cowplot)
+here::here()
+
+#raw_dir <- here("isolate_dbs/inphared/")
+#gtdb_dir <- here("isolate_dbs/gtdb/")
+library(PNWColors)
+pal2 <- pnw_palette(name="Lake",n=3,type="discrete")
+pal2 <- pnw_palette(name="Starfish",n=4,type="discrete")
+
+pal2
+```
+
+```{r}
+
+inph_dir <- here("inphared/raw_data/")
+fig_dir <- here("inphared/figs")
+
+##original inphared data
+inph <- read.delim2(here(inph_dir, "1Jan2025_data.tsv"))
+inph <- inph[,c(1:3,5,15,16,27)]
+inph <- inph %>% rename(Inph_Host = Host, Inph_Tax = Lowest.Taxa, Inph_IsoHost = Isolation.Host..beware.inconsistent.and.nonsense.values.)
+
+##phatype data
+phatyp <- read.delim2(here(inph_dir, "phatyp_prediction_inphared.tsv"))
+phatyp <- phatyp[,c(1,3:4)]
+phatyp <- phatyp %>% rename(phatyp.Pred = TYPE)
+
+
+##phastyle data
+style <- read.delim2(here(inph_dir, "inphared_phastyle_predictions.tsv"))
+style <- style[,c(1,3:5)]
+style <- style %>% rename(style.Pred = predicted_label)
+
+##phagescope data
+ps <- read.delim2(here("ivigs/phagescope_metadata.tsv"))
+ps$phage<- gsub('.[^.]*$', '', ps$Phage_ID) 
+ps <- ps[,c(11,4:7)]
+ps <- ps %>% rename(ps.Pred = Lifestyle)
+
+## dan sporulation classifying groups
+dan.tax <- read.csv(here("isolate_dbs/gtdb/gtdb_families_sporulation.csv" ))
+dan.tax$gtdb_f<- gsub('f__', '', dan.tax$gtdb_f) 
+gtdb.tax <- read.csv(here("isolate_dbs/gtdb/gtdb-taxonomy-table.csv" ))
+gtdb.tax <- subset(gtdb.tax, gtdb.tax$Domain=="Bacteria")
+colnames(gtdb.tax) <- paste0("newgtdb_", colnames(gtdb.tax))
+
+
+gtdb.tax2 <- merge(dan.tax, gtdb.tax, by.y="newgtdb_Family", by.x="gtdb_f", all.x=TRUE, all.y=FALSE)
+gtdb.tax2 <- gtdb.tax2[,c(6,11,1)]
+gtdb.tax2 <- unique(gtdb.tax2)
+
+### phatyp vs. phagescope
+all <- merge(inph, phatyp, by="Accession", all.x=TRUE, all.y=TRUE) %>%
+ merge(style, by.x="Accession", by.y="fasta_id", all.x=TRUE, all.y=TRUE) %>%
+ merge(ps, by.x="Accession", "phage", all.x=TRUE, all.y=FALSE) %>%
+ merge(gtdb.tax2, by.x="Inph_Host", by.y="newgtdb_Genus", all.x=TRUE, all.y=FALSE)
+
+#all <- all[,c(1:2, 7,9, 15, 3:6,8,10:14)]
+all <- all[,c(1:2,17,5,7,14,8,10,16)]
+
+
+## compare
+all$ps.v.type <- ifelse(all$ps.Pred==all$phatyp.Pred, TRUE, FALSE)
+scope.v.type <- all[,c(1:5,6,7,9,10)]
+scope.v.type <- scope.v.type[!is.na(scope.v.type$ps.v.type),]
+
+
+all$ps.v.style <- ifelse(all$ps.Pred==all$style.Pred, TRUE, FALSE)
+scope.v.style <- all[,c(1:5,6,8,9,11)]
+scope.v.style <- scope.v.style[!is.na(scope.v.style$ps.v.style),]
+
+all$style.v.type <- ifelse(all$style.Pred==all$phatyp.Pred, TRUE, FALSE)
+type.v.style <- all[,c(1:5,6,7,8,12)]
+type.v.style <- type.v.style[!is.na(type.v.style$style.v.type),]
+```
+
+
+
+
+
+
+### phagescope vs. phatype
+
+```{r}
+
+t.hits <- scope.v.type %>% group_by(ps.v.type, f_spor) %>%  summarise(n=n())
+
+t.true <-  t.hits %>% filter(ps.v.type) %>% pull(n) 
+
+t.false <- t.hits %>%  filter(!ps.v.type) %>%  pull(n) 
+
+total.ag <- t.true/(t.true+t.false)
+
+
+
+spor.stat <- c('Spore', 'Non-spore')
+outcome <- c('Agree', 'Fail')
+data <- matrix(c(350, 55, 913, 60), nrow=2, ncol=2, byrow=TRUE)
+dimnames(data) <- list('Spore'=spor.stat, 'Outcome'=outcome)
+
+
+library(epitools)
+
+#calculate odds ratio
+oddsratio(data)  ## 0.418499, sig
+
+fisher.test(data)  
+
+
+
+t.group <- scope.v.type %>% group_by(ps.v.type, Inph_Host) %>% summarise(n=n()) #%>% summarise(total.sum=sum(n))  
+
+group.true <-  t.group %>% filter(ps.v.type) 
+group.true <- group.true %>% rename(true.hits = n)
+group.true <- group.true[,c(-1)]
+
+
+group.false <-  t.group %>% filter(!ps.v.type) 
+group.false <- group.false %>% rename(false.hits = n)
+group.false <- group.false[,c(-1)]
+
+group <- merge(group.true, group.false, by="Inph_Host", all=TRUE) %>%
+  merge(gtdb.tax2,  by.x="Inph_Host", by.y="newgtdb_Genus", all.x=TRUE, all.y=FALSE)
+
+group <- group[!is.na(group$f_spor),]
+
+group$true.hits[is.na(group$true.hits)] <- 0
+group$false.hits[is.na(group$false.hits)] <- 0
+
+group$sum <- group$true.hits+group$false.hits
+
+group$agree <- group$true.hits/group$sum*100
+group$disagree <- group$false.hits/group$sum*100
+
+group <- subset(group, group$sum > 5)
+
+group$f_spor <- factor(group$f_spor, levels=unique(group$f_spor))
+
+ggplot(group, aes(x = factor(f_spor), fill = factor(Inph_Host), y = agree)) +
+  geom_dotplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)
+
+
+
+#aes(x=factor(x_var, level=c('value1', 'value2', 'value3'))
+    
+ps.type.gg <- ggplot(group, aes(Inph_Host, agree)) +
+  geom_col(aes(fill=f_spor)) + coord_flip()
+
+ps.type.gg
+
+typ.ps1 <- aov(ps.v.type ~ f_spor, data = all)
+
+#typ.ps2 <- aov(ps.v.type ~ f_spor+Inph_Host, data = all)
+
+summary(typ.ps1)
+
+#anova(typ.ps1)
+
+
+
+```
+
+
+
+
+### phagescope vs. phaSTYLE
+
+```{r}
+
+t.hits <- scope.v.style %>% group_by(ps.v.style, f_spor) %>%  summarise(n=n())
+
+t.true <-  t.hits %>% filter(ps.v.style) %>% pull(n) 
+
+t.false <- t.hits %>%  filter(!ps.v.style) %>%  pull(n) 
+
+total.ag <- t.true/(t.true+t.false)
+
+
+spor.stat <- c('Spore', 'Non-spore')
+outcome <- c('Agree', 'Fail')
+data <- matrix(c(313, 92, 876, 97), nrow=2, ncol=2, byrow=TRUE)
+dimnames(data) <- list('Spore'=spor.stat, 'Outcome'=outcome)
+
+
+library(epitools)
+
+#calculate odds ratio
+oddsratio(data)  ## 0.377, sig
+
+fisher.test(data)  ## 
+
+
+
+
+t.group <- scope.v.style %>% group_by(ps.v.style, Inph_Host) %>% summarise(n=n()) #%>% summarise(total.sum=sum(n))  
+
+group.true <-  t.group %>% filter(ps.v.style) 
+group.true <- group.true %>% rename(true.hits = n)
+group.true <- group.true[,c(-1)]
+
+
+group.false <-  t.group %>% filter(!ps.v.style) 
+group.false <- group.false %>% rename(false.hits = n)
+group.false <- group.false[,c(-1)]
+
+group <- merge(group.true, group.false, by="Inph_Host", all=TRUE) %>%
+  merge(gtdb.tax2,  by.x="Inph_Host", by.y="newgtdb_Genus", all.x=TRUE, all.y=FALSE)
+
+group <- group[!is.na(group$f_spor),]
+
+group$true.hits[is.na(group$true.hits)] <- 0
+group$false.hits[is.na(group$false.hits)] <- 0
+
+group$sum <- group$true.hits+group$false.hits
+
+group$agree <- group$true.hits/group$sum*100
+group$disagree <- group$false.hits/group$sum*100
+
+group <- subset(group, group$sum > 5)
+
+group$f_spor <- factor(group$f_spor, levels=unique(group$f_spor))
+
+ggplot(group, aes(x = factor(f_spor), fill = factor(gtdb_f), y = agree)) +
+  geom_dotplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)
+
+
+
+
+    
+ps.style.gg <- ggplot(group, aes(Inph_Host, agree)) +
+  geom_col(aes(fill=f_spor)) + coord_flip()
+
+ps.style.gg
+
+
+typ.ps1 <- aov(ps.v.style ~ f_spor, data = all)
+
+#typ.ps2 <- aov(ps.v.type ~ f_spor+Inph_Host, data = all)
+
+summary(typ.ps1)
+
+
+```
+
+
+
+### phastyle vs. phatype
+
+```{r}
+
+t.hits <- type.v.style %>% group_by(style.v.type, f_spor) %>%  summarise(n=n())
+
+t.true <-  t.hits %>% filter(style.v.type) %>% pull(n) 
+
+t.false <- t.hits %>%  filter(!style.v.type) %>%  pull(n) 
+
+total.ag <- t.true/(t.true+t.false)
+
+
+type.v.style$tally <- ifelse(type.v.style$style.v.type==TRUE, 1, 0)
+
+ type.v.style %>% group_by(f_spor) %>% summarise(n=mean(tally))  ## sporulator agree: 77%, non-spor agree: 88%
+
+
+spor.stat <- c('Spore', 'Non-spore')
+outcome <- c('Agree', 'Fail')
+data <- matrix(c(861, 254, 2865, 399), nrow=2, ncol=2, byrow=TRUE)
+dimnames(data) <- list('Spore'=spor.stat, 'Outcome'=outcome)
+
+
+library(epitools)
+
+#calculate odds ratio
+oddsratio(data)
+
+fisher.test(data)  ## 
+
+
+t.group <- type.v.style %>% group_by(style.v.type, Inph_Host) %>% summarise(n=n()) #%>% summarise(total.sum=sum(n))  
+
+group.true <-  t.group %>% filter(style.v.type) 
+group.true <- group.true %>% rename(true.hits = n)
+group.true <- group.true[,c(-1)]
+
+
+group.false <-  t.group %>% filter(!style.v.type) 
+group.false <- group.false %>% rename(false.hits = n)
+group.false <- group.false[,c(-1)]
+
+group <- merge(group.true, group.false, by="Inph_Host", all=TRUE) %>%
+  merge(gtdb.tax2,  by.x="Inph_Host", by.y="newgtdb_Genus", all.x=TRUE, all.y=FALSE)
+
+group <- group[!is.na(group$f_spor),]
+
+group$true.hits[is.na(group$true.hits)] <- 0
+group$false.hits[is.na(group$false.hits)] <- 0
+
+group$sum <- group$true.hits+group$false.hits
+
+group$agree <- group$true.hits/group$sum*100
+group$disagree <- group$false.hits/group$sum*100
+
+group <- subset(group, group$sum > 5)
+
+group$f_spor <- factor(group$f_spor, levels=unique(group$f_spor))
+
+ggplot(group, aes(x = factor(f_spor), fill = factor(gtdb_f), y = agree)) +
+  geom_dotplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)
+
+
+type.style.gg <- ggplot(group, aes(Inph_Host, agree)) +
+  geom_col(aes(fill=f_spor)) + coord_flip()
+
+type.style.gg + labs(fill = "Host Sproulation") + xlab("Bacterial Host") + ylab("Prediction Agreement") + ggtitle("PhaStyle vs. PhaTYP Lifestyle Prediction") + scale_fill_manual(values=pal2) 
+
+ggsave(here(fig_dir, "PhaTYPEvsSTYLE_Inphared.png"), height =4 ,width = 6)
+
+
+typ.ps1 <- aov(style.v.type ~ f_spor, data = all)
+
+
+typ.ps2 <- aov(style.v.type ~ f_spor*Inph_Host, data = all) ## sporulation and host are confounding
+
+summary(typ.ps1)
+summary(typ.ps2)
+
+anova(typ.ps1, typ.ps2)
+
+
+
+
+```
+
+```{r}
+ps.type.gg
+ps.style.gg
+type.style.gg
+
+```
+
+
+
+## phastyle temp v. virulent
+
+```{r}
+
+
+t.hits <- all %>% group_by(style.Pred, f_spor) %>%  summarise(n=n())
+
+spor.stat <- c('Sporulating', 'Non-sporulating')
+outcome <- c('Temperate', 'Lytic')
+data <- matrix(c(635, 480, 1846, 1418), nrow=2, ncol=2, byrow=TRUE)
+dimnames(data) <- list('Host'=spor.stat, 'Predicted Phage Lifestyle'=outcome)
+
+
+
+
+fisher.test(data)  ## p = 0.83, no sig!! 
+oddsratio(data) 
+
+style.mo <- ~
+
+style.mo 
+
+mosaicplot(data, col=pal2, main = "PhaStyle", cex.axis = 1.5) 
+
+ggsave(here(fig_dir, "STYLE_mosiac.png"), height =4 ,width = 6)
+
+
+```
+
+
+
+## phatype temp v. virulent
+
+```{r}
+
+
+t.hits <- all %>% group_by(phatyp.Pred, f_spor) %>%  summarise(n=n())
+t.hits <- subset(t.hits, t.hits$phatyp.Pred=="temperate" | t.hits$phatyp.Pred=="virulent")
+
+
+spor.stat <- c('Sporulating', 'Non-sporulating')
+outcome <- c('Temperate', 'Lytic')
+data2 <- matrix(c(481, 633, 1602, 1656), nrow=2, ncol=2, byrow=TRUE)
+dimnames(data2) <- list('Host'=spor.stat, 'Predicted Phage Lifestyle'=outcome)
+
+
+
+
+#oddsratio(data)
+fisher.test(data2) # p=0.0005, OR: 0.78, signficant!!
+oddsratio(data2) 
+type.mo <- mosaicplot(data2, col=pal2, main = "PhaTYP", cex.axis = 1.5)  
+
+```
+
+
+
+```{r}
+library(gridGraphics)
+#plot_grid(type.mo, style.mo, labels = c('A', 'B'), label_size = 12)
+```
+
+
+
+## phagescope temp v. virulent
+
+```{r}
+
+
+t.hits <- all %>% group_by(ps.Pred, f_spor) %>%  summarise(n=n())
+t.hits <- subset(t.hits, t.hits$ps.Pred=="temperate" | t.hits$ps.Pred=="virulent")
+
+
+spor.stat <- c('Spore', 'Non-spore')
+outcome <- c('Temp', 'Vir')
+data <- matrix(c(383, 590, 154, 251), nrow=2, ncol=2, byrow=TRUE)
+dimnames(data) <- list('Spore'=spor.stat, 'Outcome'=outcome)
+
+
+
+fisher.test(data) ### not significant, p = 0.67, might be due to smaller sample size
+oddsratio(data) 
+mosaicplot(data, color = TRUE)  
+```
+
+
+
+### leaning toward type being more accurate? except for wbeta lol 
+
+## p larvae phage thought to be lytic but this paper says it is actually temperate: ## https://pmc.ncbi.nlm.nih.gov/articles/PMC4510184/ 
+```

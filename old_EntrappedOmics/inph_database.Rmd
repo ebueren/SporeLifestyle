@@ -1,0 +1,98 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(here)
+library(tidyverse)
+library(knitr)
+library(cowplot)
+library(ggrepel)
+
+here::here()
+
+data_dir <- here("isolate_dbs/inphared/")
+
+raw_dir <- here("isolate_dbs/inphared/")
+gtdb_dir <- here("isolate_dbs/gtdb/")
+
+
+```
+
+```{r}
+
+###wrong csv, need spor table, not IVIG sporulation hits
+dan.tax <- read.csv(here(gtdb_dir, "gtdb_families_sporulation.csv" ))
+dan.tax$gtdb_f<- gsub('f__', '', dan.tax$gtdb_f) 
+gtdb.tax <- read.csv(here(gtdb_dir, "gtdb-taxonomy-table.csv" ))
+gtdb.tax <- subset(gtdb.tax, gtdb.tax$Domain=="Bacteria")
+colnames(gtdb.tax) <- paste0("newgtdb_", colnames(gtdb.tax))
+
+tax <- merge(dan.tax, gtdb.tax, by.x="gtdb_f", by.y="newgtdb_Family", all.x=TRUE, all.y=FALSE)
+
+weird <- subset(tax, is.na(tax$newgtdb_Domain))
+
+tax <- subset(tax, !is.na(tax$newgtdb_Class))
+
+tax <- unique(tax[,c(1,6:11)])
+
+### check inph for dereplication/ duplicates between refseq and genbank, ex: Bacillus phage Eldridge
+#inph <- read.delim2(here(raw_dir, "1Jan2025_data.tsv"))
+#inph$ignore <- "keep"
+#inph <- inph[,c(1,28)]
+inph<- read.delim2(here(raw_dir, "1Jan2025_data_excluding_refseq.tsv"))
+#inph.clean <- merge(inph, inph.noref, by="Accession", all.x=FALSE, all.y=TRUE)
+
+
+test <- merge(inph, tax, by.x="Host", by.y="newgtdb_Genus", all=FALSE)
+test$fna <- "fna"
+
+
+### all phage with known sporulation status (T/F) of host
+test.known <- subset(test, !is.na(test$f_spor))
+write.csv(test.known, here(data_dir, "known_sporhostphage.csv"))
+
+
+### list of all known sporulation status phages 
+
+writeLines(as.character(test.known$Accession), here(data_dir, "known_Contig_sporhostphage.txt"))
+
+test.allknown <- test.known[,c(2,34)]
+test.allknown <- unite(test.allknown, "name", c("Accession", "fna"), sep=".")
+
+test.ref <- subset(test.allknown, grepl("NC_", name))
+
+write.table(test.allknown, here(data_dir, "known_sporhostphage.txt"), row.names=FALSE, col.names=FALSE, quote=FALSE)
+
+
+
+## all phage with sporulating hosts
+
+test.spore <- subset(test.known, test.known$f_spor==TRUE) #299 NC_phages
+test.allspore <- test.spore[,c(2,34)]
+test.allspore <- unite(test.allspore, "name", c("Accession", "fna"), sep=".")
+
+write.table(test.allspore, here(data_dir, "inphared_sporhostphage.txt"), row.names=FALSE, col.names=FALSE, quote=FALSE)
+
+
+
+```
+
+
+```{r}
+
+test.nonspore <- subset(test.known, test.known$f_spor==FALSE) ##732 NC_Phages
+
+
+#test.NC <-  subset(test.known, grepl("NC_", Accession))
+```
+
+```{r}
+
+
+#test.NC <- test.known[,c(2)]
+
+
+#test.NC <-  subset(test.known, grepl("NC_", Accession))
+```
+

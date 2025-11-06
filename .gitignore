@@ -52,3 +52,25 @@ cache/
 # Package build directories
 .Rcheck/
 .Rbuildignore
+
+
+### current entrappedOmics files that are too large
+old_EntrappedOmics/inphared/0a_withhost.csv
+old_EntrappedOmics/inphared/raw_data/metacerb_inphared_final_annotation_summary.tsv
+old_EntrappedOmics/inphared/raw_data/0A_inphjan25_consensus_py.txt
+old_EntrappedOmics/refseq/raw_data/0A_inphjan25_knownsporphage0A_consensus_py.txt
+old_EntrappedOmics/refseq/040225_rawdir/metacerb_final_annotation_summary.tsv
+old_EntrappedOmics/refseq/040225_rawdir/metacerb_allfiltered.tsv
+old_EntrappedOmics/qualitycontrol/annotation_summary_KOFam_all_KEGG.tsv
+old_EntrappedOmics/refseq_0403/raw_data/0A_inphjan25_knownsporphage0A_consensus_py.txt
+old_EntrappedOmics/isolate_dbs/uniprotkb_reviewed_true_2025_05_11.tsv
+old_EntrappedOmics/ivigs/01272025_metacerb_GPD_final_annotation_summary.tsv
+old_EntrappedOmics/ivigs/01272025_metacerb_annotation_summary_KOFam_all_KEGG.tsv
+old_EntrappedOmics/ivigs/0A_alldan_consensus_py.txt
+old_EntrappedOmics/ivigs/01272025_metacerb_GPD_allHITs.tsv
+old_EntrappedOmics/ivigs/perf1mis_0a_alldan_consensus_py.txt
+old_EntrappedOmics/mmseqs/inphared/annotation_summary_PHROG.tsv
+old_EntrappedOmics/mmseqs/inphared/metacerb_annotation_summary_COG.tsv
+old_EntrappedOmics/mmseqs/inphared/metacerb_final_annotation_summary.tsv
+old_EntrappedOmics/mmseqs/inphared/metacerb_annotation_summary_KOFam_all_KEGG.tsv
+old_EntrappedOmics/mmseqs/gpd/dan_uniprot_results.m8

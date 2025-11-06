@@ -1,0 +1,132 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(here)
+library(tidyverse)
+
+here::here()
+data_dir <- here("inphared/")
+raw_dir <- here("inphared/raw_data/")
+
+
+```
+
+```{r}
+#box <- read.delim2(here(raw_dir, "0A_inphjan25_consensus_py.txt"))
+#box <- subset(box, box$Mismatches==0)
+#write.csv(box, here(raw_dir, "perf0A_inphjan25_consensus_py.txt"))
+
+box <- read.csv(here(raw_dir, "perf0A_inphjan25_consensus_py.txt"), row.names = 1)
+#box <- read.csv(here(raw_dir, "perf1mis_0a_alldan_consensus_py.txt"), row.names = 1)
+#box <- subset(box, box$Mismatches==1)
+
+box <- box %>% rename(product = Sequence, phage = Contig)
+box[,c(2)] <- "0A_box"
+box <- box[,c(3,2,1)]
+box$count <- 1
+
+dan.tax <- read.csv(here("isolate_dbs/gtdb/gtdb_families_sporulation.csv" ))
+dan.tax$gtdb_f<- gsub('f__', '', dan.tax$gtdb_f) 
+dan.tax <- dan.tax[,c(5,6)]
+dan.tax <- unique(dan.tax)
+
+gtdb.tax <- read.csv(here("isolate_dbs/gtdb/gtdb-taxonomy-table.csv" ))
+gtdb.tax <- subset(gtdb.tax, gtdb.tax$Domain=="Bacteria")
+colnames(gtdb.tax) <- paste0("newgtdb_", colnames(gtdb.tax))
+
+gtdb.tax <- merge(dan.tax, gtdb.tax, by.x="gtdb_f", by.y="newgtdb_Family", all.x=TRUE, all.y=TRUE)
+
+gtdb.tax <- gtdb.tax[,c(7,2)]
+gtdb.tax <- unique(gtdb.tax)
+
+inph <- read.delim2(here(raw_dir, "1Jan2025_data.tsv"))
+
+
+#phatyp <- read.delim2(here(raw_dir, "dan_phatyp_prediction.tsv" )) 
+style <- read.delim2(here(raw_dir, "inphared_phastyle_predictions.tsv" )) 
+
+
+
+all <- merge(box, style, by.x="phage", by.y="fasta_id", all.x=TRUE, all.y=TRUE) 
+
+all <- merge(all, inph, by.x="phage", by.y="Accession", all.x=TRUE, all.y=TRUE)
+
+all <- merge(all, gtdb.tax, by.x="Host", by.y="newgtdb_Genus", all.x=TRUE, all.y=FALSE)
+
+
+all$life_bool <- ifelse(all$predicted_label=="temperate", TRUE, FALSE)
+write.csv(all, here("inphared/0a_withhost.csv"))
+
+all$genera<- ""
+
+
+all$count[is.na(all$count)] <- 0
+
+all %>% group_by(predicted_label, count) %>% summarise(n=n())
+
+df <- data.frame("w0a" = c(2613, 5703), "n0a" = c(80, 24), row.names = c("temperate", "lytic"))
+df
+
+
+
+
+
+```
+
+
+```{r}
+group <- all %>% group_by(phage, predicted_label, Host) %>% summarise(n=n()) 
+
+group$count <- 1
+
+mean <- all %>% group_by(phage, predicted_label ) %>% summarise(n=n()) 
+
+all %>% group_by(predicted_label ) %>% summarise(n=n()) 
+
+host <- group %>% group_by(predicted_label, Host) %>% summarise(count=n()) 
+
+
+group %>% group_by(predicted_label) %>% summarise(n=mean(n)) 
+
+
+
+
+ggplot(group, aes(x = factor(predicted_label), fill = factor(predicted_label), y = n)) +
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)
+
+ggplot(group, aes(x = factor(Host), fill = factor(predicted_label), y = n)) +
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") +coord_flip() #+ geom_jitter(width = 0.2) + coord_flip()
+
+ggplot(group, aes(x = factor(Host), fill = factor(predicted_label), y = n)) +
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2) + coord_flip()
+
+bacillus <- subset(group, group$Host=="Bacillus" | group$Host=="Clostridium" | group$Host=="Erysipelothrix")
+
+ggplot(bacillus, aes(x = factor(Host), fill = factor(predicted_label), y = n)) +
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") #+ geom_jitter(position=position_dodge(0.8))
+
+
+
+
+
+```
+
+
+```{r}
+
+res.aov1 <- aov(n ~ predicted_label, data = group)
+summary(res.aov1)
+
+res.aov2 <- aov(n ~ predicted_label+Host, data = group)
+summary(res.aov2)
+
+
+res.aov3 <- aov(n ~ predicted_label*Host, data = group)
+summary(res.aov3)
+
+
+anova(res.aov1, res.aov2, res.aov3)
+
+```

@@ -1,0 +1,217 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(here)
+library(tidyverse)
+library(knitr)
+library(cowplot)
+library(ggrepel)
+
+here::here()
+data_dir <- here("inphared/raw_data/")
+raw_dir <- here("inphared/raw_data/")
+
+
+
+cog <- read.delim2("func_dbs/1_EGGNOGannotations.tsv", header=FALSE)
+cog <- cog[,-c(1)]
+cog <- cog %>% rename(COGlet = V3, COG.ID = V2, COG.desc = V4)
+phrog <- read.delim2("func_dbs/phrog_annot_v4.tsv")
+phrog$phrog_num <- gsub("^", "phrog_", phrog$phrog_num)
+
+
+#phagescope$phage<- gsub('.[^.]*$', '', phagescope$Phage_ID) 
+
+kegg <- read.csv("UniprotSporulationList_Master.csv")
+kegg$trait <- "sporulation_assoc"
+kegg <- unique(kegg[,c(31:32)])
+
+
+func_groups <- read.csv("func_dbs/mastercog.csv")
+
+
+```
+
+
+```{r}
+anno.all <- read.csv("mmseqs/inphared/mmseqs_kegg_phrogs_cog_cleaned.csv", row.names = 1)
+anno.all[is.na(anno.all)] <- "NA"
+anno.all$final_gene <- 0
+anno.all$final_db <- 0
+anno.all$final_gene <- ifelse(anno.all$cog_best_hit!="NA", anno.all$cog_best_hit, anno.all$final_gene)
+anno.all$final_db <- ifelse(anno.all$cog_best_hit!="NA", "COG", anno.all$final_db)
+
+
+anno.all$final_gene <- ifelse(anno.all$phrog_best_hit!="NA", anno.all$phrog_best_hit, anno.all$final_gene)
+anno.all$final_db <- ifelse(anno.all$phrog_best_hit!="NA", "PHROG", anno.all$final_db)
+
+
+anno.all$final_gene <- ifelse(anno.all$kegg_sporulation!="no_hit", anno.all$gene_id, anno.all$final_gene)
+anno.all$final_db <- ifelse(anno.all$kegg_sporulation!="no_hit", "KEGG", anno.all$final_db)
+
+
+anno.all$final_gene <- ifelse(anno.all$mmseqs_sporulation!="no_hit", anno.all$gene_id, anno.all$final_gene)
+anno.all$final_db <- ifelse(anno.all$mmseqs_sporulation!="no_hit", "MMSEQS", anno.all$final_db)
+
+
+anno.all <- merge(anno.all, cog, by.x="final_gene", by.y ="COG.ID", all.x=TRUE, all.y=FALSE)
+
+anno.all <- merge(anno.all, phrog, by.x="final_gene", by.y ="phrog_num", all.x=TRUE, all.y=FALSE)
+
+anno.all <- merge(anno.all, kegg, by.x="final_gene", by.y="FinalID", all.x=TRUE, all.y=FALSE)
+
+anno.edit <- anno.all
+```
+
+
+```{r}
+
+
+
+anno.edit$COGlet[is.na(anno.edit$COGlet)] <- 0
+anno.edit$COGlet <- ifelse(nchar(anno.edit$COGlet) > 1, "S", anno.edit$COGlet)
+
+anno.edit$COGlet <- ifelse(anno.edit$final_db=="PHROG", "Ph", anno.edit$COGlet)
+anno.edit$phrog_category[is.na(anno.edit$phrog_category)] <- 0
+anno.edit$COGlet <- ifelse(anno.edit$phrog_category=="moron, auxiliary metabolic gene and host takeover", "Aux", anno.edit$COGlet)
+
+
+
+# NEED TO separate moron, auxiliary metabolic gene and host takeover
+anno.edit$trait[is.na(anno.edit$trait)] <- 0
+anno.edit$COGlet <- ifelse(anno.edit$trait=="sporulation_assoc", "Sp", anno.edit$COGlet)
+anno.edit$COGlet <- ifelse(anno.edit$kegg_sporulation=="og.enriched" | anno.edit$mmseqs_sporulation=="og.enriched", "SpE", anno.edit$COGlet)
+
+
+
+
+#COG <- subset(anno.all, anno.all$final_db=="COG")
+#PHROG <- subset(anno.all, anno.all$final_db=="PHROG")
+#HYP <- subset(anno.all, anno.all$final_db==0)
+#SPOR <- subset(anno.all, anno.all$final_db=="KEGG" | anno.all$final_db=="MMSEQS")
+
+
+
+hmm <- merge(anno.edit, func_groups, by="COGlet", all.x=TRUE, all.y=FALSE)
+
+hmm$deets <- hmm$Nog.new
+hmm$phrog_category[is.na(hmm$phrog_category)] <- 0
+hmm$deets <- ifelse(hmm$COGlet=="Ph" | hmm$Cog.letcat=="PhAux", hmm$phrog_category, hmm$deets)
+hmm$deets <- ifelse(hmm$COGlet=="X", "unknown function", hmm$deets)
+
+hmm.el <- subset(hmm, hmm$COGlet=="Sp")
+hmm.el <- hmm.el[,c(2,5,6,14,15,16)]
+
+#inphared2 <- inphared[,c(1,27)]
+#hmm.el <- merge(hmm.el, inphared2, by.x="phage", by.y="Accession", all.x=TRUE, all.y=FALSE)
+
+write.csv(hmm.el,  here("inphared/annotations_for_el.csv"))
+```
+
+```{r}
+
+hmm$tally <- 1
+
+
+total_prot <- sum(hmm$tally)
+total_prot  ##3521
+
+
+
+broad_All <- hmm %>%
+  group_by(COG.broad) %>%
+  summarise(TotalORF.freq = sum(tally)) %>%
+  mutate(broad_freq = TotalORF.freq/total_prot*100)
+#write.csv(broad_All, "")
+
+
+broad_life <- hmm %>%
+  group_by(COG.broad, life_bool) %>%
+  summarise(TotalORF.freq = sum(tally)) #%>%
+  #mutate(broad_freq = TotalORF.freq/total_prot*100)
+#write.csv(broad_All, "")
+
+
+deets_life <- hmm %>%
+  group_by(deets, life_bool, COG.broad) %>%
+  summarise(TotalORF.freq = sum(tally)) #%>%
+  #mutate(broad_freq = TotalORF.freq/total_prot*100)
+#write.csv(broad_All, "")
+
+
+cat_All <- hmm %>%
+  group_by(Cog.cat) %>%
+  summarise(TotalORF.freq = sum(tally)) %>%
+  mutate(broad_freq = TotalORF.freq/total_prot*100)
+
+
+
+
+
+
+
+totalhits_per_life <- hmm %>%
+  group_by(life_bool) %>%
+  summarise(totalhits = sum(tally))
+
+usethis <- merge(totalhits_per_life, broad_life, by="life_bool", all=TRUE)
+usethis <- subset(usethis, usethis$life_bool!="NA")
+usethis$perc.fq <- usethis$TotalORF.freq/usethis$totalhits*100
+
+
+all.p <- ggplot(data=usethis, aes(fill=COG.broad, x=life_bool, y=perc.fq)) + geom_bar(stat="identity") + ggtitle("Functional Analysis of All Predicted Inphared Phages") + coord_flip() + xlab("Temperate Lifestyle") +ylab("Percent of Phage Total Genes") + theme(legend.position="bottom") #+ theme2 +theme(legend.position="bottom", legend.title = element_blank(), legend.margin = margin(l = -50))  + scale_fill_manual(values = auxcolors)  + guides(fill=guide_legend(ncol=3))
+
+all.p
+
+no.phage <- subset(usethis, usethis$COG.broad!="PHAGE")
+
+ggsave("mmseqs/inphared/cogbroad_lifestyle.png")
+
+all.aux<- ggplot(data=no.phage, aes(fill=COG.broad, x=life_bool, y=perc.fq)) + geom_bar(stat="identity") + ggtitle("Functional Analysis of All Predicted Inphared Phages") + coord_flip() + xlab("Temperate Lifestyle") +ylab("Percent of Phage Total Genes") + theme(legend.position="bottom") #+ theme2 +theme(legend.position="bottom", legend.title = element_blank(), legend.margin = margin(l = -50))  + scale_fill_manual(values = auxcolors)  + guides(fill=guide_legend(ncol=3))
+
+all.aux
+
+ggsave("mmseqs/inphared/aux_cogbroad_lifestyle.png")
+
+
+
+
+deets.data <- merge(totalhits_per_life, deets_life, by="life_bool", all=TRUE)
+deets.data <- subset(deets.data, deets.data$life_bool!="NA")
+deets.data <- subset(deets.data, deets.data$COG.broad!="PHAGE")
+deets.data$perc.fq <- deets.data$TotalORF.freq/deets.data$totalhits*100
+
+deets.data <- subset(deets.data, deets.data$deets!="Unknown (S, No Hits)" & deets.data$deets!="unknown function")
+
+deets.fig<- ggplot(data=deets.data, aes(fill=deets, x=life_bool, y=perc.fq)) + geom_bar(stat="identity") + ggtitle("Functional Analysis of All Predicted Inphared Phages") + coord_flip() + xlab("Temperate Lifestyle") +ylab("Percent of Phage Total Genes") + theme(legend.position="bottom") #+ theme2 +theme(legend.position="bottom", legend.title = element_blank(), legend.margin = margin(l = -50))  + scale_fill_manual(values = auxcolors)  + guides(fill=guide_legend(ncol=3))
+
+deets.fig
+
+ggsave("mmseqs/inphared/aux_inpharedsSPOR_lifestyle.png", width=11, height=8)
+
+
+
+deets.data <- merge(totalhits_per_life, deets_life, by="life_bool", all=TRUE)
+deets.data <- subset(deets.data, deets.data$life_bool!="NA")
+deets.data <- subset(deets.data, deets.data$COG.broad!="PHAGE" & deets.data$COG.broad!="PHAGE_Aux" & deets.data$COG.broad!="SPORULATION")
+deets.data$perc.fq <- deets.data$TotalORF.freq/deets.data$totalhits*100
+
+deets.data <- subset(deets.data, deets.data$deets!="Unknown (S, No Hits)" & deets.data$deets!="unknown function")
+
+deets.fig<- ggplot(data=deets.data, aes(fill=deets, x=life_bool, y=perc.fq)) + geom_bar(stat="identity") + ggtitle("Functional Analysis of All Predicted Inphared Phages") + coord_flip() + xlab("Temperate Lifestyle") +ylab("Percent of Phage Total Genes") + theme(legend.position="bottom") #+ theme2 +theme(legend.position="bottom", legend.title = element_blank(), legend.margin = margin(l = -50))  + scale_fill_manual(values = auxcolors)  + guides(fill=guide_legend(ncol=3))
+
+deets.fig
+
+ggsave("mmseqs/inphared/zoomed_aux_inpharedsSPOR_lifestyle.png", width=11, height=8)
+
+```
+
+```{r}
+
+
+
+```

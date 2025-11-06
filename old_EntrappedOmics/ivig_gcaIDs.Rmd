@@ -1,0 +1,30 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+library(here)
+
+
+here::here()
+data_dir <- here("qualitycontrol")
+
+
+gca <- read.delim2(here(data_dir, "GPD_accessionList_messy.txt"))
+gca <- subset(gca, !grepl("#", Host_range_isolates))
+gca <- subset(gca, gca$Host_range_isolates!="No")
+gca <-as.data.frame(unique(gca$Host_range_isolates))
+
+ivig.acc <- read.delim2(here(data_dir, "contig_ivig_list.txt"), header=FALSE)
+ivig.acc <- subset(ivig.acc, !grepl("uvig", V1))
+ivig.acc <- ivig.acc %>% separate(V2, into=c("access.alt", "access", "ignore","etc"), sep="_", extra="merge", remove=FALSE)
+
+
+ivig.acc$access <- ifelse(ivig.acc$access=="", ivig.acc$ignore, ivig.acc$access)
+
+uniq <- unique(ivig.acc$access)
+
+```
