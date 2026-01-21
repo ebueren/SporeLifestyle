@@ -1,0 +1,26 @@
+MEME version 5
+
+ALPHABET= ACGT
+
+strands: + -
+
+Background letter frequencies (from uniform background):
+A 0.25 C 0.25 G 0.25 T 0.25
+
+MOTIF RacA_consensus
+
+letter-probability matrix: alength= 4 w= 14 nsites= 1 E= 0
+ 1.00   0.00   0.00   0.00
+ 0.00   0.00   1.00   0.00
+ 1.00   0.00   0.00   0.00
+ 0.00   1.00   0.00   0.00
+ 0.00   0.00   1.00   0.00
+ 0.00   1.00   0.00   0.00
+ 0.00   1.00   0.00   0.00
+ 0.00   0.00   1.00   0.00
+ 0.00   0.00   1.00   0.00
+ 0.00   1.00   0.00   0.00
+ 0.00   0.00   1.00   0.00
+ 0.00   0.00   0.00   1.00
+ 0.00   1.00   0.00   0.00
+ 1.00   0.00   0.00   0.00

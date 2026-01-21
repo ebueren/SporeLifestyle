@@ -33,6 +33,9 @@ cache/
 *.utf8.md
 *.knit.md
 
+###old files stored in my archive that don't need to be sent to github
+*/archive/*
+zz_archive/*
 
 # Temporary files created by R
 .Rout

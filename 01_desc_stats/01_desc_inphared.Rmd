@@ -10,6 +10,7 @@ output: html_notebook
 library(tidyverse)
 library(here)
 library(cowplot)
+library(emmeans)
 here()
 dr_here()
 
@@ -31,16 +32,21 @@ inph <- unite(inph, "phage_type", c("sporulation", "predicted_label"), sep = "_"
 
 inph <- subset(inph, inph$ref=="not_run" | inph$ref=="ref_seq")
 
+unique(inph$Host)
 ```
 
 ### compare genome size of temperate vs. lytic  BACILLOTA ONLY
 ```{r}
+inph$genome.log <- log10(inph$Genome.Length..bp.)
+inph$cds.log <- log10(inph$Number.CDS)
+
 inph.all <- inph
 #inph<- subset(inph.all, inph.all$Jumbophage==FALSE)
 
-inph$genome.log <- log10(inph$Genome.Length..bp.)
 
-inph.subset <- subset(inph.all, inph.all$newgtdb_Phylum=="Actinomycetota" | inph.all$newgtdb_Phylum=="Pseudomonadota" | inph.all$newgtdb_Phylum=="Bacteroidota" | inph.all$newgtdb_Phylum=="Bacillota" | inph.all$newgtdb_Phylum=="Campylobacterota" | inph.all$newgtdb_Phylum== "Cyanobacteriota")
+
+
+inph.subset <- subset(inph.all, inph.all$Host=="Bacillus" | inph.all$Host=="Clostridioides" | inph.all$Host=="Staphylococcus" | inph.all$Host=="Clostridium" | inph.all$Host=="Enterococcus" | inph.all$Host== "Lactobacillus" | inph.all$Host=="Paenibacillus" | inph.all$Host=="Listeria" | inph.all$Host=="Streptococcus" )
 
 
 inph.bac <- subset(inph.all, inph.all$newgtdb_Phylum=="Bacillota")
@@ -52,23 +58,40 @@ inph.log <- ggplot(inph.bac, aes(x = factor(lifestyle), fill = factor(lifestyle)
 inph.genes <- ggplot(inph.bac, aes(x = factor(lifestyle), fill = factor(lifestyle), y = Number.CDS)) + 
   geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("Number of Genes") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~ newgtdb_Phylum2, ncol = 2)
 
+inph.genes.log <- ggplot(inph.bac, aes(x = factor(lifestyle), fill = factor(lifestyle), y = cds.log)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("Number of Genes") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~ newgtdb_Phylum2, ncol = 2)
+
+
+##lifestyle vs. genome size
+inph.log
+
+
+### lifesytle vs. # of genes
+inph.genes
+
+inph.genes.log
+```
+
+```{r}
+
 ggplot(inph.subset, aes(x = factor(lifestyle), fill = factor(lifestyle), y = genome.log)) + 
   geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("log10 (Genome Size)") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~ newgtdb_Phylum2, ncol = 3)
-
 
 oneway.inph.l <- aov(genome.log ~ lifestyle , data = inph.bac)
 oneway.inph.s <- aov(genome.log ~ sporulation , data = inph.bac)
 
 twoway.inph.a <- aov(genome.log ~ lifestyle + sporulation, data = inph.bac)
 
-twoway.inph.m <- aov(Number.CDS ~ lifestyle * sporulation, data = inph.bac)
+twoway.inph.m <- aov(genome.log ~ lifestyle * sporulation, data = inph.bac)
 
-summary(twoway.inph)
+
+#summary(twoway.inph)
 
 em.inph <- emmeans(twoway.inph.m, ~ lifestyle * sporulation, data=inph.bac)
 pairs(em.inph)
 summary(em.inph)
 contrast(em.inph, method = "pairwise", by = "lifestyle", adjust = "holm")
+
 
 
 library(AICcmodavg)
@@ -91,7 +114,9 @@ ggplot(inph.bac, aes(x = factor(lifestyle), fill = factor(lifestyle), y = tRNAs)
 ggplot(inph.bac, aes(x = factor(lifestyle), fill = factor(lifestyle), y = Number.CDS)) + 
   geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  + scale_fill_manual(values=pal2) + ylab("Phage Genome Size (bp)") + xlab("") + ggtitle("INPHARED, with jumbophages") + labs(fill="Lifestyle") + facet_wrap(~ newgtdb_Phylum2, ncol = 2)
 
-````
+
+
+```
 
 
 
@@ -498,6 +523,13 @@ gvC <- ggplot(inph.all, aes(Genome.Length..bp., Number.CDS, fill=phage_type, col
                         label.x.npc = "left", label.y.npc = "top" )# Add equation#+ ylim(0, 25) #+ xlim(0, 400000)
 
 
+gvC.log <- ggplot(inph.all, aes(Genome.Length..bp., cds.log, fill=phage_type, colour = phage_type, shape = f_spor)) +
+  geom_point() +
+  geom_smooth(method="lm")+ # Add regression line
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "left", label.y.npc = "top" )# Add equation#+ ylim(0, 25) #+ xlim(0, 400000)
+
+
 GvGC <- ggplot(inph.bac, aes(Genome.Length..bp., molGC...., fill=host_phage_spor, colour = host_phage_spor, shape = host_phage_spor)) +
   geom_point() + geom_smooth(method="lm") +
  stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
@@ -512,6 +544,14 @@ all.line
 
 #ggsave(here("data/inphared_db/inphared_linear.png"), height=11, width=8)
 
+gvC.log
 
+model <- lm(genome.log ~ cds.log, data = inph.all)
+summary(model)
+
+plot(inph.all$genome.log, inph.all$cds.log)
+abline(model, col = "blue")
+par(mfrow=c(2,2))
+plot(model)
 ```
 

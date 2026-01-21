@@ -227,6 +227,108 @@ ggplot(ParS.hits, aes(x = rel.mdpt, fill = nice)) +
 
 ggsave(here("02_motifs/ParS/figs/RelativeParSposition_1e4.png"), width=7, height=7)
 ```
+###Positional Enrichment Test
+
+```{r}
+
+test <- subset(ParS.hits, ParS.hits$hostspec_phage_spor=="Bacillota_Lytic_Spor")
+#test <- subset(ParS.hits, ParS.hits$hostspec_phage_spor=="Bacillota_Temp_Spor")
+#test <- subset(ParS.hits, ParS.hits$hostspec_phage_spor=="Bacillota_Lytic_NonSpor")
+#test <- subset(ParS.hits, ParS.hits$hostspec_phage_spor=="Bacillota_Temp_NonSpor")
+#test <- subset(ParS.hits, ParS.hits$host_phyla=="OtherPhyla")
+N <- 100
+bins <- cut(test$rel.frac, breaks = seq(0,1,length=N+1), include.lowest=TRUE)
+obs <- table(bins)
+exp <- length(test$rel.frac) / N
+
+pvals <- pbinom(obs - 1, size = length(test$rel.frac), prob = 1/N, lower.tail = FALSE)
+p.adj <- p.adjust(pvals, method="BH")
+
+p.adj
+pvals
+
+N <- length(p.adj)
+
+bin_midpoints <- seq(1/(2*N), 1 - 1/(2*N), length.out = N)
+
+plot(
+  bin_midpoints, p.adj,
+  type = "b", pch = 16,
+  xlab = "Genome position (fraction)",
+  ylab = "Adjusted p-value (BH)",
+  main = "Bin-wise motif enrichment (BH-adjusted p-values)"
+)
+abline(h = 0.05, lty = 2, col = "red")   # significance threshold
+
+
+sig <- p.adj < 0.05
+
+plot(
+  bin_midpoints, p.adj,
+  pch = 16,
+  col = ifelse(sig, "red", "black"),
+  xlab = "Genome position (fraction)",
+  ylab = "Adjusted p-value (BH)"
+)
+abline(h = 0.05, lty = 2)
+
+
+plot(
+  seq_len(N), -log10(p.adj),
+  pch = 16,
+  xlab = "Bin index",
+  ylab = "-log10(adjusted p-value)",
+  main = "Enrichment significance"
+)
+abline(h = -log10(0.05), lty = 2)
+
+
+```
+
+
+```{r}
+# test$rel.frac = motif positions in [0,1)
+Nbins <- 100
+breaks <- seq(0, 1, length.out = Nbins + 1)
+
+# observed counts
+obs <- table(cut(test$rel.frac, breaks, include.lowest = TRUE, right = FALSE))
+obs <- as.integer(obs)
+
+# permutation null
+nsim <- 5000
+sim_counts <- matrix(0, nrow = nsim, ncol = Nbins)
+
+for (i in seq_len(nsim)) {
+  sim_x <- runif(length(test$rel.frac))     # null = uniform placement
+  sim_tab <- table(cut(sim_x, breaks, include.lowest = TRUE, right = FALSE))
+  sim_counts[i, ] <- as.integer(sim_tab)
+}
+
+# empirical p-values
+pvals <- (colSums(sim_counts >= matrix(obs, nrow = nsim, ncol = Nbins, byrow = TRUE)) + 1) /
+         (nsim + 1)
+
+p.adj <- p.adjust(pvals, method = "BH")
+
+
+sig <- p.adj < 0.05
+
+plot(
+  bin_midpoints, p.adj,
+  pch = 16,
+  col = ifelse(sig, "red", "black"),
+  xlab = "Genome position (fraction)",
+  ylab = "Adjusted p-value (BH)"
+)
+abline(h = 0.05, lty = 2)
+
+
+```
+
+
+
+
 ### Enrichment
 ```{r}
 # -----------------------------

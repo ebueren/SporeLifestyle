@@ -1,0 +1,162 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+library(here)
+library(cowplot)
+library(emmeans)
+library(lme4)
+library(lmerTest)
+library(ggplot2) 
+
+
+here()
+dr_here()
+
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+#inph <- read.csv(here("data/inphared_db/14Apr2025_knownsporestatus.csv", row.names=1))
+inph.all <- read.csv(here("00_data", "inphared_db", "14Apr2025_knownsporestatus.csv"), row.names = 1)
+
+inph.all$sporulation <- "T"
+inph.all$sporulation <- ifelse(inph.all$f_spor==TRUE, "SproulatingHost", "NonsporulatingHost")
+
+inph.all <- unite(inph.all, "phage_type", c("sporulation", "predicted_label"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+
+
+### remove duplicates (keep only reference strains)
+### currently this only works on bacilliota, 99.5% ANI over 100% alignment threshold
+## rest of inph.allared is pending 
+
+inph.all <- subset(inph.all, inph.all$ref=="not_run" | inph.all$ref=="ref_seq")
+
+
+inph.all$genome.log <- log10(inph.all$Genome.Length..bp.)
+inph.all$cds.log <- log10(inph.all$Number.CDS)
+
+
+### just Bacillota
+inph<- subset(inph.all, inph.all$newgtdb_Phylum=="Bacillota")
+
+
+```
+
+
+```{r}
+
+f1.inph <- ggplot(inph, aes(x = factor(sporulation), fill = factor(sporulation), y = genome.log)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)   + ylab("log10 (Genome Size)") + xlab("") + facet_wrap(~ lifestyle, ncol = 2) + theme(legend.position = "none") +labs(fill="Host")+ggtitle("INPHARED")
+f1.inph
+
+f2.inph <- ggplot(subset(inph),
+       aes(x = genome.log, fill=sporulation)) +
+  geom_density(alpha = 0.2) + scale_x_log10() + facet_wrap(~ lifestyle, ncol = 2)+ scale_x_log10() + theme(legend.position = "right") +ylab("Frequency") +xlab("log10 (Genome Size)") + labs(fill="Host") + ggtitle("INPHARED") #+ scale_color_manual(values=pal2)+scale_cf_manual(values=pal2)
+
+f2.inph
+
+plot_grid(f2.inph, f2, nrow=2)
+
+plot_grid(f1.inph, f1.gpdgvd, nrow=2)
+ggsave(here("01_desc_stats", "figs", "inph_vs_gpdgvd_box.png"), width=11, height=8)
+
+
+
+ggplot(subset(inph),
+       aes(x = Number.CDS , color = f_spor, fill=f_spor)) +
+  geom_density(alpha = 0.2) + scale_x_log10() + facet_wrap(~ lifestyle, ncol = 2)+ scale_x_log10()
+
+
+### KS test 
+##lytic
+ks.test(
+  inph$Genome.Length..bp.[inph$lifestyle == "Lytic" & inph$f_spor == TRUE],
+  inph$Genome.Length..bp.[inph$lifestyle == "Lytic" & inph$f_spor == FALSE]) #, alternative="less"
+
+##two side pos, checking to see if smaller or larger <--- lytic spor genomes skew larger
+ks.test(
+  inph$Genome.Length..bp.[inph$lifestyle == "Lytic" & inph$f_spor == TRUE],
+  inph$Genome.Length..bp.[inph$lifestyle == "Lytic" & inph$f_spor == FALSE], alternative="less")
+
+### do not skew smaller
+ks.test(
+  inph$Genome.Length..bp.[inph$lifestyle == "Lytic" & inph$f_spor == TRUE],
+  inph$Genome.Length..bp.[inph$lifestyle == "Lytic" & inph$f_spor == FALSE], alternative="greater")
+
+
+##temp
+ks.test(
+  inph$Genome.Length..bp.[inph$lifestyle == "Temp" & inph$f_spor == TRUE],
+  inph$Genome.Length..bp.[inph$lifestyle == "Temp" & inph$f_spor == FALSE])#, alternative="alternative"
+##yes, difference
+
+##skew larger
+ks.test(
+  inph$Genome.Length..bp.[inph$lifestyle == "Temp" & inph$f_spor == TRUE],
+  inph$Genome.Length..bp.[inph$lifestyle == "Temp" & inph$f_spor == FALSE], alternative="less")
+
+## skew smaller
+ks.test(
+  inph$Genome.Length..bp.[inph$lifestyle == "Temp" & inph$f_spor == TRUE],
+  inph$Genome.Length..bp.[inph$lifestyle == "Temp" & inph$f_spor == FALSE], alternative="greater")
+
+## conclusion: greater variance (size)
+
+```
+## Check powerlog relationship
+
+
+
+```{r}
+m_mixed1 <- lmer(
+  log(Genome.Length..bp.) ~ log(Number.CDS) * f_spor * lifestyle + 
+    (1 | Host),
+  data = inph,
+  REML = FALSE
+)
+summary(m_mixed1)
+
+m_mixed2 <- lmer(
+  log(Genome.Length..bp.) ~ log(Number.CDS) * f_spor * lifestyle +
+    (1 + log(Number.CDS) | Host),
+  data = inph,
+  REML = FALSE
+)
+summary(m_mixed2)
+
+isSingular(m_mixed2, tol = 1e-4)
+
+m_mixed2_bobyqa <- update(m_mixed2, control = lmerControl(optimizer = "bobyqa"))
+summary(m_mixed2_bobyqa)
+
+
+anova(m_mixed1, m_mixed2_bobyqa)   # LRT; both fitted with REML=FALSE
+AIC(m_mixed1, m_mixed2_bobyqa)
+
+###Host as random effect for  both incercept and slope is best fit
+```
+
+
+
+sporulation effect on lifestyle powerlaw and genome size at fixed cds
+```{r}
+## power law
+slopes_mixed <- emtrends(m_mixed2_bobyqa, ~ f_spor | lifestyle,
+                         var = "log(Number.CDS)")
+pairs(slopes_mixed)
+
+### sporulation has no effect on genome ~ cds slop  in lytic or temp phages (**note temp is borderline, p<0.0513)
+
+## genome size at fixed cds
+cds_med <- median(inph$Number.CDS)
+
+intercepts_mixed <- emmeans(m_mixed2_bobyqa, 
+                            ~ f_spor | lifestyle,
+                            at = list(`log(Number.CDS)` = log(cds_med)))
+pairs(intercepts_mixed)
+
+### sporulation has no effect on genome size at fixed cds in lytic or temp phages
+
+```

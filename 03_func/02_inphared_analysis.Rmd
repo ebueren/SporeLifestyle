@@ -1,0 +1,302 @@
+
+```{r}
+library(here)
+library(tidyverse)
+library(PNWColors)
+
+here::here()
+data_dir <- here("03_func", "inphared")
+meta_dir <- here("03_func", "03_metadata")
+raw_dir <- here("03_func", "inphared", "03_inph_raw")
+figs_dir <- here("03_func", "inphared", "figs")
+
+
+cog  <- read.delim2(here(meta_dir, "1_EGGNOGannotations.tsv"), header=FALSE) ##d_amg
+cog <- cog[,-c(1)]
+cog <- cog %>% rename(COGlet = V3, COG.ID = V2, COG.desc = V4)
+
+cog$COGlet <- ifelse(cog$COG.ID=="COG1724" | cog$COG.ID=="COG5492", "S", cog$COGlet)
+
+
+```
+
+```{r}
+phrog  <- read.delim2(here(meta_dir, "phrog_annot_v4.tsv"))
+phrog$phrog_num <- gsub("^", "phrog_", phrog$phrog_num)
+
+
+#phagescope$phage<- gsub('.[^.]*$', '', phagescope$Phage_ID) 
+
+
+kegg  <- read.csv(here(meta_dir, "UniprotSporulationList_Master.csv" )) ##d_amg
+kegg$trait <- "sporulation_assoc"
+kegg <- unique(kegg[,c(31:32)])
+
+
+func_groups <- read.csv(here(meta_dir, "mastercog.csv" )) ##d_amg
+
+anno.all <- read.csv(here(data_dir, "mmseqs_kegg_phrogs_cog_cleaned.csv" ), row.names=1) ##d_amg
+
+
+### set order on legend
+desired_order2 <- c("Sporulation (All)", "Sporulation" ,"Sporulation, enriched", "Sporulation, other", "Predicted_AMG", "Predicted_Aux", "Phage takeover or host defense", "moron, auxiliary metabolic gene and host takeover", "Carbohydrate (G)", "Secondary metabolite (Q)", "Nucleotide (F)", "Lipid (I)", "Inorganic ion (P)", "Information Processing (ALBY)", "Information processing (ALBY)", "Energy (C)", "Coenzyme (H)", "Amino acid (E)", "Signaling (DTNZU)", "Defense (V)", "Membrane (MW)",  "Translation (JO)", "Transcription (K)", "DNA/RNA Processes (ALBYJOK)", "Phage-associated", "Unknown (S, No Hits)")
+#"#9F9990"
+
+#F0AF09
+auxcolors3 <- c("Unknown (S, No Hits)" ="#D4D4D4", "Phage-associated"="#b4b4b4", "DNA/RNA Processes (ALBYJOK)"= "#EAE3C9", "Amino acid (E)" ="#DDFFA0", "Carbohydrate (G)"="navy", "Coenzyme (H)"="#97CE2F", "Energy (C)" ="#4E7705", "Inorganic ion (P)"="#43BA8F", "Lipid (I)" ="#148F77", "Secondary metabolite (Q)"="#098BD9",  "Nucleotide (F)"="#ADD8E6", "Membrane (MW)"="#F5C77E", "Defense (V)" = "#EC9006", "Signaling (DTNZU)"="#D24E01", "moron, auxiliary metabolic gene and host takeover" ="#9966CB" , "Phage_moron, auxiliary metabolic gene and host takeover"="#9966CB", "Phage takeover or host defense"="#9966CB", "Predicted_AMG"="#9966CB", "Predicted_Aux" ="#9966CB", "Sporulation, other" = "#C64B8C", "Sporulation, enriched"= "#702963", "Sporulation (All)"= "#702963", "Sporulation"= "#702963") 
+```
+
+```{r}
+anno.all[is.na(anno.all)] <- "NA"
+anno.all$final_gene <- 0
+anno.all$final_db <- 0
+
+anno.all <- merge(anno.all, phrog, by.x="phrog_best_hit", by.y="phrog_num", all.x=TRUE, all.y=FALSE)
+
+### add in phrogs, with discretion (keep AMGS, others, unknowns as COGS if possible )
+
+anno.all$final_gene <- ifelse(anno.all$cog_best_hit!="NA", anno.all$cog_best_hit, anno.all$final_gene)
+anno.all$final_db <- ifelse(anno.all$cog_best_hit!="NA", "COG", anno.all$final_db)
+
+anno.all$final_gene <- ifelse(anno.all$phrog_best_hit!="NA", anno.all$phrog_best_hit, anno.all$final_gene)
+anno.all$final_db <- ifelse(anno.all$phrog_best_hit!="NA", "PHROG", anno.all$final_db)
+
+
+###unless....
+anno.all[is.na(anno.all)] <- "NA"
+
+anno.all$final_db <- ifelse(anno.all$phrog_category=="moron, auxiliary metabolic gene and host takeover" & anno.all$cog_best_hit!="NA", "COG", anno.all$final_db)
+
+anno.all$final_db <- ifelse(anno.all$phrog_category=="unknown function" & anno.all$cog_best_hit!="NA", "COG", anno.all$final_db)
+
+anno.all$final_db <- ifelse(anno.all$phrog_category=="other" & anno.all$cog_best_hit!="NA", "COG", anno.all$final_db)
+
+anno.all$final_gene <- ifelse(anno.all$final_db=="COG", anno.all$cog_best_hit, anno.all$final_gene)
+
+## eg: COG0192, phrog_1569 unknown function
+## COG5405, phrog_1040 other
+## COG2274, phrog_2392  aux
+```
+
+
+```{r}
+###get rid of phrog cats for now
+anno.all <- anno.all[-c(20,21)]
+
+anno.all$final_gene <- ifelse(anno.all$kegg_sporulation!="no_hit", anno.all$gene_id, anno.all$final_gene)
+anno.all$final_db <- ifelse(anno.all$kegg_sporulation!="no_hit", "KEGG", anno.all$final_db)
+
+
+anno.all$final_gene <- ifelse(anno.all$mmseqs_sporulation!="no_hit", anno.all$gene_id, anno.all$final_gene)
+anno.all$final_db <- ifelse(anno.all$mmseqs_sporulation!="no_hit", "MMSEQS", anno.all$final_db)
+
+
+anno.all <- merge(anno.all, cog, by.x="final_gene", by.y ="COG.ID", all.x=TRUE, all.y=FALSE)
+
+anno.all <- merge(anno.all, phrog, by.x="final_gene", by.y ="phrog_num", all.x=TRUE, all.y=FALSE)
+
+anno.all <- merge(anno.all, kegg, by.x="final_gene", by.y="FinalID", all.x=TRUE, all.y=FALSE)
+
+
+```
+
+
+
+
+```{r}
+anno.edit <- anno.all
+anno.edit$COGlet[is.na(anno.edit$COGlet)] <- 0
+anno.edit$COGlet <- ifelse(nchar(anno.edit$COGlet) > 1, "S", anno.edit$COGlet)
+
+
+# NEED TO separate moron, auxiliary metabolic gene and host takeover
+anno.edit$trait[is.na(anno.edit$trait)] <- 0
+anno.edit$COGlet <- ifelse(anno.edit$trait=="sporulation_assoc", "Sp", anno.edit$COGlet)
+anno.edit$COGlet <- ifelse(anno.edit$kegg_sporulation=="og.enriched" | anno.edit$mmseqs_sporulation=="og.enriched", "SpE", anno.edit$COGlet)
+
+
+
+
+#COG <- subset(anno.all, anno.all$final_db=="COG")
+#PHROG <- subset(anno.all, anno.all$final_db=="PHROG")
+#HYP <- subset(anno.all, anno.all$final_db==0)
+#SPOR <- subset(anno.all, anno.all$final_db=="KEGG" | anno.all$final_db=="MMSEQS")
+
+anno.edit$phrog_category[is.na(anno.edit$phrog_category)] <- 0
+anno.edit$COGlet <- ifelse(anno.edit$final_db=="PHROG", "Ph", anno.edit$COGlet)
+anno.edit$COGlet <- ifelse(anno.edit$phrog_category=="moron, auxiliary metabolic gene and host takeover" & anno.edit$final_db=="PHROG", "Aux", anno.edit$COGlet)
+```
+
+```{r}
+hmm <- merge(anno.edit, func_groups, by="COGlet", all.x=TRUE, all.y=FALSE)
+
+hmm$detailed <- hmm$Nog.new
+hmm$phrog_category[is.na(hmm$phrog_category)] <- 0
+hmm$detailed <- ifelse(hmm$COGlet=="Ph" | hmm$Cog.letcat=="PhAux", hmm$phrog_category, hmm$detailed)
+hmm$detailed <- ifelse(hmm$COGlet=="X", "unknown function", hmm$detailed)
+
+hmm$detailed <- ifelse(hmm$sporulation_hit!="no_hit", hmm$Nog.abbrev, hmm$detailed)
+hmm$detailed <- ifelse(hmm$detailed=="unknown function" | hmm$detailed=="other", "Unknown Phage-Associated", hmm$detailed)
+
+
+hmm$comp <- hmm$Nog.new
+hmm$comp <- ifelse(hmm$detailed=="Unknown Phage-Associated", "Unknown (S, No Hits)", hmm$comp)
+
+hmm$comp <- ifelse(hmm$comp=="Phage aux", "Predicted_Aux", hmm$comp)
+
+hmm$comp <- ifelse(hmm$sporulation_hit!="no_hit", hmm$detailed, hmm$comp)
+
+
+hmm$comp2 <- hmm$comp
+
+
+```
+
+
+```{r}
+hmm$comp2 <- ifelse(hmm$comp2=="Information processing (ALBY)" | hmm$comp2=="Translation (JO)" | hmm$comp2=="Transcription (K)", "DNA/RNA Processes (ALBYJOK)", hmm$comp2)
+
+hmm$comp3 <- hmm$comp2
+hmm$comp3 <- ifelse(hmm$sporulation_hit!="no_hit", "Sporulation", hmm$comp3)
+
+
+hmm$spor <- 0
+hmm$spor <- ifelse(hmm$f_spor==TRUE, "Spor", "NonSpor")
+
+
+dups <- read.csv(here("00_data", "inphared_db", "14Apr2025_knownsporestatus.csv"), row.names = 1)
+
+dups <- dups[,c(1,46)]
+
+hmm <- merge(hmm, dups, by.x="phage", by.y="Accession", all.x=TRUE, all.y=FALSE)
+```
+
+
+###running list of weird proteins that need to be reclassified
+```{r}
+
+```
+
+```{r}
+
+write.csv(hmm, here(data_dir, "inphared_hmm_comp2.csv"))
+
+hmm <- subset(hmm, hmm$ref=="ref_seq")
+```
+
+
+
+###Calculate functional distribution for INDIVIDUAL phages
+```{r}
+hmm.indiv <- hmm
+hmm.indiv$tally <- 1
+###count number of ORFS per phage
+prot.phage <- hmm.indiv %>%
+  group_by(Host, predicted_label) %>%
+  summarise(TotalORF.perPhage = sum(tally))
+
+prot.phage <- unite(prot.phage, iso_phage, Host, predicted_label, sep = "_", remove=TRUE)
+
+
+### count number of ORFs per phage by functional category (+ keep track of genus, intact estimates)
+indiv.phage <- hmm.indiv %>%
+     group_by(Host, sporulation_hit, COGlet, detailed, comp, comp2, comp3, spor, predicted_label) %>%
+  # group_by(Host, sporulation_hit, COG.broad, Cog.cat, COGlet, detailed, comp, comp2, predicted_label) %>%
+  summarise(new.freq = sum(tally))
+
+indiv.phage<- unite(indiv.phage, iso_phage, Host, predicted_label, sep = "_", remove=FALSE)
+
+
+
+##combine count data from above
+indiv.phage.freq <- merge(prot.phage, indiv.phage, by="iso_phage", all=TRUE)
+
+### calc the percentage a category takes up that portin of the phage genome (e.g. total genome is 20 genomes, 2 of which are carbon metabolism (2/20 = 10% of genome))
+indiv.phage.freq$perc.fq <- indiv.phage.freq$new.freq/indiv.phage.freq$TotalORF.perPhage*100
+
+
+phage.func.indiv <- indiv.phage.freq
+
+###Calculate functional distribution for all phages of a Bacterial host
+
+### count number of ORFS per bacterial host
+prot.iso <- hmm.indiv %>%
+  group_by(predicted_label) %>%
+  summarise(TotalORF.perIso = sum(tally))
+
+
+### count number of hits to a Category per bacterial host
+indiv.iso <- hmm.indiv %>%
+    group_by(sporulation_hit, COGlet, detailed, comp, comp2, comp3, spor, predicted_label) %>%
+  # group_by(sporulation_hit, COG.broad, Cog.cat, COGlet, detailed, comp, comp2, predicted_label) %>%
+  summarise(new.freq = sum(tally))
+
+
+### merge count data
+indiv.iso.freq <- merge(prot.iso, indiv.iso, by="predicted_label", all=TRUE)
+
+### find percentage of ORF Category that contributes to a bacterial host's "phage pangenome"
+indiv.iso.freq$perc.fq <- indiv.iso.freq$new.freq/indiv.iso.freq$TotalORF.perIso*100
+
+phage.func.iso <- indiv.iso.freq
+```
+```{r}
+
+
+phage.func.iso$facet1 <- "All Genes"
+
+phage.func.iso <- unite(phage.func.iso, facet2, spor, predicted_label, sep = "_", remove=FALSE)
+
+### for isos with no phage, set the "intact" status to degraded so they are not lost when graphing
+
+
+aux.iso.meta <- subset(phage.func.iso, phage.func.iso$comp!="Unknown (S, No Hits)" & phage.func.iso$comp!="Phage-associated")
+aux.iso.meta$facet1 <- "Auxillary Genes"
+
+test_phage.func.iso_facet <- rbind(phage.func.iso, aux.iso.meta)
+
+
+# Ensure comp has the right order
+test_phage.func.iso_facet$comp3 <- factor(test_phage.func.iso_facet$comp3, 
+                                         levels = desired_order2)
+```
+
+
+```{r}
+
+#test_phage.func.iso_facet <- subset(test_phage.func.iso_facet, #test_phage.func.iso_facet$COG.broad=="CELLULAR PROCESSES AND SIGNALING") 
+
+ ggplot(data=test_phage.func.iso_facet, aes(fill=comp3, x = predicted_label, y=perc.fq)) + geom_bar(stat="identity")+ coord_flip() +xlab("")+ylab("") +  facet_wrap(~ facet1, ncol = 4, scales = "free_x") + scale_fill_manual(values = auxcolors3) + guides(fill=guide_legend(ncol=4)) + theme(legend.position = "bottom")
+
+ggsave(here(figs_dir, "inph_lifestyle_func_comp.png"), height =6 ,width = 10)
+```
+
+```{r}
+##CONCEPTUALLY LOL.
+
+# Ensure comp has the right order
+test_phage.func.iso_facet$comp3 <- factor(test_phage.func.iso_facet$comp3, 
+                                         levels = desired_order2)
+
+ ggplot(data=test_phage.func.iso_facet, aes(fill=comp3, x = predicted_label, y=perc.fq)) + geom_bar(stat="identity")+ coord_flip() +xlab("")+ylab("") +  facet_wrap(~ facet2, ncol = 4, scales = "free_x") + scale_fill_manual(values = auxcolors3) + guides(fill=guide_legend(ncol=4)) + theme(legend.position = "bottom")
+
+
+#ggsave(here(figs_dir, "inph_lifestyle_func_comp_host.png"), height =6 ,width = 10)
+```
+
+HOST SPECIFIC
+```{r}
+
+aux.indiv.meta <- subset(phage.func.indiv, phage.func.indiv$comp!="Unknown (S, No Hits)" & phage.func.indiv$comp!="Phage-associated")
+
+# Ensure comp has the right order
+aux.indiv.meta$comp3 <- factor(aux.indiv.meta$comp3, 
+                                         levels = desired_order2)
+
+ ggplot(data=aux.indiv.meta, aes(fill=comp3, x = Host, y=perc.fq)) + geom_bar(stat="identity")+ coord_flip() +xlab("")+ylab("") +  facet_wrap(~ predicted_label, ncol = 4, scales = "free_x") + scale_fill_manual(values = auxcolors3) + guides(fill=guide_legend(ncol=4)) + theme(legend.position = "bottom")
+ 
+
+ggsave(here(figs_dir, "inph_lifestyle_func_comp_host.png"), height =6 ,width = 10) 
+
+```
+

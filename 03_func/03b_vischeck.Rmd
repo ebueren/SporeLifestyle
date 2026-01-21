@@ -1,0 +1,63 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(here)
+library(tidyverse)
+library(PNWColors)
+library(knitr)
+library(cowplot)
+library(ggrepel)
+
+
+here::here()
+data_dir <- here("03_func", "inphared")
+meta_dir <- here("03_func", "03_metadata")
+raw_dir <- here("03_func", "inphared", "03_inph_raw")
+figs_dir <- here("03_func", "inphared", "figs")
+
+### Run 03_inpharedStats.R first to load data.
+
+```
+### Relative Dot Graph
+```{r}
+
+
+d.amg.sum$rel <- ifelse(d.amg.sum$life_bool==TRUE, d.amg.sum$n/total_temp*100, d.amg.sum$n/total_vir*100)
+
+
+d.amg.sum %>%
+  ggplot(aes(comp3, rel, color = life_bool))+
+  geom_point(shape=21, size=2)+
+  ylab( "normalized (%) occurence from AMG genes") +
+  coord_flip()+ theme_bw() + labs(color="Lifestyle") + scale_color_hue(labels = c("Virulent", "Temperate")) 
+  
+d.amg.sum %>%
+  ggplot(aes(comp3, rel, fill = life_bool))+
+  geom_bar(stat="identity", position=position_dodge()) +
+  ylab( "normalized (%) occurence from AMG genes") +
+  coord_flip()+ theme_bw() + labs(color="Lifestyle") + scale_color_hue(labels = c("Virulent", "Temperate")) 
+  
+
+
+# ggsave(here("refseq/out-dir/rel_lifestyle_spor_enrich.png"), height =3 ,width = 6)
+
+
+
+```
+
+```{r}
+d.amg.sum %>%
+  ggplot(aes(comp3, rel, fill= life_bool)) +
+  #geom_point(shape = 21, size = 2) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  ylab("Normalized (%) Relative Abundance of Gene") +
+  theme_bw() +
+  labs(color = "Lifestyle", fill = "Phage Lifestyle") +
+  scale_color_hue(labels = c("Virulent", "Temperate")) #+
+  facet_wrap(~ enriched_facet, scales = "free_x", ncol = 2) + scale_fill_manual(labels = c ("Lytic", "Temperate"), values=pal2.flip) + theme(axis.text.x = element_text(angle = 25, hjust = 1)) + xlab("Enriched Gene") + ggtitle("INPHARED") + theme(legend.position = "bottom") #+ coord_flip()
+
+```

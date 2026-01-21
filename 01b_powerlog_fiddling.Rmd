@@ -1,0 +1,276 @@
+
+```{r}
+library(tidyverse)
+library(here)
+library(cowplot)
+library(emmeans)
+library(lme4)
+library(lmerTest)   # gives p-values and easier anova for lmer
+
+here()
+dr_here()
+
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+#inph <- read.csv(here("data/inphared_db/14Apr2025_knownsporestatus.csv", row.names=1))
+inph.all <- read.csv(here("00_data", "inphared_db", "14Apr2025_knownsporestatus.csv"), row.names = 1)
+
+inph.all$sporulation <- "T"
+inph.all$sporulation <- ifelse(inph.all$f_spor==TRUE, "SproulatingHost", "NonsporulatingHost")
+
+inph.all <- unite(inph.all, "phage_type", c("sporulation", "predicted_label"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+
+
+### remove duplicates (keep only reference strains)
+### currently this only works on bacilliota, 99.5% ANI over 100% alignment threshold
+## rest of inph.allared is pending 
+
+inph.all <- subset(inph.all, inph.all$ref=="not_run" | inph.all$ref=="ref_seq")
+
+
+inph.all$genome.log <- log10(inph.all$Genome.Length..bp.)
+inph.all$cds.log <- log10(inph.all$Number.CDS)
+
+
+
+inph<- subset(inph.all, inph.all$newgtdb_Phylum=="Bacillota")
+
+
+```
+
+
+```{r}
+m_mixed1 <- lmer(
+  log(Genome.Length..bp.) ~ log(Number.CDS) * f_spor * lifestyle + 
+    (1 | Host),
+  data = inph,
+  REML = FALSE
+)
+summary(m_mixed1)
+
+m_mixed2 <- lmer(
+  log(Genome.Length..bp.) ~ log(Number.CDS) * f_spor * lifestyle +
+    (1 + log(Number.CDS) | Host),
+  data = inph,
+  REML = FALSE
+)
+summary(m_mixed2)
+
+isSingular(m_mixed2, tol = 1e-4)
+
+m_mixed2_bobyqa <- update(m_mixed2, control = lmerControl(optimizer = "bobyqa"))
+summary(m_mixed2_bobyqa)
+
+
+anova(m_mixed1, m_mixed2_bobyqa)   # LRT; both fitted with REML=FALSE
+AIC(m_mixed1, m_mixed2_bobyqa)
+
+
+```
+
+
+sporulation effect on lifestyle powerlaw
+```{r}
+
+slopes_mixed <- emtrends(m_mixed2, ~ f_spor | lifestyle,
+                         var = "log(Number.CDS)")
+pairs(slopes_mixed)
+
+```
+sporulation effect on lifestyle fixed genome size
+```{r}
+cds_med <- median(inph$Number.CDS)
+
+intercepts_mixed <- emmeans(m_mixed2_bobyqa, 
+                            ~ f_spor | lifestyle,
+                            at = list(`log(Number.CDS)` = log(cds_med)))
+pairs(intercepts_mixed)
+
+library(ggplot2)
+emmip(m_mixed2_bobyqa, f_spor ~ Number.CDS | lifestyle,
+      at = list(Number.CDS = seq(min(inph$Number.CDS),
+                                 max(inph$Number.CDS),
+                                 length=200)),
+      type="response")
+```
+```{r}
+
+# density + rug + histogram
+plot(density(inph$Genome.Length..bp.), main="Genome length density (bp)")
+rug(inph$Genome.Length..bp.)
+hist(inph$Genome.Length..bp., breaks=100)
+
+# overlay by f_spor within lytic
+library(ggplot2)
+ggplot(subset(inph, lifestyle=="Lytic"),
+       aes(x = Genome.Length..bp., fill = f_spor)) +
+  geom_density(alpha = 0.4) + scale_x_log10()
+
+
+library(ggplot2)
+ggplot(subset(inph, lifestyle=="Temp"),
+       aes(x = Genome.Length..bp., fill = f_spor)) +
+  geom_density(alpha = 0.4) + scale_x_log10()
+
+
+#table(subset(inph,lifestyle=="Lytic")$Host, subset(inph,lifestyle=="Lytic")$f_spor)
+
+```
+
+
+```{r}
+cds_vals <- quantile(inph$Number.CDS, probs = c(0.1,0.25,0.5,0.75,0.9))
+em_list <- emmeans(m_mixed2, ~ f_spor | lifestyle,
+                   at = list(`log(Number.CDS)` = log(cds_vals)))
+pairs(em_list)
+# Or plot predicted difference vs CDS:
+library(emmeans)
+emmip(m_mixed2, lifestyle ~ Number.CDS | f_spor, type = "response",
+      at = list(Number.CDS = seq(min(inph$Number.CDS), max(inph$Number.CDS), length=100)))
+
+
+```
+
+
+
+```{r}
+
+#install.packages("mclust"); 
+library(mclust)
+x <- log(subset(inph, lifestyle=="Lytic")$Genome.Length..bp.)
+mc <- Mclust(x, G=2)   # try 2 components
+table(mc$classification)
+# attach cluster assignment and test spor effect within each cluster:
+inph$cluster <- NA
+inph$cluster[inph$lifestyle=="Lytic"] <- mc$classification
+# then run emmeans or mixed model within each cluster:
+library(lmerTest)
+m_c1 <- lmer(log(Genome.Length..bp.) ~ log(Number.CDS)*f_spor + (1|Host),
+             data = subset(inph, lifestyle=="Lytic" & cluster==1))
+summary(m_c1)
+
+#install.packages("flexmix"); 
+library(flexmix)
+fm <- flexmix(log(Genome.Length..bp.) ~ log(Number.CDS) + f_spor,
+              data = subset(inph, lifestyle=="Lytic"), k = 2)
+parameters(fm)
+# examine how f_spor effect differs by component
+
+#install.packages("segmented"); 
+library(segmented)
+library(segmented)
+
+# fit lm with raw Number.CDS (so Number.CDS exists in model frame)
+lm0 <- lm(log(Genome.Length..bp.) ~ I(log(Number.CDS)) * f_spor,
+          data = subset(inph, lifestyle == "Lytic"))
+
+# initial guess for the breakpoint on the log scale (use median as starting value)
+psi0 <- median(log(subset(inph, lifestyle == "Lytic")$Number.CDS), na.rm = TRUE)
+
+# segmented on the log(Number.CDS) term (psi given)
+seg <- segmented(lm0, seg.Z = ~ I(log(inph$Number.CDS)), psi = psi0)
+summary(seg)
+plot(seg)
+
+```
+
+
+```{r}
+ks.test(
+  inph$Genome.Length..bp.[inph$f_spor],
+  inph$Genome.Length..bp.[!inph$f_spor]
+)
+
+ggplot(inph, aes(x = Genome.Length..bp., fill = f_spor)) +
+    geom_density(alpha = 0.4) + scale_x_log10()
+
+
+ks.test(
+  inph$Genome.Length..bp.[inph$lifestyle == "Lytic" & inph$f_spor == TRUE],
+  inph$Genome.Length..bp.[inph$lifestyle == "Lytic" & inph$f_spor == FALSE], alternative="less"
+)
+
+
+ks.test(
+  inph$Genome.Length..bp.[inph$lifestyle == "Temp" & inph$f_spor == TRUE],
+  inph$Genome.Length..bp.[inph$lifestyle == "Temp" & inph$f_spor == FALSE]
+)
+
+library(ggplot2)
+
+ggplot(inph, aes(Genome.Length..bp., color=f_spor)) +
+  geom_density(linewidth=1.1) +
+  facet_wrap(~ lifestyle, scales="free") +
+  scale_x_log10() +
+  theme_minimal()
+
+```
+
+
+```{r}
+library(dplyr)
+
+host_summ <- inph %>%
+   group_by(Host, lifestyle, f_spor) %>%
+   summarize(med_genome = median(Genome.Length..bp.), .groups="drop")
+
+# Lytic
+wilcox.test(med_genome ~ f_spor, data = subset(host_summ, lifestyle=="Lytic"))
+
+# Temperate
+wilcox.test(med_genome ~ f_spor, data = subset(host_summ, lifestyle=="Temp"))
+
+
+
+```
+
+
+```{r}
+
+library(ggplot2)
+ggplot(host_summ %>% filter(lifestyle=="Lytic"), aes(x = med_genome, fill = f_spor)) +
+  geom_density(alpha = 0.4) + scale_x_log10()
+
+# jittered points by host
+ggplot(host_summ %>% filter(lifestyle=="Lytic"), aes(x = f_spor, y = med_genome)) +
+  geom_jitter(width = 0.1, height = 0, alpha=0.6)
+
+
+```
+
+
+
+```{r}
+set.seed(1)
+host_summ <- inph %>%
+  group_by(Host, lifestyle, f_spor) %>%
+  summarize(med_genome = median(Genome.Length..bp., na.rm=TRUE), .groups="drop")
+
+# function to compute test stat (difference in medians) for a subset (e.g., Lytic)
+obs_stat <- function(df) {
+  med_true  <- median(df$med_genome[df$f_spor==TRUE])
+  med_false <- median(df$med_genome[df$f_spor==FALSE])
+  return(med_true - med_false)
+}
+
+perm_test <- function(df, nperm=5000) {
+  obs <- obs_stat(df)
+  perms <- replicate(nperm, {
+    lab <- sample(df$f_spor)   # shuffle label across hosts
+    median(df$med_genome[lab==TRUE]) - median(df$med_genome[lab==FALSE])
+  })
+  pval <- mean(abs(perms) >= abs(obs))
+  list(obs = obs, pval = pval, perms = perms)
+}
+
+# run per lifestyle
+lyt <- perm_test(filter(host_summ, lifestyle=="Lytic"))
+tmp <- perm_test(filter(host_summ, lifestyle=="Temp"))
+lyt$obs; lyt$pval
+tmp$obs; tmp$pval
+
+
+
+
+```

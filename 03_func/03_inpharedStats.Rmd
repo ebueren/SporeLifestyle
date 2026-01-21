@@ -1,0 +1,216 @@
+
+```{r}
+library(here)
+library(tidyverse)
+library(PNWColors)
+library(knitr)
+library(cowplot)
+library(ggrepel)
+
+
+here::here()
+data_dir <- here("03_func", "inphared")
+meta_dir <- here("03_func", "03_metadata")
+raw_dir <- here("03_func", "inphared", "03_inph_raw")
+figs_dir <- here("03_func", "inphared", "figs")
+
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+hmm <- read.csv(here(data_dir, "inphared_hmm_comp2.csv"), row.names=1 ) ##d_amg
+hmm$comp3 <- hmm$Nog.abbrev
+#hmm$comp3 <- ifelse(hmm$sporulation_hit!="no_hit", "Sporulation", hmm$comp3)
+hmm$comp3 <- ifelse(hmm$comp2=="Unknown (S, No Hits)", hmm$comp2, hmm$comp3)
+
+hmm$comp3 <- ifelse(hmm$sporulation_hit!="no_hit", "Sporulation", hmm$comp3)
+
+
+hmm <- subset(hmm, hmm$ref=="ref_seq")
+
+hmm.brief <- select(hmm, phage, mmseqs_qseqid, predicted_label, detailed, comp, comp2, comp3, spor, Host, life_bool)
+
+hmm.brief <- subset(hmm.brief, hmm.brief$comp2!="Unknown (S, No Hits)" & hmm.brief$comp2!="Phage-associated")
+
+hmm.brief <- subset(hmm.brief, hmm.brief$comp2!="Unknown (S, No Hits)" & hmm.brief$comp2!="Phage-associated")
+
+### everything is currently sporulating only
+#hmm.brief <- unite(hmm.brief, lifestyle_spor, spor, predicted_label, sep = "_", remove=FALSE)
+```
+
+
+
+```{r}
+# add host sporulation to amg
+#d.amg <- subset(d.amg, d.amg$phage=="OX639564") ##weird lifestyle data, remove for now
+#d.amg <- all %>% rename(spor_host = f_spor, comp3 = comp3, gene_description = query, Lifestyle = predicted_label)
+
+
+
+d.amg <- hmm.brief %>% rename(spor_host = Host, Lifestyle = predicted_label)
+d.amg %>% group_by(Lifestyle) %>% summarise(n=n())
+
+inph.damg <- d.amg
+```
+
+
+First we summarize the number of phages infecting hosts that are lytic/temp 
+```{r}
+d.vir <- d.amg %>% group_by(life_bool, Lifestyle) %>% summarise(n=n())
+
+```
+
+```{r}
+p.signif <- 1e-3
+
+k_treshold <- 8
+```
+
+
+
+First we summarize the number of phages infecting hosts that sporulate or not
+```{r}
+
+total_temp <- 
+  d.vir %>% 
+  filter(life_bool) %>% 
+  pull(n) 
+
+
+
+total_vir <- 
+  d.vir %>% 
+  filter(!life_bool) %>% 
+  pull(n) 
+
+
+```
+
+
+For each gene we ask how many times it is found in a temp or lytic phage.
+```{r}
+
+# Summarise total number of sporulators and non sporulators
+d.amg.sum <- d.amg %>%
+  # filter(str_detect(header, regex("sporulation", ignore_case = T))) %>%
+  filter(!is.na(comp3)) %>% 
+  filter(!is.na(life_bool)) %>% 
+  group_by(comp3, life_bool) %>% #category removed, lifestyle added
+  summarise(n = n()) %>%
+  arrange(desc(n))
+
+```
+
+
+
+```{r}
+temp_enrich <- 
+  d.amg %>% 
+  
+  # Summarize KOs by host sporulation
+ mutate(life_bool = case_when(
+    life_bool ~ "temperate",
+    !life_bool ~ "virulent"
+  )) %>% 
+  filter(!is.na(comp3)) %>% 
+  group_by(comp3, life_bool) %>% 
+  summarise(n=n(), .groups = "drop") %>% 
+  pivot_wider(values_from = n, names_from = life_bool, values_fill = 0) %>% 
+   
+    # q	: the number of white balls drawn without replacement 
+    # from an urn which contains both black and white balls.
+    # >>> AMG (specific gene) in viruses infecting sporulators
+    mutate(q = temperate) %>% 
+    
+    # m	:the number of white balls in the urn.
+    # >>> number of viruses infecting sporulators in the pool
+    mutate(m = total_temp) %>% 
+    
+    # n	:the number of black balls in the urn.
+    # >>> number of viruses infecting non-sporulators in the pool
+    mutate(n = total_vir) %>% 
+    
+    # k: the number of balls drawn from the urn, hence must be in 0,1,., m+n.
+    # >>> Total AMG (specific gene) detected in viruses
+    mutate(k = virulent + temperate) %>% 
+    
+    mutate(p.val = signif (phyper(q, m, n, k, lower.tail =F),5)) #%>% 
+  # Adjust Pvalue for multiple testing
+ #   mutate(p.adj = signif (p.adjust(p.val, method = "BH"),5)) %>% 
+  # mark significantly enriched genes
+  # mutate(significant = (p.adj < p.signif) & (k>k_treshold))
+#pval adjust done later
+  
+temp_enrich$enriched <- "temperate"
+p_temp.all <- temp_enrich
+```
+
+
+```{r}
+vir_enrich <- 
+  d.amg %>% 
+  
+  # Summarize KOs by host sporulation
+ mutate(life_bool = case_when(
+    life_bool ~ "temperate",
+    !life_bool ~ "virulent"
+  )) %>% 
+  filter(!is.na(comp3)) %>% 
+  group_by(comp3, life_bool) %>% 
+  summarise(n=n(), .groups = "drop") %>% 
+  pivot_wider(values_from = n, names_from = life_bool, values_fill = 0) %>% 
+   
+    # q	: the number of white balls drawn without replacement 
+    # from an urn which contains both black and white balls.
+    # >>> AMG (specific gene) in viruses infecting that lifestyle
+    mutate(q = virulent) %>% 
+    
+    # m	:the number of white balls in the urn.
+    # >>> number of viruses of that lifestyle
+    mutate(m = total_vir) %>% 
+    
+    # n	:the number of black balls in the urn.
+    # >>> number of viruses infecting the other lifestyle
+    mutate(n = total_temp) %>% 
+    
+    # k: the number of balls drawn from the urn, hence must be in 0,1,., m+n.
+    # >>> Total AMG (specific gene) across all lifestyles
+    mutate(k = virulent + temperate) %>% 
+    
+    mutate(p.val = signif (phyper(q, m, n, k, lower.tail =F),5)) #%>% 
+  # Adjust Pvalue for multiple testing
+    #mutate(p.adj = signif (p.adjust(p.val, method = "BH"),5)) %>% 
+  # mark significantly enriched genes
+   #mutate(significant = (p.adj < p.signif) & (k>k_treshold))
+
+#pval adjust done later
+
+vir_enrich$enriched <- "virulent"
+p_vir.all <- vir_enrich
+
+
+```
+
+```{r}
+
+## pval adjustement for all?
+
+all.pv <- rbind(p_temp.all, p_vir.all)
+# all.pv$og.adj <- all.pv$p.adj
+
+
+## i adjust p.val original, NOT p.adj (from original?)
+  # Adjust Pvalue for multiple testing
+all.pv.adj <-  all.pv %>%  mutate(p.adj = signif (p.adjust(p.val, method = "BH"),5)) %>% 
+  # mark significantly enriched genes
+   mutate(significant = (p.adj < p.signif) & (k>k_treshold))
+
+#all.pv.adj <- merge(all.pv.adj, kegg.enrich, by.x="comp3", by.y="comp3", all.x=TRUE, all.y=FALSE)
+
+##parA is **mostly** in temperate clostridium difficile phage -- think this might be a sampling issue.
+
+test_phage.func.iso_facet <- subset(test_phage.func.iso_facet, test_phage.func.iso_facet$facet1=="All Genes")
+d.amg.sig.bubble <- test_phage.func.iso_facet
+
+d.amg.sig.bubble$facet2 <- ifelse(d.amg.sig.bubble$facet2=="Spor_temperate", "Temperate", "Virulent")
+```
+
+

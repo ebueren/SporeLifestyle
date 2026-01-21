@@ -1,0 +1,181 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+
+
+library(tidyverse)
+library(here)
+library(cowplot)
+library(emmeans)
+library(lme4)
+library(lmerTest)
+library(ggplot2) 
+
+
+here()
+dr_here()
+
+
+
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+#gpdgvd <- read.csv(here("data/gpdgvdared_db/14Apr2025_knownsporestatus.csv", row.names=1))
+gpdgvd <- read.csv(here("00_data", "gpd_gvd", "gpd_gvd_sporstatus_checkv.csv"), row.names = 1)
+
+gpdgvd$sporulation <- "T"
+gpdgvd$sporulation <- ifelse(gpdgvd$f_spor==TRUE, "SproulatingHost", "NonsporulatingHost")
+
+gpdgvd$newgtdb_Phylum2 <- gpdgvd$newgtdb_Phylum
+gpdgvd$newgtdb_Phylum2 <- ifelse(gpdgvd$newgtdb_Phylum=="Bacillota" & gpdgvd$f_spor==TRUE, "Bacillota_Spor", gpdgvd$newgtdb_Phylum2 )
+gpdgvd$newgtdb_Phylum2 <- ifelse(gpdgvd$newgtdb_Phylum=="Bacillota" & gpdgvd$f_spor==FALSE, "Bacillota_NonSpor", gpdgvd$newgtdb_Phylum2 )
+
+
+
+gpdgvd <- subset(gpdgvd,  gpdgvd$newgtdb_Phylum!="unknown")
+gpdgvd <- subset(gpdgvd,  gpdgvd$checkv_quality!="Low-quality" & gpdgvd$checkv_quality!="Medium-quality")
+
+gpdgvd <- subset(gpdgvd,  gpdgvd$checkv_quality=="Complete")
+gpdgvd <- subset(gpdgvd, gpdgvd$newgtdb_Phylum=="Bacillota")
+### remove duplicates (keep only reference strains)
+### currently this only works on bacilliota, 99.5% ANI over 100% alignment threshold
+## rest of gpdgvdared is pending 
+
+#gpdgvd <- subset(gpdgvd, gpdgvd$ref=="not_run" | gpdgvd$ref=="ref_seq")
+```
+
+```{r}
+
+
+ggplot(gpdgvd,
+       aes(x = contig_length, color = f_spor, fill=f_spor)) +
+  geom_density(alpha = 0.4) + scale_x_log10() + facet_wrap(~ lifestyle, ncol = 2)
+gpdgvd$contig_length.log <- log10(gpdgvd$contig_length)
+
+
+f2<- ggplot(gpdgvd,
+       aes(x = contig_length.log, fill=sporulation)) +
+  geom_density(alpha = 0.2) + scale_x_log10() + facet_wrap(~ lifestyle, ncol = 2)+ scale_x_log10() + theme(legend.position = "right") +ylab("Frequency") +xlab("log10 (Genome Size)") + labs(fill="Host")+ ggtitle("GPDGVD")#+ scale_color_manual(values=pal2)+scale_cf_manual(values=pal2)
+
+f2
+
+f1.gpdgvd <- ggplot(gpdgvd, aes(x = factor(sporulation), fill = factor(sporulation), y = contig_length.log)) + geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)   + ylab("log10 (Genome Size)") + xlab("") + facet_wrap(~ lifestyle, ncol = 2) + theme(legend.position = "none") +labs(fill="Host")+ggtitle("GPDGVD")
+f1.gpdgvd
+
+
+ggplot(subset(gpdgvd),
+       aes(x = gene_count, color = f_spor, fill=f_spor)) +
+  geom_density(alpha = 0.4) + scale_x_log10() + facet_wrap(~ lifestyle, ncol = 2)
+
+ggplot(subset(gpdgvd),
+       aes(x = contig_length, color = lifestyle)) +
+  geom_density(alpha = 0.4) + scale_x_log10() + facet_wrap(~ newgtdb_Class, ncol = 2)
+
+```
+
+```{r}
+
+### KS test 
+##lytic
+ks.test(
+  gpdgvd$contig_length[gpdgvd$lifestyle == "Lytic" & gpdgvd$f_spor == TRUE],
+  gpdgvd$contig_length[gpdgvd$lifestyle == "Lytic" & gpdgvd$f_spor == FALSE]) #, alternative="less"
+
+##two side pos, checking to see if smaller or larger <--- lytic spor genomes skew larger
+ks.test(
+  gpdgvd$contig_length[gpdgvd$lifestyle == "Lytic" & gpdgvd$f_spor == TRUE],
+  gpdgvd$contig_length[gpdgvd$lifestyle == "Lytic" & gpdgvd$f_spor == FALSE], alternative="less")
+
+### do not skew smaller
+ks.test(
+  gpdgvd$contig_length[gpdgvd$lifestyle == "Lytic" & gpdgvd$f_spor == TRUE],
+  gpdgvd$contig_length[gpdgvd$lifestyle == "Lytic" & gpdgvd$f_spor == FALSE], alternative="greater")
+
+
+##temp
+
+ks.test(
+  gpdgvd$contig_length[gpdgvd$lifestyle == "Temp" & gpdgvd$f_spor == TRUE],
+  gpdgvd$contig_length[gpdgvd$lifestyle == "Temp" & gpdgvd$f_spor == FALSE]) #, alternative="less"
+
+##two side pos, checking to see if smaller or larger <--- Temp spor genomes skew larger
+ks.test(
+  gpdgvd$contig_length[gpdgvd$lifestyle == "Temp" & gpdgvd$f_spor == TRUE],
+  gpdgvd$contig_length[gpdgvd$lifestyle == "Temp" & gpdgvd$f_spor == FALSE], alternative="less")
+
+### do not skew smaller
+ks.test(
+  gpdgvd$contig_length[gpdgvd$lifestyle == "Temp" & gpdgvd$f_spor == TRUE],
+  gpdgvd$contig_length[gpdgvd$lifestyle == "Temp" & gpdgvd$f_spor == FALSE], alternative="greater")
+
+
+### in real dataset (gut), both lytic + temp skew bigger if sporulators.
+
+```
+
+## Check powerlog relationship
+
+
+
+```{r}
+m_mixed1 <- lmer(
+  log(contig_length) ~ log(gene_count) * f_spor * lifestyle + 
+    (1 | gtdb_f),
+  data = gpdgvd,
+  REML = FALSE
+)
+summary(m_mixed1)
+
+m_mixed2 <- lmer(
+  log(contig_length) ~ log(gene_count) * f_spor * lifestyle +
+    (1 + log(gene_count) | gtdb_f),
+  data = gpdgvd,
+  REML = FALSE
+)
+summary(m_mixed2)
+
+isSingular(m_mixed2, tol = 1e-4)
+
+m_mixed2_bobyqa <- update(m_mixed2, control = lmerControl(optimizer = "bobyqa"))
+summary(m_mixed2_bobyqa)
+
+
+anova(m_mixed1, m_mixed2_bobyqa)   # LRT; both fitted with REML=FALSE
+AIC(m_mixed1, m_mixed2_bobyqa)
+
+###gtdb_f as random effect for  both incercept and slope is best fit
+```
+
+
+
+sporulation effect on lifestyle powerlaw and genome size at fixed cds
+```{r}
+## power law
+slopes_mixed <- emtrends(m_mixed2_bobyqa, ~ f_spor | lifestyle,
+                         var = "log(gene_count)")
+pairs(slopes_mixed)
+
+### sporulation has no effect on genome ~ cds slop  in lytic or temp phages 
+
+## genome size at fixed gene count (ORFs)
+cds_med <- median(gpdgvd$gene_count)
+
+intercepts_mixed <- emmeans(m_mixed2_bobyqa, 
+                            ~ f_spor | lifestyle,
+                            at = list(`log(gene_count)` = log(cds_med)))
+pairs(intercepts_mixed)
+
+### sporulation has no effect on genome size at fixed cds in lytic or temp phages
+
+```
+
+```{r}
+library(ggplot2)
+emmip(m_mixed2_bobyqa, f_spor ~ gene_count | lifestyle,
+      at = list(gene_count = seq(min(gpdgvd$gene_count),
+                                 max(gpdgvd$gene_count),
+                                 length=200)),
+      type="response")
+
+```
