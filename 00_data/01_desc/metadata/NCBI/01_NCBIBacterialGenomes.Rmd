@@ -1,0 +1,78 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+library(dplyr)
+library(here)
+library(cowplot)
+library(emmeans)
+library(lme4)
+library(lmerTest)
+library(ggplot2) 
+
+
+bac.size <- read.delim2(here("00_data", "01_descstats_data", "NCBI_Bacillota_Genomes.tsv"))
+bac.size$Organism.Name <- gsub("\\[|\\]", "", bac.size$Organism.Name)
+bac.size$CheckM.completeness <- as.numeric(bac.size$CheckM.completeness)
+bac.size$CheckM.contamination <- as.numeric(bac.size$CheckM.contamination)
+
+bac.size <- subset(bac.size, bac.size$CheckM.completeness>=95 & bac.size$CheckM.contamination<3)
+
+#bac.size <- subset(bac.size, bac.size$Assembly.Level=="Complete Genome")
+#bac.size <- subset(bac.size, bac.size$Assembly.Level=="Complete Genome")
+
+bac.size <- separate(bac.size, "Organism.Name", into=c("Genus"), sep=" ", remove = FALSE)
+
+bac.size <- select(bac.size, Assembly.Accession, Organism.Name, Genus, Organism.Taxonomic.ID, Assembly.Stats.Total.Sequence.Length, Assembly.Level, CheckM.marker.set, Annotation.Count.Gene.Total, Assembly.Stats.GC.Percent)
+
+
+gtdb.tax <-read.csv(here("00_data", "01_desc", "metadata", "GTDB", "GTDBFamilySporulation.csv"), row.names=1)
+
+
+
+bac <- merge(bac.size, gtdb.tax, by.x="Genus", by.y="newgtdb_Genus", all.x=TRUE, all.y=FALSE)
+bac$gtdb_f[is.na(bac$gtdb_f)] <- "FAIL"
+
+bac.good <- subset(bac, bac$gtdb_f!="FAIL")
+bac.good <- select(bac.good, Assembly.Accession, Organism.Name, Genus, Organism.Taxonomic.ID, Assembly.Stats.Total.Sequence.Length, Assembly.Level, newgtdb_Domain, newgtdb_Phylum, newgtdb_Class, newgtdb_Order, gtdb_f, f_spor, Annotation.Count.Gene.Total, Assembly.Stats.GC.Percent)
+
+
+bac.fail <- subset(bac, bac$gtdb_f=="FAIL")
+
+bac.fail <- select(bac.fail, Assembly.Accession, Organism.Name, Genus, Organism.Taxonomic.ID, Assembly.Stats.Total.Sequence.Length, Assembly.Level, CheckM.marker.set, Annotation.Count.Gene.Total, Assembly.Stats.GC.Percent)
+
+gtdb.fam <- unique(select(gtdb.tax, newgtdb_Domain, newgtdb_Phylum, newgtdb_Class, newgtdb_Order, gtdb_f, f_spor))
+
+
+bac.fail <- merge(gtdb.fam, bac.fail, by.y="CheckM.marker.set", by.x="gtdb_f", all.x=FALSE, all.y=TRUE)
+bac.fail$f_spor[is.na(bac.fail$f_spor)] <- "unknown"
+
+
+bac.fail <- select(bac.fail, Assembly.Accession, Organism.Name, Genus, Organism.Taxonomic.ID, Assembly.Stats.Total.Sequence.Length, Assembly.Level, newgtdb_Domain, newgtdb_Phylum, newgtdb_Class, newgtdb_Order, gtdb_f, f_spor, Annotation.Count.Gene.Total, Assembly.Stats.GC.Percent)
+
+bac.clean <- rbind(bac.good, bac.fail)
+
+bac.clean <- subset(bac.clean, bac.clean$f_spor!="unknown")
+
+
+bac.clean$genome.log <- log10(bac.clean$Assembly.Stats.Total.Sequence.Length)
+bac.clean$gene.log <- log10(bac.clean$Annotation.Count.Gene.Total)
+bac.clean$gene.count <- bac.clean$Annotation.Count.Gene.Total
+bac.clean$GC <- as.numeric(bac.clean$Assembly.Stats.GC.Percent)
+
+bac.stats <- select(bac.clean, Genus, Assembly.Stats.Total.Sequence.Length, newgtdb_Domain, newgtdb_Phylum, newgtdb_Class, newgtdb_Order, gtdb_f, f_spor, gene.count, GC)
+
+
+
+bac.stats <- bac.stats %>%
+  group_by(newgtdb_Domain, newgtdb_Phylum, newgtdb_Class, newgtdb_Order, gtdb_f, f_spor,) %>%
+  summarise(total = n(),
+    host.genome.length = mean(Assembly.Stats.Total.Sequence.Length, na.rm = TRUE) ,
+    host.gene.count = mean(gene.count, na.rm = TRUE),
+    host.GC = mean(GC, na.rm = TRUE))
+
+write.csv(bac.stats, here("00_data", "01_desc", "metadata", "NCBI", "SummaryStatsBacillotaGenomes.csv"))
+
+```

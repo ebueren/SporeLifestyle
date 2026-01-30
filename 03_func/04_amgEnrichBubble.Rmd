@@ -358,9 +358,163 @@ ggsave(here(figs_dir, "inph_lifestyle_AVG_enriched_relative.png"), height =6 ,wi
 #geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2) + coord_flip()
 
 ```
+```{r}
+flip <- d.amg.sig[,c(1,2,4,7,3,5,6)]
+
+flip_wide <- flip %>%
+  select(comp3, enriched, COG.broad, enriched_facet, life_bool, n, rel) %>%
+  pivot_wider(
+    names_from  = life_bool,
+    values_from = c(n, rel),
+    names_glue  = "{life_bool}_{.value}"
+  ) %>%
+  rename(
+    temp_n   = TRUE_n,
+    temp_rel = TRUE_rel,
+    vir_n    = FALSE_n,
+    vir_rel  = FALSE_rel
+  )
+flip_wide$prop.val <- 0
+flip_wide$prop.val <- ifelse(flip_wide$enriched_facet=="virulent", flip_wide$vir_rel/flip_wide$temp_rel, flip_wide$prop.val)
+flip_wide$prop.val <- ifelse(flip_wide$enriched_facet=="temperate", flip_wide$temp_rel/flip_wide$vir_rel, flip_wide$prop.val)
+
+flip_wide$prop.val.neg <- ifelse(flip_wide$enriched_facet=="temperate", flip_wide$prop.val*(-1) , flip_wide$prop.val)
+
+
+library(ggplot2)
+
+ggplot(flip_wide, aes(x = 1, y = comp3, fill = prop.val)) +
+  geom_tile() +
+  scale_x_continuous(breaks = NULL) +
+  labs(x = NULL, y = NULL, fill = "Value") +
+  theme_minimal()
+
+
+
+pathway_levels <- flip_wide %>%
+  distinct(enriched_facet, COG.broad, comp3) %>%
+  arrange(enriched_facet, COG.broad, comp3) %>%
+  pull(comp3)
+
+d.amg.sig.bubble <- flip_wide %>%
+  mutate(comp3 = factor(comp3, levels = pathway_levels))
+
+p <- ggplot(d.amg.sig, aes(x = comp3)) +
+  geom_point(aes(size = prop.val), shape = 21, stroke = 0.6, fill="black") +
+ scale_size_area(limits = c(0, 55), max_size = 8) +
+  # control max bubble diameter
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.title = element_blank(),
+    axis.text.x = element_text(size = 11, face = "bold"),
+    axis.text.y = element_text(size = 10),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank()
+  ) #+facet_wrap(~ enriched_facet, scales = "free_y", ncol = 2)  
+
+library(ggplot2)
+
+flip_wide_only <- subset(flip_wide, flip_wide$enriched_facet!="Not Enriched")
+ggplot(flip_wide_only, aes(x = 1, y = comp3, fill=enriched, color=enriched)) +
+  geom_point(
+    aes(size = prop.val, fill = enriched, color=enriched),
+    fill = "black",
+    stroke = 0.6
+  ) +
+  scale_size_area(max_size = 10) +
+  scale_x_continuous(breaks = NULL) +
+  labs(x = NULL, y = NULL, color = "Enriched by Viral Lifestyle", size="Fold Increase in \nEnriched Lifestyle") +
+  theme_minimal()
+
+
+
+ggplot(flip_wide_only, aes(x = comp3, y = 1, fill = prop.val.neg)) +
+  geom_tile() +
+   scale_fill_gradient2(
+    low = "blue",
+    mid = "white",
+    high = "red",
+    midpoint=0,
+    limits = c(-25, 25),
+    breaks = c(-25, -5, 0, 5, 25),
+    labels = c(
+      "25× enriched Temperate",
+      "5× enriched Temperate",
+      "--",
+      "5× enriched Virulent",
+      "25× enriched Virulent"
+    )
+  ) +
+  scale_y_continuous(breaks = NULL) +
+  coord_flip() +
+  labs(x = NULL, y = NULL) +
+  theme_minimal()+ labs(x = NULL, y = NULL, fill ="Fold Increase in \nEnriched Lifestyle") 
+
+```
+
+
+
+
+
 
 ```{r}
+d.amg.sig.bubble <- d.amg.sig
+d.amg.sig.bubble$life_bool <- ifelse(d.amg.sig.bubble$life_bool==TRUE, "Temperate", "Virulent")
+d.amg.sig.bubble$enriched_facet <- ifelse(d.amg.sig.bubble$enriched=="temperate", "Temperate-Enriched Genes", "Virulent-Enriched Genes")
+d.amg.sig.bubble$enriched_facet <- ifelse(d.amg.sig.bubble$enriched=="Not Enriched", "Not Lifestyle-Enriched Genes", d.amg.sig.bubble$enriched_facet)
+#d.amg.sig.bubble <- subset(d.amg.sig, d.amg.sig$enriched_facet=="temperate")
 
+d.amg.sig.bubble <- subset(d.amg.sig.bubble, d.amg.sig.bubble$enriched!="Not Enriched")
+
+pathway_levels <- d.amg.sig.bubble %>%
+  distinct(enriched_facet, COG.broad, comp3) %>%
+  arrange(enriched_facet, COG.broad, comp3) %>%
+  pull(comp3)
+
+d.amg.sig.bubble <- d.amg.sig.bubble %>%
+  mutate(comp3 = factor(comp3, levels = pathway_levels))
+
+p <- ggplot(d.amg.sig.bubble, aes(x = life_bool, y = comp3)) +
+  geom_point(aes(size = rel), shape = 21, stroke = 0.6, fill="black") +
+ scale_size_area(limits = c(0, 55), max_size = 8) +
+  # control max bubble diameter
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.title = element_blank(),
+    axis.text.x = element_text(size = 11, face = "bold"),
+    axis.text.y = element_text(size = 10),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank()
+  ) #+facet_wrap(~ enriched_facet, scales = "free_y", ncol = 2)  
+
+p
+
+# Add a colored strip at the LEFT that corresponds to pathway categories
+strip_df <- unique(select(d.amg.sig.bubble, enriched_facet, COG.broad, comp3))
+strip_df$COG.broad <- as.factor(strip_df$COG.broad)
+strip_df <- strip_df %>% mutate(xpos = as.numeric(COG.broad))
+
+strip_x <- min(strip_df$xpos) - 0.8   # ← ONLY CHANGE (was max + offset)
+
+strip_df <- strip_df %>%
+  select(COG.broad, comp3, enriched_facet) %>%
+  distinct() %>%
+  mutate(x = strip_x, xend = strip_x + 0.4)
+
+p <- p +
+  geom_tile(
+    data = strip_df,
+    aes(x = x, y = comp3, fill = COG.broad),
+    width = 0.4,
+    height = 0.9,
+    inherit.aes = FALSE
+  ) +
+  coord_cartesian(clip = "off")
+
+# Add legend and show
+temp.gg <- p + guides(size = guide_legend(title = "Gene Category Proportion (%) "), fill=guide_legend(""))
+temp.gg
+#ggsave(here(figs_dir, "inph_AVG_bubbleplot_Enrich.png"), height =5 ,width = 12)
 
 
 
@@ -368,8 +522,110 @@ ggsave(here(figs_dir, "inph_lifestyle_AVG_enriched_relative.png"), height =6 ,wi
                                                 
 ```
 
+
 ```{r}
- # reverse so top item plotted at top
+library(ggplot2)
+library(dplyr)
+library(ggnewscale)  # allow multiple independent fill scales
+
+d.amg.sig.bubble <- d.amg.sig
+d.amg.sig.bubble$life_bool <- ifelse(d.amg.sig.bubble$life_bool==TRUE, "Temperate", "Virulent")
+d.amg.sig.bubble$enriched_facet <- ifelse(d.amg.sig.bubble$enriched=="temperate", "Temperate-Enriched Genes", "Virulent-Enriched Genes")
+d.amg.sig.bubble$enriched_facet <- ifelse(d.amg.sig.bubble$enriched=="Not Enriched", "Not Lifestyle-Enriched Genes", d.amg.sig.bubble$enriched_facet)
+
+# drop not enriched as you already do
+d.amg.sig.bubble <- subset(d.amg.sig.bubble, d.amg.sig.bubble$enriched!="Not Enriched")
+
+# set ordering for comp3
+pathway_levels <- d.amg.sig.bubble %>%
+  distinct(enriched_facet, COG.broad, comp3) %>%
+  arrange(enriched_facet, COG.broad, comp3) %>%
+  pull(comp3)
+
+d.amg.sig.bubble <- d.amg.sig.bubble %>%
+  mutate(comp3 = factor(comp3, levels = pathway_levels))
+
+# base bubble plot
+p <- ggplot(d.amg.sig.bubble, aes(x = life_bool, y = comp3)) +
+  geom_point(aes(size = rel), shape = 21, stroke = 0.6, fill = "black") +
+  scale_size_area(limits = c(0, 55), max_size = 11) +
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.title = element_blank(),
+    axis.text.x = element_text(size = 11, face = "bold"),
+    axis.text.y = element_text(size = 10),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank()
+  )
+
+# Prepare strip data (unique rows)
+strip_df <- d.amg.sig.bubble %>%
+  select(enriched_facet, COG.broad, comp3) %>%
+  distinct() %>%
+  arrange(COG.broad)
+
+# first strip (COG.broad) — place right of the second strip
+strip_df <- strip_df %>% mutate(COG.broad = as.factor(COG.broad))
+strip_df <- strip_df %>% mutate(xpos = as.numeric(COG.broad))
+strip_x1 <- min(strip_df$xpos) - 0.8   # original position (you used min - 0.8)
+strip_df <- strip_df %>%
+  mutate(x = strip_x1, xend = strip_x1 + 0.4)
+
+# second strip (enriched_facet) — further left
+strip_x2 <- strip_x1 - 0.5
+strip2_df <- strip_df %>%
+  select(comp3, enriched_facet) %>%
+  distinct() %>%
+  mutate(x = strip_x2, xend = strip_x2 + 0.4)
+
+# Add the COG.broad strip (first fill scale)
+p <- p +
+  geom_tile(
+    data = strip_df,
+    aes(x = x, y = comp3, fill = COG.broad),
+    width = 0.4,
+    height = 0.9,
+    inherit.aes = FALSE,
+    show.legend = TRUE
+  )
+
+# allow a new independent fill scale for the second strip
+p <- p + ggnewscale::new_scale_fill()
+
+# Add the enriched_facet strip (second fill scale)
+# choose two colors for enriched_facet (edit to preference)
+enrich_colors <- c(
+  "Temperate-Enriched Genes" = "#1b9e77",   # greenish
+  "Virulent-Enriched Genes"  = "#d95f02"    # orangish
+)
+
+p <- p +
+  geom_tile(
+    data = strip2_df,
+    aes(x = x, y = comp3, fill = enriched_facet),
+    width = 0.4,
+    height = 0.9,
+    inherit.aes = FALSE,
+    show.legend = TRUE
+  ) +
+  scale_fill_manual(name = "Enriched facet", values = enrich_colors)
+
+# Keep COG.broad legend; Add custom scale for COG.broad (optional)
+# If you want a discrete palette for COG.broad, set it here:
+p <- p + scale_fill_brewer(type = "qual", palette = "Set3", guide = guide_legend(title = "COG broad"), na.value = "grey80")
+
+# coord and legend tweaks
+p <- p + coord_cartesian(clip = "off") +
+  guides(
+    size = guide_legend(title = "Gene Category Proportion (%)"),
+    fill = guide_legend(order = 1)
+  )
+
+# Note: because we used ggnewscale, the most recent scale_fill_* (scale_fill_manual for enriched_facet)
+# applies only to the second strip, and the scale_fill_brewer applies only to the first strip.
+# Render
+p
+
 ```
 
 ```{r}
@@ -482,7 +738,7 @@ library(here)   # optional if saving
 # -------------------------
 size_min_observed <- min(d.amg.sig.bubble$rel[d.amg.sig.bubble$rel > 0], na.rm = TRUE) # e.g. 0.1
 size_limits <- c(0.05, 55)
-size_max    <- 8
+size_max    <- 11
 size_breaks <- c(0.05, 1, 10, 20, 30, 40, 50)
 size_labels <- as.character(size_breaks)
 
@@ -635,7 +891,7 @@ final_plot <- plot_grid(main_grid, legend_grob, ncol = 2, rel_widths = c(1, 0.28
 # display
 print(final_plot)
 
-ggsave(here(figs_dir, "inph_AVG_bubbleplot_Enrich.png"), height =6 ,width = 14)
+#ggsave(here(figs_dir, "inph_AVG_bubbleplot_Enrich.png"), height =6 ,width = 14)
 # optional: save (create dir if needed)
 # out_dir <- here::here("figs")
 # if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)

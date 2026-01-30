@@ -1,0 +1,134 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(here)
+here()
+
+dr_here()
+```
+
+### Checkv
+```{r}
+inph <- read.delim2(here("00_data", "01_desc", "CheckV", "14Apr2025_CheckV_qualsummary.tsv"))
+
+gpdgvd <- read.delim2(here("00_data", "01_desc", "CheckV", "gpdgvd_checkvqualsum.tsv"))
+#gpdgvd <- subset(gpdgvd, gpdgvd$checkv_quality=="Complete" | gpdgvd$checkv_quality=="High-quality")
+
+gsv <- read.delim2(here("00_data", "01_desc", "CheckV", "GSV_CheckV_qualsummary.tsv"))
+#gsv <- subset(gsv, gsv$checkv_quality=="Complete" | gsv$checkv_quality=="High-quality")
+
+checkv <- rbind(inph, gpdgvd, gsv)
+checkv <- checkv %>% rename(Accession=contig_id)
+checkv.abb <- select(checkv, Accession, contig_length, gene_count, checkv_quality, completeness, contamination)
+
+
+
+
+```
+
+
+
+### GC
+```{r}
+inph <- read.delim2(here("00_data", "01_desc", "GC_seqkit", "15Apr2025Inphared_GC_fx2tab.tsv"), header=FALSE)
+
+gpdgvd <- read.csv(here("00_data", "01_desc", "GC_seqkit", "GPDGVD_GC_fx2tab_tabfix.csv"), header=FALSE)
+gpdgvd <- gpdgvd[,c(1,3,4)]
+colnames(gpdgvd) <- c("V1", "V2", "V3")
+
+gsv <- read.delim2(here("00_data", "01_desc", "GC_seqkit", "GSV_GC_fx2tab.tsv"), header=FALSE)
+
+
+gc.perc <- rbind(inph, gpdgvd, gsv)
+colnames(gc.perc) <- c("Name", "seqkit.length", "GC")
+
+gc.perc <- separate(gc.perc, Name, into=c("Accession"), sep=" ", remove = TRUE)
+gc.perc <- select(gc.perc, Accession, GC)
+
+
+```
+
+
+
+
+### Phastyle
+```{r}
+inph <- read.delim2(here("00_data", "01_desc", "Phastyle", "15Apr2025_INPHARED_phastyle.tsv"))
+gpdgvd <- read.delim2(here("00_data", "01_desc", "Phastyle", "GPDGVD_phastyle.tsv"))
+gsv <- read.delim2(here("00_data", "01_desc", "Phastyle", "GSV_phastyle.tsv"))
+
+phastyle <- rbind(inph, gpdgvd, gsv)
+
+phastyle <- phastyle %>% rename(Accession=fasta_id)
+phastyle <- select(phastyle, Accession, predicted_label, p_temperate, p_virulent)
+
+### filter phastyle 
+
+phastyle <- subset(phastyle, phastyle$p_temperate>=0.7 | phastyle$p_virulent>=0.7)
+```
+
+
+### Cherry
+
+```{r}
+
+### Cherry is the only filtered dataset (removes Eukaryotic viruses)
+cherry <- read.csv(here("00_data", "01_desc", "CHERRY", "CleanedCherry.csv"), row.names=1)
+### ensure no merge issues caused by NA values
+cherry[is.na(cherry)] <- "Unknown"
+```
+
+
+### merge
+
+```{r}
+
+#keep only validated cherry hits + checkV qual hits + filter phastyle hits
+final <- merge(cherry, checkv.abb, by="Accession", all.x=FALSE, all.y=FALSE)  
+final <- merge(final, phastyle, by="Accession", all.x=FALSE, all.y=FALSE)
+final <- merge(final, gc.perc, by="Accession", all.x=TRUE, all.y=FALSE)
+```
+
+### customize columns
+
+```{r}
+
+## create column that indicates if Bacillota or OtherPhyla
+final$Bacillota <- "tbd"
+final$Bacillota <- ifelse(final$newgtdb_Phylum=="Bacillota", "Bacillota", "Non-Bacillota")
+
+##  Set all Non-Bacillota to false (F_spor)
+
+final$f_spor <- ifelse(final$Bacillota=="Non-Bacillota", FALSE, final$f_spor)
+
+### remove "unknown" sporulating phenotype Bacillota
+final <- subset(final, final$f_spor!="unknown")
+
+## Create easier to track sproulating / nonsporulating variable 
+final$spor <- "Nonsporulating"
+final$spor <- ifelse(final$f_spor==TRUE, "Sporulating", "Nonsporulating")
+
+## Identify sporulating and nonsporulating Bacillota
+final$spor_host <- final$Bacillota
+final$spor_host <- ifelse(final$f_spor==TRUE & final$newgtdb_Phylum=="Bacillota", "Sporulating Bacillota", final$spor_host)
+final$spor_host <- ifelse(final$f_spor==FALSE & final$newgtdb_Phylum=="Bacillota", "Nonsporulating Bacillota", final$spor_host)
+
+## change predicted_label to lifestyle (easier to track)
+final <- final %>% rename(lifestyle=predicted_label)
+final$lifestyle <- ifelse(final$lifestyle=="temperate", "Temperate", final$lifestyle)
+final$lifestyle <- ifelse(final$lifestyle=="virulent", "Lytic", final$lifestyle)
+
+final <- unite(final, "phage_spor_host", c("lifestyle", "spor_host"), sep = " ", remove = FALSE, na.rm=FALSE)
+
+## filter out low qual metagenome contigs
+
+
+
+
+write.csv(final, here("00_data", "01_desc", "CompleteMetadata.csv"))
+
+```

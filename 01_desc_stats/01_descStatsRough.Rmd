@@ -1,0 +1,369 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+
+library(tidyverse)
+library(dplyr)
+library(here)
+library(cowplot)
+library(emmeans)
+library(lme4)
+library(lmerTest)
+library(ggplot2) 
+
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+
+dr_here()
+### load complete virus data
+
+df <- read.csv(here("00_data", "01_desc", "CompleteMetadata.csv"), row.names=1)
+
+
+df <- subset(df, df$checkv_quality=="Complete" )#| df$checkv_quality=="High-quality" )
+
+df$genome.log <- log10(df$contig_length)
+df$gene.log <- log10(df$gene_count)
+
+df.bac <- subset(df, df$Bacillota=="Bacillota")
+
+
+bac.stat <- read.csv(here("00_data", "01_desc", "metadata", "NCBI", "SummaryStatsBacillotaGenomes.csv"), row.names=1)
+
+bac.stat <- select(bac.stat, gtdb_f, host.genome.length, host.gene.count, host.GC)
+
+
+df.bac <- merge(df.bac, bac.stat, by="gtdb_f", all.x=TRUE, all.y=FALSE)
+df.bac[is.na(df.bac)] <- 0
+
+df.bac.stats <- subset(df.bac, df.bac$host.GC!=0)
+
+df.bac.stats$phage.pl <- df.bac.stats$genome.log / df.bac.stats$gene.log
+
+df.bac.stats$phage.gvg <- df.bac.stats$contig_length / df.bac.stats$gene_count
+df.bac.stats$host.gvg <- df.bac.stats$host.genome.length / df.bac.stats$host.gene.count
+
+df.bac.stats$host.pl <- log10(df.bac.stats$host.genome.length) / log10(df.bac.stats$host.gene.count)
+
+df.bac.stats$pl.ratio <- df.bac.stats$phage.pl/df.bac.stats$host.pl
+
+df.bac.stats$gc.dif.abs <- abs(df.bac.stats$GC - df.bac.stats$host.GC)
+df.bac.stats$gc.dif <- df.bac.stats$GC - df.bac.stats$host.GC
+
+df.bac.stats$gc.prop <- df.bac.stats$GC / df.bac.stats$host.GC
+```
+### gc correlation
+
+```{r}
+
+library(ggpubr)
+ggplot(df.bac.stats, aes(x = factor(spor), fill = factor(spor), y = pl.ratio)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  +  ylab("log10 (Genome Size)") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~lifestyle , ncol = 1)
+
+
+
+ ggplot(df.bac.stats, aes(host.pl, phage.pl, fill=phage_spor_host, colour = phage_spor_host)) +
+  geom_point() + geom_smooth(method="lm") + facet_wrap(~lifestyle , ncol = 1)+
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "middle", label.y.npc = "top" )
+
+ ggplot(df.bac.stats, aes(phage.gvg, host.gvg, fill=phage_spor_host, colour = phage_spor_host)) +
+  geom_point() + geom_smooth(method="lm") + facet_wrap(~lifestyle , ncol = 1)+
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "middle", label.y.npc = "top" )
+
+```
+
+### gc difference to host
+
+```{r}
+ggplot(df.bac.stats, aes(x = factor(spor), fill = factor(spor), y = gc.prop)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  +   xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~lifestyle , ncol = 1)
+
+
+ggplot(df.bac.stats, aes(x = factor(spor), fill = factor(spor), y = gc.dif)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  +   xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~lifestyle , ncol = 1)
+
+ggplot(df.bac.stats, aes(x = gc.dif, fill = phage_spor_host)) +
+  geom_histogram(aes(y = after_stat(density)), 
+                 alpha = 0.5, position = "identity", binwidth = 2) +
+  geom_density(alpha = 0.2) +
+  labs(title = "Independent Densities (Each Species Area = 1)")+ facet_wrap(~lifestyle , ncol = 1)
+
+
+ggplot(df.bac.stats, aes(x = factor(spor), fill = factor(spor), y = gc.dif.abs)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  +  xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~lifestyle , ncol = 1)
+
+
+
+ggplot(df.bac.stats, aes(x = gc.dif.abs, fill = phage_spor_host)) +
+  geom_histogram(aes(y = after_stat(density)), 
+                 alpha = 0.5, position = "identity", binwidth = 2) +
+  geom_density(alpha = 0.2) +
+  labs(title = "Independent Densities (Each Species Area = 1)")+ facet_wrap(~lifestyle , ncol = 1)
+
+
+
+```
+
+
+
+
+
+### compare genome length & size
+```{r}
+ggplot(df.bac, aes(x = factor(spor), fill = factor(spor), y = genome.log)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  +  ylab("log10 (Genome Size)") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~lifestyle , ncol = 1)
+
+ggplot(df.bac.stats, aes(x = factor(spor), fill = factor(spor), y = pl.ratio)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  +  ylab("log10 (Genome Size)") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~lifestyle , ncol = 1)
+
+
+ggplot(df.bac.stats, aes(x = pl.ratio, fill = spor)) +
+  geom_density(alpha = 0.4) + facet_wrap(~lifestyle, ncol=1)
+
+ggplot(df.bac.stats, aes(x = pl.ratio, fill = spor)) +
+  geom_histogram(
+    aes(y = after_stat(count / sum(count))),
+    bins = 30,
+    position = "identity",
+    alpha = 0.4
+  ) +
+  facet_wrap(~ lifestyle, ncol = 1) +
+  ylab("Proportion")
+
+
+ggplot(df.bac.stats, aes(x = factor(spor), fill = factor(spor), y = gc.dif)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  +  ylab("log10 (Genome Size)") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~lifestyle , ncol = 1)
+
+ggplot(df.bac.stats, aes(x = factor(spor), fill = factor(spor), y = gc.dif.abs)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  +  ylab("log10 (Genome Size)") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~lifestyle , ncol = 1)
+
+
+ggplot(df.bac.stats, aes(x = gc.dif.abs, fill = spor)) +
+  geom_density(alpha = 0.4) + facet_wrap(~lifestyle, ncol=1)
+
+
+ggplot(df.bac.stats, aes(x = pl.ratio, fill = spor)) +
+  geom_density(alpha = 0.4) + facet_wrap(~lifestyle, ncol=1)
+
+
+ggplot(df.bac.stats, aes(x = gc.dif, fill = phage_spor_host)) +
+  geom_density(alpha = 0.4) + facet_wrap(~lifestyle, ncol=1)
+
+
+
+ggplot(df.bac.stats, aes(x = gc.dif, fill = phage_spor_host)) +
+  geom_histogram(aes(y = after_stat(density)), 
+                 alpha = 0.5, position = "identity", binwidth = 2) +
+  geom_density(alpha = 0.2) +
+  labs(title = "Independent Densities (Each Species Area = 1)")+ facet_wrap(~lifestyle , ncol = 1)
+
+
+
+
+ ggplot(df.bac, aes(x = factor(spor), fill = factor(spor), y = gene_count)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  +  ylab("log10 (Genome Size)") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~lifestyle , ncol = 1)
+
+
+```
+
+```{r}
+
+
+
+ggplot(df.bac.stats, aes(x = gc.dif, fill = phage_spor_host, group = phage_spor_host)) +
+  geom_histogram(aes(y = after_stat(count / sum(count))), 
+                 alpha = 0.5, position = "dodge", binwidth = 4) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(y = "Percent within Group", title = "Independent Proportions")+ facet_wrap(~lifestyle , ncol = 1)
+
+ggplot(df.bac.stats, aes(x = gc.dif.abs, fill = phage_spor_host)) +
+  geom_histogram(aes(y = after_stat(density)), 
+                 alpha = 0.5, position = "identity", binwidth = 2) +
+  geom_density(alpha = 0.2) +
+  labs(title = "Independent Densities (Each Species Area = 1)")+ facet_wrap(~lifestyle , ncol = 1)
+
+ggplot(df.bac.stats, aes(x = gc.dif.abs, fill = phage_spor_host)) +
+  geom_histogram(aes(y = after_stat(density)), 
+                 alpha = 0.5, position = "identity", binwidth = 2) +
+  geom_density(alpha = 0.2) +
+  labs(title = "Independent Densities (Each Species Area = 1)")
+
+
+
+ggplot(df.bac.stats, aes(x = pl.ratio, fill = phage_spor_host)) +
+  geom_histogram(aes(y = after_stat(density)), 
+                 alpha = 0.5, position = "identity", binwidth = 3) +
+  geom_density(alpha = 0.2) +
+  labs(title = "Independent Densities (Each Species Area = 1)")+ facet_wrap(~lifestyle , ncol = 1)
+
+ggplot(df.bac.stats, aes(x = pl.ratio, fill = phage_spor_host, group = phage_spor_host)) +
+  geom_histogram(aes(y = after_stat(count / sum(count))), 
+                 alpha = 0.5, position = "dodge", binwidth = .05) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(y = "Percent within Group", title = "Independent Proportions")+ facet_wrap(~lifestyle , ncol = 1)
+
+
+ggplot(df.bac.stats, aes(x = pl.ratio, fill = phage_spor_host)) +
+  geom_histogram(aes(y = after_stat(density)), 
+                 alpha = 0.5, position = "identity", binwidth = 2) +
+  geom_density(alpha = 0.2) +
+  labs(title = "Independent Densities (Each Species Area = 1)")+ facet_wrap(~lifestyle , ncol = 1)
+
+```
+
+```{r}
+
+ggplot(df.bac, aes(x = factor(phage_spor_host), fill = factor(phage_spor_host), y = gene.log)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  +  ylab("log10 (Genome Size)") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~dataset , ncol = 1)
+
+
+ggplot(df.bac.stats, aes(x = factor(phage_spor_host), fill = factor(phage_spor_host), y = pl.ratio)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  +  ylab("log10 (Genome Size)") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~dataset , ncol = 1)
+
+ggplot(df.bac, aes(x = factor(phage_spor_host), fill = factor(phage_spor_host), y = GC)) + 
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2)  +  ylab("log10 (Genome Size)") + xlab("") + ggtitle("INPHARED") + labs(fill="Lifestyle") + facet_wrap(~dataset , ncol = 1)
+```
+
+```{r}
+m_mixed1 <- lmer(
+  log(genome.log) ~ log(gene.log) * f_spor * lifestyle + 
+    (1 | Host),
+  data = df.bac,
+  REML = FALSE
+)
+
+summary(m_mixed1)
+
+m <- lmer(
+  gene.log ~
+    genome.log * lifestyle * f_spor +
+    dataset +
+    (1 + genome.log | Host),
+  data = df.bac,
+  REML = FALSE
+)
+
+
+slopes_mixed <- emtrends(
+  m,
+  ~ f_spor | lifestyle,
+  var = "genome.log"
+)
+
+pairs(slopes_mixed)
+
+plot(slopes_mixed)
+
+
+
+summary(m)
+
+isSingular(m_mixed2, tol = 1e-4)
+
+m_mixed2_bobyqa <- update(m_mixed2, control = lmerControl(optimizer = "bobyqa"))
+summary(m_mixed2_bobyqa)
+
+
+anova(m_mixed1, m_mixed2)   # LRT; both fitted with REML=FALSE
+AIC(m_mixed1, m_mixed2)
+
+
+slopes_mixed <- emtrends(m_mixed2, ~ f_spor | lifestyle,
+                         var = "gene.log")
+
+pairs(slopes_mixed)
+
+
+
+
+library(ggpubr)
+ggplot(df.bac, aes(genome.log, gene.log, fill = factor(phage_spor_host), colour = phage_spor_host)) +
+  geom_point() +
+  geom_smooth(method="lm")+ # Add regression line
+ stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
+                        label.x.npc = "middle", label.y.npc = "top" ) + facet_wrap(~dataset , ncol = 1)# Add equation#+ ylim(0, 25) #+ xlim(0, 400000)
+```
+```{r}
+# install if needed
+# install.packages(c("broom.mixed"))
+
+library(lme4)
+library(emmeans)      # for emtrends if you need slopes text
+library(broom.mixed)  # tidy mixed model predictions (optional)
+library(tidyverse)    # ggplot2 + dplyr
+
+df.bac$dataset <- factor(df.bac$dataset, levels = unique(df.bac$dataset))
+df.bac$lifestyle <- factor(df.bac$lifestyle, levels = unique(df.bac$lifestyle))
+df.bac$f_spor <- factor(df.bac$f_spor, levels = unique(df.bac$f_spor))
+
+gmin <- min(df.bac$genome.log, na.rm = TRUE)
+gmax <- max(df.bac$genome.log, na.rm = TRUE)
+grid <- seq(gmin, gmax, length.out = 200)
+ds_levels <- levels(df.bac$dataset)
+
+pred_grid_all <- expand.grid(
+  genome.log = grid,
+  lifestyle  = levels(df.bac$lifestyle),
+  f_spor     = levels(df.bac$f_spor),
+  dataset    = ds_levels,
+  stringsAsFactors = FALSE
+)
+
+pred_grid_all$dataset  <- factor(pred_grid_all$dataset, levels = levels(df.bac$dataset))
+pred_grid_all$lifestyle <- factor(pred_grid_all$lifestyle, levels = levels(df.bac$lifestyle))
+pred_grid_all$f_spor    <- factor(pred_grid_all$f_spor, levels = levels(df.bac$f_spor))
+
+pred_grid_all$gene.log_pred_fixed <- predict(m, newdata = pred_grid_all, re.form = NA)
+
+library(dplyr)
+pred_grid_avg <- pred_grid_all %>%
+  group_by(genome.log, lifestyle, f_spor) %>%
+  summarize(gene.log_pred_fixed = mean(gene.log_pred_fixed), .groups = "drop")
+
+# Plot dataset-averaged population lines
+ggplot(df.bac, aes(x = genome.log, y = gene.log, color = lifestyle)) +
+  geom_point(alpha = 0.35, size = 1.5) +
+  facet_wrap(~ f_spor) +
+  geom_line(data = pred_grid_avg, aes(x = genome.log, y = gene.log_pred_fixed, color = lifestyle),
+            size = 1) +
+  labs(x = "log10(genome size)", y = "log10(number of genes)",
+       title = "Dataset-averaged fixed-effect power laws") +
+  theme_minimal()
+
+
+
+ds_levels <- levels(df.bac$dataset)
+
+pred_grid_all <- expand.grid(
+  genome.log = grid,
+  lifestyle  = levels(df.bac$lifestyle),
+  f_spor     = levels(df.bac$f_spor),
+  dataset    = ds_levels,
+  stringsAsFactors = FALSE
+)
+
+pred_grid_all$dataset  <- factor(pred_grid_all$dataset, levels = levels(df.bac$dataset))
+pred_grid_all$lifestyle <- factor(pred_grid_all$lifestyle, levels = levels(df.bac$lifestyle))
+pred_grid_all$f_spor    <- factor(pred_grid_all$f_spor, levels = levels(df.bac$f_spor))
+
+pred_grid_all$gene.log_pred_fixed <- predict(m, newdata = pred_grid_all, re.form = NA)
+
+library(dplyr)
+pred_grid_avg <- pred_grid_all %>%
+  group_by(genome.log, lifestyle, f_spor) %>%
+  summarize(gene.log_pred_fixed = mean(gene.log_pred_fixed), .groups = "drop")
+
+ggplot(df.bac, aes(x = genome.log, y = gene.log)) +
+  geom_point(aes(color = lifestyle), alpha = 0.35, size = 1.4) +
+  facet_wrap(~ f_spor) +
+  geom_line(data = pred_grid_all, aes(x = genome.log, y = gene.log_pred_fixed, color = dataset, linetype = lifestyle),
+            size = 0.8, alpha = 0.8) +
+  labs(x = "log10(genome size)", y = "log10(number of genes)",
+       title = "Fixed-effect predictions separated by dataset") +
+  theme_minimal()
+```

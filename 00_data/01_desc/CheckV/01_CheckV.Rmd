@@ -1,0 +1,18 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(here)
+here()
+
+dr_here()
+```
+
+```{r}
+inph <- read.delim2(here("00_data", "01_desc", "CheckV", "14Apr2025_CheckV_qualsummary.tsv"))
+gsv <- read.delim2(here("00_data", "01_desc", "CheckV", "GSV_CheckV_qualsummary.tsv"))
+```
+
