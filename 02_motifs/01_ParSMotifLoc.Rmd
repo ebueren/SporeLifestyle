@@ -1,0 +1,301 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(emmeans)
+library(ggsignif)
+library(here)
+library(tidyverse)
+library(grid)
+library(PNWColors)
+
+theme_eb <- theme_classic(base_size = 16) +
+  theme(
+    plot.title = element_text(size = 20),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 14)
+  )
+
+theme_set(theme_eb)
+pal3 <- pnw_palette("Sunset", 3, type=c("discrete"))
+pal7 <-  pnw_palette("Starfish", 7, type=c("discrete"))
+
+
+df <- read.csv(here("00_data", "01_desc", "CompleteMetadata.csv"), row.names=1)
+df <- subset(df, df$dataset=="INPHARED")
+here::here()
+
+### note the quartz script needs to be fixed, the headers are janky and wrong (had to be manually fixed)
+
+
+
+ParS <- read.delim2(here("02_motifs/ParS/data/01_out_01_indiv_hmm1_ParS.tsv"))
+
+ParS$q.value<- as.numeric(ParS$q.value)
+ParS$p.value<- as.numeric(ParS$p.value)
+ParS$score<- as.numeric(ParS$score)
+
+
+
+### remove any duplicate motifs (occasionally a motif will be a palindromic and hit both + and - strands) 
+ParS <- ParS %>%
+  group_by(sequence_name, start, stop) %>%  # group by coordinates
+  slice_max(order_by = score, n = 1) %>%    # keep only the row with highest score
+  ungroup()
+
+### phi3T KY030782, spbeta AF020713
+## redrock (actino phage with ParABS) GU339467, uses parS sites but of a different type than sporulation ParS
+
+
+#inph <- select(inph, Accession, Host, Genome.Length..bp., gtdb_f, f_spor, newgtdb_Phylum,  host_phage_spor, phage_type, sporulation, lifestyle, nice)
+all <- merge(df, ParS, by.x="Accession", by.y="sequence_name", all.x=TRUE, all.y=FALSE)
+all$motif_id[is.na(all$motif_id)] <- "no_hit"
+
+### create binary hit column of 1 for ParS hit, 0 if no hit
+all$hit <- ifelse(all$motif_id=="ParS_BSub", 1, 0)
+all$q.value[is.na(all$q.value)] <- 1
+
+### remove duplicates (keep only reference strains)
+### currently this only works on bacilliota, 99.5% ANI over 100% alignment threshold
+## rest of inphared is pending 
+
+#all <- subset(all, all$ref=="not_run" | all$ref=="ref_seq")
+
+```
+
+### threshold testing
+```{r}
+
+
+### threshold testing
+
+library(dplyr)
+library(ggplot2)
+
+# Define thresholds
+thresholds <- 10^seq(-6, -1, by = 1)   # from 1e-6 to 1e-1
+thresholds <- c(thresholds, 0.05, 1)      # add 0.05 explicitly if desired
+results <- lapply(thresholds, function(th) {
+  all %>%
+    group_by(Accession, phage_spor_host) %>%
+    summarise(
+      pos.ParS.hit = max(ifelse(!is.na(q.value) & q.value <= th, 1, 0)),
+      .groups = "drop"
+    ) %>%
+    group_by(phage_spor_host) %>%
+    summarise(
+      Phage_has_ParS = sum(pos.ParS.hit),
+      total.phage = n(),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      ParS.pos.perc = Phage_has_ParS / total.phage * 100,
+      threshold = th
+    )
+}) %>% bind_rows()
+
+#results.fig <- merge(results, meta.cats, by="phage_spor_host")
+
+# Plot
+p<- ggplot(results, aes(x = threshold, y = ParS.pos.perc, color = phage_spor_host)) +
+  geom_line(size = 1.2) +
+  geom_point() +
+  scale_x_log10() +  # log scale for q-values
+  labs(
+    x = "False Positive (q-value) Threshold",
+    y = "% Phages with 1 or more ParS Binding Site"
+  ) + labs(linetype = "Phage Lifestyle", color="Bacterial Host") +geom_vline(xintercept = 1e-4, linetype = "dotted") #+ theme(legend.position="none")
+p + theme(legend.position = c(0.125, 0.82)) #+ scale_color_manual(values = rev(pal3))
+
+
+#ggsave(here("02_motifs/ParS/QValueTresh1e4_line.png"),width=7, height=7)
+```
+
+
+## Filter w/ q value and summarize data
+```{r}
+
+
+#### Q FILTERING
+ParS.qual <- all
+
+#ParS.qual$hit <- ifelse(ParS.qual$q.value<1e-4, 1, 0)
+ParS.qual$hit <- ifelse(ParS.qual$q.value<1e-4, 1, 0)
+
+## create binary list of phages w/ and w/out ParS hits
+ParS.pos <- ParS.qual %>% group_by(Accession, phage_spor_host) %>%
+  summarise(total.ParS.hits = sum(hit), pos.ParS.hit = max(hit), .groups = "drop") #%>% 
+ParS.pos %>% count(phage_spor_host)
+
+
+#write.csv(ParS.pos, here("02_motifs/ParS/ParSpos_1e4.csv"))
+## create binary list of phages w/ and w/out ParS hits
+#ParS.sanity <- ParS.qual %>% group_by(Accession, phage_spor_host, Host, Description, Lowest.Taxa, Genus, Family, Genome.Length..bp., molGC....) %>%
+#  summarise(total.ParS.hits = sum(hit), pos.ParS.hit = max(hit), .groups = "drop") #%>% 
+
+
+ParS.sanity <- ParS.qual %>%
+  summarise(total.ParS.hits = sum(hit), pos.ParS.hit = max(hit), .groups = "drop") #%>% 
+
+only.pos <- subset(ParS.sanity, ParS.sanity$total.ParS.hits>0)
+
+
+ParS.pos %>% count(phage_spor_host)
+
+ParS.summary <- ParS.pos %>% 
+  group_by(phage_spor_host) %>% 
+  summarise(
+    total_ParS_hits = sum(total.ParS.hits, na.rm = TRUE),
+    Phage_has_ParS = sum(pos.ParS.hit, na.rm = TRUE),
+    total.phage = n(),
+    .groups = "drop"
+  ) %>% 
+  mutate(ParS.pos.perc = Phage_has_ParS / total.phage * 100)
+
+
+ParS.bin <- ParS.pos[,c(1,2,4)]
+
+
+
+```
+
+```{r}
+ParS.hits <- subset(ParS.qual, ParS.qual$hit==1)
+## find center of motif 
+ParS.hits$motif.mdpt <- round((ParS.hits$stop + ParS.hits$start )/ 2, 0)
+
+func <- read.csv(here("00_data", "03_func_data", "output", "inph_functional_data.csv"),row.name=1)
+func1 <- select(func, protein_id, Accession, best_hit, gene_start, gene_end, gene_length, gene_strand, gene_gc )
+
+##make strand symbol into -1 / 1
+ParS.hits2 <- select(ParS.hits, Accession, motif_id, start, stop, motif.mdpt,score, strand)
+ParS.hits2$strand <- ifelse(ParS.hits2$strand=="-", -1, 1)
+
+
+```
+
+
+```{r}
+library(data.table)
+ParS.hits2 <- select(ParS.hits, Accession, motif_id, start, stop, motif.mdpt,score, strand)
+ParS.hits2$strand <- ifelse(ParS.hits2$strand=="-", -1, 1)
+
+
+ParS.hits2 <- ParS.hits2 %>%
+  group_by(Accession) %>%
+  mutate(motif_id = paste0(Accession, "_ParS_", sprintf("%02d", row_number()))) %>%
+  ungroup()
+
+
+motifs <- select(ParS.hits2, Accession, start, stop, strand, motif_id)
+colnames(motifs) <- c("PHAGE", "motif_start", "motif_end", "motif_strand", "motif_id")
+motifs <- as.data.table(motifs)
+
+ORFs <- select(func1, Accession, gene_start, gene_end, protein_id, gene_strand)
+
+colnames(ORFs) <- c("PHAGE", "OSTART", "OEND", "ORF_ID", "orf_strand")
+ORFs   <- as.data.table(ORFs)
+
+setkey(ORFs, PHAGE, OSTART, OEND, orf_strand)
+
+
+library(data.table)
+
+find_motifs_flanks_final <- function(motifs, orfs, 
+                                     motif_id_col = "motif_id",
+                                     motif_strand_col = "motif_strand",
+                                     orf_strand_col = "orf_strand",
+                                     require_same_strand = FALSE) {
+  # defensive copies
+  mot_dt <- as.data.table(motifs)
+  orf_dt <- as.data.table(orfs)
+
+  # build motif table keeping motif_id and optional strand
+  M <- mot_dt[, .(motif_id = get(motif_id_col), PHAGE, motif_start, motif_end)]
+  M[, MID := floor((motif_start + motif_end) / 2)]
+
+  if (motif_strand_col %in% names(mot_dt)) M[, motif_strand := as.character(mot_dt[[motif_strand_col]])]
+  else M[, motif_strand := NA_character_]
+
+  # build ORF table keeping strand if present
+  G <- orf_dt[, .(PHAGE, OSTART, OEND, ORF_ID)]
+  if (orf_strand_col %in% names(orf_dt)) G[, orf_strand := as.character(orf_dt[[orf_strand_col]])]
+  else G[, orf_strand := NA_character_]
+
+  # optionally require same strand by creating a shared STRAND column
+  if (require_same_strand) {
+    M[, STRAND := motif_strand]
+    G[, STRAND := orf_strand]
+
+    cont <- G[M, on = .(PHAGE, STRAND, OSTART <= MID, OEND >= MID), nomatch = 0L, allow.cartesian = TRUE]
+    cont_agg <- cont[, .(
+      CONTAINING_ORF = paste(unique(ORF_ID), collapse = ","),
+      CONTAINING_STRAND = paste(unique(STRAND), collapse = ",")
+    ), by = .(motif_id)]
+
+    up <- G[M, on = .(PHAGE, STRAND, OEND < MID), mult = "last",
+            .(motif_id = i.motif_id, UP_ORF = ORF_ID, UP_STRAND = STRAND, UP_DIST = pmax(0L, i.MID - OEND))]
+    down <- G[M, on = .(PHAGE, STRAND, OSTART > MID), mult = "first",
+               .(motif_id = i.motif_id, DOWN_ORF = ORF_ID, DOWN_STRAND = STRAND, DOWN_DIST = pmax(0L, OSTART - i.MID))]
+  } else {
+    cont <- G[M, on = .(PHAGE, OSTART <= MID, OEND >= MID), nomatch = 0L, allow.cartesian = TRUE]
+    cont_agg <- cont[, .(
+      CONTAINING_ORF = paste(unique(ORF_ID), collapse = ","),
+      CONTAINING_STRAND = paste(unique(orf_strand), collapse = ",")
+    ), by = .(motif_id)]
+
+    up <- G[M, on = .(PHAGE, OEND < MID), mult = "last",
+            .(motif_id = i.motif_id, UP_ORF = ORF_ID, UP_STRAND = orf_strand, UP_DIST = pmax(0L, i.MID - OEND))]
+    down <- G[M, on = .(PHAGE, OSTART > MID), mult = "first",
+               .(motif_id = i.motif_id, DOWN_ORF = ORF_ID, DOWN_STRAND = orf_strand, DOWN_DIST = pmax(0L, OSTART - i.MID))]
+  }
+
+  # assemble (left join so motifs with no matches remain)
+  out <- merge(M, cont_agg, by = "motif_id", all.x = TRUE)
+  out <- merge(out, up, by = "motif_id", all.x = TRUE)
+  out <- merge(out, down, by = "motif_id", all.x = TRUE)
+
+  # final tidy columns, ensure character NAs
+  out[, .(motif_id,
+          PHAGE,
+          motif_start,
+          motif_end,
+          MID,
+          motif_strand = if ("motif_strand" %in% names(out)) motif_strand else NA_character_,
+          CONTAINING_ORF = ifelse(is.na(CONTAINING_ORF), NA_character_, CONTAINING_ORF),
+          CONTAINING_STRAND = ifelse(is.na(CONTAINING_STRAND), NA_character_, CONTAINING_STRAND),
+          UP_ORF = ifelse(is.na(UP_ORF), NA_character_, UP_ORF),
+          UP_STRAND = ifelse(is.na(UP_STRAND), NA_character_, UP_STRAND),
+          UP_DIST,
+          DOWN_ORF = ifelse(is.na(DOWN_ORF), NA_character_, DOWN_ORF),
+          DOWN_STRAND = ifelse(is.na(DOWN_STRAND), NA_character_, DOWN_STRAND),
+          DOWN_DIST)]
+}
+
+
+res <- find_motifs_flanks_final(motifs, ORFs)
+
+```
+
+```{r}
+res$hit <- 1
+res <- select(res, motif_start, motif_end, MID, PHAGE, motif_id, CONTAINING_ORF, UP_ORF, DOWN_ORF, hit)
+
+res.contain <- select(res, PHAGE, motif_id, CONTAINING_ORF, hit)
+res.contain <- na.omit(res.contain)
+
+
+res.flank1 <- select(res, PHAGE, motif_id, UP_ORF, hit)
+colnames(res.flank1) <- c("PHAGE", "motif_id", "FLANK_ORF", "hit")
+res.flank2 <- select(res, PHAGE, motif_id, DOWN_ORF, hit )
+colnames(res.flank2) <- c("PHAGE", "motif_id", "FLANK_ORF", "hit")
+res.flank <- rbind(res.flank1, res.flank2)
+res.flank <- na.omit(res.flank)
+
+```
+

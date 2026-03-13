@@ -1,0 +1,206 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(here)
+library(dplyr)
+library(tidyr)
+library(purrr)
+
+# Labels (adjust if needed)
+temp_label <- "Temperate"
+lytic_label <- "Lytic"
+
+
+inph <- read.csv(here("00_data", "03_func_data", "output", "inph_functional_data.csv"),row.names=1) 
+inph <- subset(inph, inph$completeness>90 & inph$contamination<0.5) 
+inph <- subset(inph, inph$newgtdb_Phylum=="Bacillota" &  inph$f_spor==TRUE)
+#inph <- subset(inph, inph$newgtdb_Phylum=="Bacillota" &  inph$f_spor==FALSE)
+
+inph.aux<- subset(inph, inph$newgtdb_Phylum=="Bacillota")
+inph.spor<- subset(inph, inph$newgtdb_Phylum=="Bacillota" & inph$SporHitRelax==TRUE)
+
+inph.spor$COGlet <- "Sp"
+inph.auxspor <- bind_rows(inph.aux, inph.spor)
+inph.auxspor$DetailedCat2 <- inph.auxspor$DetailedCat
+inph.auxspor$DetailedCat2 <- ifelse(inph.auxspor$func_gene_cat!="unknown function", inph.auxspor$func_gene_cat, inph.auxspor$DetailedCat2)
+inph.auxspor$DetailedCat2 <- ifelse(inph.auxspor$COGlet=="Sp", "Sporulation", inph.auxspor$DetailedCat2)
+inph.auxspor$DetailedCat2 <- ifelse(inph.auxspor$COGlet=="Ph", "Phage-associated", inph.auxspor$DetailedCat2)
+
+
+
+#gsv <- read.csv(here("00_data", "03_func_data", "output", "GSV_functional_data.csv"),row.names=1)
+#gsv<- subset(gsv, gsv$newgtdb_Phylum=="Bacillota" &  gsv$f_spor==TRUE & gsv$SporHitRelax==TRUE)
+
+#gsv<- subset(gsv, gsv$newgtdb_Phylum=="Bacillota" &  gsv$f_spor==FALSE & gsv$SporHitRelax==TRUE)
+
+#gsv <- subset(gsv, gsv$completeness>90 & gsv$contamination<0.5) 
+
+
+
+
+uhgv  <- read.csv(here("00_data", "03_func_data", "output", "UHGV_functional_data.csv"),row.names=1) 
+uhgv<- subset(uhgv, uhgv$newgtdb_Phylum=="Bacillota" &  uhgv$f_spor==TRUE)
+#uhgv<- subset(uhgv, uhgv$newgtdb_Phylum=="Bacillota" &  uhgv$f_spor==FALSE)
+
+
+uhgv <- subset(uhgv, uhgv$completeness>90 & uhgv$contamination<0.5) 
+uhgv.aux<- subset(uhgv, uhgv$newgtdb_Phylum=="Bacillota")
+uhgv.spor<- subset(uhgv, uhgv$newgtdb_Phylum=="Bacillota" & uhgv$SporHitRelax==TRUE)
+
+uhgv.spor$COGlet <- "Sp"
+uhgv.auxspor <- bind_rows(uhgv.aux, uhgv.spor)
+uhgv.auxspor$DetailedCat2 <- uhgv.auxspor$DetailedCat
+uhgv.auxspor$DetailedCat2 <- ifelse(uhgv.auxspor$func_gene_cat!="unknown function", uhgv.auxspor$func_gene_cat, uhgv.auxspor$DetailedCat2)
+uhgv.auxspor$DetailedCat2 <- ifelse(uhgv.auxspor$COGlet=="Sp", "Sporulation", uhgv.auxspor$DetailedCat2)
+uhgv.auxspor$DetailedCat2 <- ifelse(uhgv.auxspor$COGlet=="Ph", "Phage-associated", uhgv.auxspor$DetailedCat2)
+
+
+
+
+source(here("utility-scripts", "03_func_fishertest_genecounts.R"),)
+#hmm<- subset(hmm, hmm$completeness >=
+```
+
+```{r}
+
+inph.list <- prepare_gene_counts(inph.auxspor, phage_col = "Accession", gene_col  = "DetailedCat2", lifestyle_col = "lifestyle", cog_col = "COGlet", temp_label = "Temperate", lytic_label = "Lytic")
+
+#gsv.list <- prepare_gene_counts(gsv, phage_col = "Accession", gene_col  = "spor_gene_name", lifestyle_col = "lifestyle", cog_col = "COGlet", temp_label = "Temperate", lytic_label = "Lytic")
+
+uhgv.list <- prepare_gene_counts(uhgv.auxspor, phage_col = "Accession", gene_col  = "DetailedCat2", lifestyle_col = "lifestyle", cog_col = "COGlet", temp_label = "Temperate", lytic_label = "Lytic")
+
+
+inph.gene_counts    <- inph.list$gene_counts
+inph.total_temp     <- inph.list$total_temp
+inph.total_lytic    <- inph.list$total_lytic
+inph_df <- inph.list$df_genome_gene
+
+inph_df <- inph_df %>%
+  group_by(gene_name, COGlet) %>%
+  summarise(prots.by.phage = n(), .groups = "drop")
+
+
+#gsv.gene_counts    <- gsv.list$gene_counts
+#gsv.total_temp     <- gsv.list$total_temp
+#gsv.total_lytic    <- gsv.list$total_lytic
+
+uhgv.gene_counts    <- uhgv.list$gene_counts
+uhgv.total_temp     <- uhgv.list$total_temp
+uhgv.total_lytic    <- uhgv.list$total_lytic
+
+uhgv_df <- uhgv.list$df_genome_gene
+
+
+
+cog_df <- bind_rows(inph_df, uhgv_df)
+
+cog_df <- cog_df %>%
+  group_by(gene_name, COGlet) %>%
+  summarise(prots.by.phage = n(), .groups = "drop")
+
+##if multiple genes hit to same COG letter, merge with largest group.
+cog_df_clean <- cog_df[order(cog_df$gene_name, -cog_df$prots.by.phage), ]
+cog_df_clean <- cog_df_clean[!duplicated(cog_df_clean$gene_name), ]
+cog_df <- select(cog_df_clean, gene_name, COGlet)
+```
+
+```{r}
+
+
+inph.fisher <- compute_fisher_minimal(
+  inph.gene_counts,
+  inph.total_temp,
+  inph.total_lytic
+)
+
+inph.fisher$dataset <- "INPHARED"
+
+#gsv.fisher <- compute_fisher_minimal(
+#  gsv.gene_counts,
+#  gsv.total_temp,
+#  gsv.total_lytic
+#)
+
+#gsv.fisher$dataset <- "GSV"
+
+uhgv.fisher <- compute_fisher_minimal(
+  uhgv.gene_counts,
+  uhgv.total_temp,
+  uhgv.total_lytic
+)
+
+uhgv.fisher$dataset <- "UHGV"
+```
+
+
+```{r}
+
+#all.fisher <- bind_rows(inph.fisher, gsv.fisher, uhgv.fisher)
+
+
+all.fisher <- bind_rows(inph.fisher, uhgv.fisher) 
+p.signif <- 1e-3
+
+k_threshold <- 5
+
+all.fisher <- subset(all.fisher, all.fisher$gene_name!="lytD" & all.fisher$gene_name!="nlpD")
+
+all.fisher <- merge(all.fisher, cog_df, by="gene_name", all.x=TRUE, all.y=FALSE)
+
+
+```
+
+```{r}
+
+
+
+
+#all.fisher$fisher_test <- "AVG_SporBacil_Lifestyle"
+#write.csv(all.fisher, here("03_func", "01_fishertests", "01_AVGs", "unadj_pval", "AVG_SporBacil_Lifestyle_fisher_unadj.csv"))
+
+#all.fisher$fisher_test <- "AVG_NonSporBacil_Lifestyle"
+#write.csv(all.fisher, here("03_func", "01_fishertests", "01_AVGs", "unadj_pval", "AVG_NonSporBacil_Lifestyle_fisher_unadj.csv"))
+
+
+
+#all.fisher <-  all.fisher %>%  mutate(p.adj = signif (p.adjust(p_two_sided, method = "BH"),5), neg_log10_p = -log10(p.adj),) %>% 
+  # mark significantly enriched genes
+#   mutate(significant = (p.adj < p.signif) & (prevalence > k_threshold)) 
+
+
+```
+
+
+
+```{r}
+TEST <- ggplot(all.fisher, aes(x = dataset, y = reorder(gene_name, plot_OR))) +
+  geom_point(aes(size = plot_OR,
+                 color = direction),
+             alpha = 0.7) +
+
+  scale_color_manual(values = c(
+    "Temperate" = "#1f78b4",
+    "Lytic" = "#e31a1c",
+    "Equal" = "grey70"
+  )) +
+  
+  labs(
+    y = "Gene",
+    color = "Enriched in",
+    size = "|log2(OR)|"
+  ) +
+  
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x  = element_blank(),
+    axis.ticks.x = element_blank()
+  ) #+ facet_wrap(~stage, scales = "free_y")
+
+#TEST
+```
+

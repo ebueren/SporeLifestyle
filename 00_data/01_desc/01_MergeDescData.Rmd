@@ -15,13 +15,17 @@ dr_here()
 ```{r}
 inph <- read.delim2(here("00_data", "01_desc", "CheckV", "14Apr2025_CheckV_qualsummary.tsv"))
 
-gpdgvd <- read.delim2(here("00_data", "01_desc", "CheckV", "gpdgvd_checkvqualsum.tsv"))
+gpdgvd <- read.delim2(here("00_data", "01_desc", "CheckV", "GPDGVD_CHECKV.tsv"))
 #gpdgvd <- subset(gpdgvd, gpdgvd$checkv_quality=="Complete" | gpdgvd$checkv_quality=="High-quality")
 
 gsv <- read.delim2(here("00_data", "01_desc", "CheckV", "GSV_CheckV_qualsummary.tsv"))
 #gsv <- subset(gsv, gsv$checkv_quality=="Complete" | gsv$checkv_quality=="High-quality")
 
-checkv <- rbind(inph, gpdgvd, gsv)
+
+uhgv <- read.delim2(here("00_data", "01_desc", "CheckV", "UHGV_CHECKV.tsv"))
+
+checkv <- rbind(inph, gpdgvd, gsv, uhgv)
+
 checkv <- checkv %>% rename(Accession=contig_id)
 checkv.abb <- select(checkv, Accession, contig_length, gene_count, checkv_quality, completeness, contamination)
 
@@ -43,7 +47,10 @@ colnames(gpdgvd) <- c("V1", "V2", "V3")
 gsv <- read.delim2(here("00_data", "01_desc", "GC_seqkit", "GSV_GC_fx2tab.tsv"), header=FALSE)
 
 
-gc.perc <- rbind(inph, gpdgvd, gsv)
+UHGV <- read.delim2(here("00_data", "01_desc", "GC_seqkit", "UHGV_hq_GC_fx2tab.tsv"), header=FALSE)
+
+
+gc.perc <- rbind(inph, gpdgvd, gsv, UHGV)
 colnames(gc.perc) <- c("Name", "seqkit.length", "GC")
 
 gc.perc <- separate(gc.perc, Name, into=c("Accession"), sep=" ", remove = TRUE)
@@ -60,8 +67,10 @@ gc.perc <- select(gc.perc, Accession, GC)
 inph <- read.delim2(here("00_data", "01_desc", "Phastyle", "15Apr2025_INPHARED_phastyle.tsv"))
 gpdgvd <- read.delim2(here("00_data", "01_desc", "Phastyle", "GPDGVD_phastyle.tsv"))
 gsv <- read.delim2(here("00_data", "01_desc", "Phastyle", "GSV_phastyle.tsv"))
+uhgv <- read.delim2(here("00_data", "01_desc", "Phastyle", "UHGV_phastyle.tsv"))
 
-phastyle <- rbind(inph, gpdgvd, gsv)
+
+phastyle <- rbind(inph, gpdgvd, gsv, uhgv)
 
 phastyle <- phastyle %>% rename(Accession=fasta_id)
 phastyle <- select(phastyle, Accession, predicted_label, p_temperate, p_virulent)

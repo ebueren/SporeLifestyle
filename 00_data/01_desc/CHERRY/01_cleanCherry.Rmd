@@ -305,6 +305,77 @@ gsv.fin <- select(gsv.fin,  Accession, cherry_Species, Host, gtdb_f, f_spor, new
 
 ```
 
+### UHGV + cherry
+
+```{r}
+
+
+cherry.uhgv <- read.delim2(here("00_data", "01_desc", "CHERRY", "UHGV_cherry.tsv"))
+### remove []
+cherry.uhgv$Host_NCBI_lineage <- gsub("\\[|\\]", "", cherry.uhgv$Host_NCBI_lineage)
+cherry.uhgv$Host <- gsub("\\[|\\]", "", cherry.uhgv$Host)
+
+cherry.uhgv$Host <- gsub(".*:(.*)$", "\\1", cherry.uhgv$Host)
+### load cherry data, clean up taxonomy labels, and remove non-bacteria and unknown hits
+cherry.uhgv <- subset(cherry.uhgv, cherry.uhgv$Method!="Method")
+
+cherry.uhgv <- select(cherry.uhgv, Accession, Host, CHERRYScore, Host_NCBI_lineage )
+cherry.uhgv <- separate(cherry.uhgv, Host_NCBI_lineage, into=c("cherry_Domain", "cherry_Phylum", "cherry_Class", "cherry_Order", "cherry_Family", "cherry_Genus", "cherry_Species"), sep=";", remove = TRUE, )
+cherry.uhgv.og <- cherry.uhgv %>%
+  mutate(across(where(is.character), ~ gsub(".*__", "", .x)))
+
+
+
+cherry.uhgv.og[is.na(cherry.uhgv.og)] <- ""
+
+
+cherry.uhgv <- subset(cherry.uhgv.og, cherry.uhgv.og$cherry_Domain=="Bacteria")
+
+## merge remaining hits with gtdb taxa list
+cherry.uhgv <- merge(cherry.uhgv, gtdb.tax, by.x="cherry_Genus", by.y="newgtdb_Genus", all.x=TRUE, all.y=FALSE)
+
+cherry.uhgv$gtdb_f[is.na(cherry.uhgv$gtdb_f)] <- "NoHit"
+
+uhgv.perf <- subset(cherry.uhgv, cherry.uhgv$gtdb_f!="NoHit")
+uhgv.perf <- select(uhgv.perf, Accession, cherry_Species, Host, gtdb_f, f_spor, newgtdb_Order, newgtdb_Class, newgtdb_Phylum, newgtdb_Domain)
+
+uhgv.famcheck <- subset(cherry.uhgv, cherry.uhgv$gtdb_f=="NoHit")
+
+## see if cherry hits match based on gtdb genus
+
+uhgv.famcheck <- select(uhgv.famcheck, Accession, Host, cherry_Domain, cherry_Phylum, cherry_Class, cherry_Order, cherry_Family,  Host, cherry_Species)
+
+uhgv.famcheck <- merge(gtdb.fam, uhgv.famcheck, by.x="gtdb_f", by.y="cherry_Family", all.x=FALSE, all.y=TRUE)
+
+uhgv.famcheck$newgtdb_Order[is.na(uhgv.famcheck$newgtdb_Order)] <- "NoHit"
+uhgv.ordercheck <- subset(uhgv.famcheck, uhgv.famcheck$newgtdb_Order=="NoHit")
+
+uhgv.famcheck <- subset(uhgv.famcheck, uhgv.famcheck$newgtdb_Order!="NoHit")
+uhgv.famcheck <- select(uhgv.famcheck, Accession, cherry_Species, Host, gtdb_f, f_spor, newgtdb_Order, newgtdb_Class, newgtdb_Phylum, newgtdb_Domain)
+
+uhgv.ordercheck <- select(uhgv.ordercheck, Accession, Host, cherry_Domain, cherry_Phylum, cherry_Class, cherry_Order, Host, cherry_Species)
+
+
+uhgv.ordercheck <- merge(gtdb.order.spor, uhgv.ordercheck, by.x="newgtdb_Order", by.y="cherry_Order", all.x=FALSE, all.y=TRUE)
+uhgv.ordercheck[is.na(uhgv.ordercheck)] <- "Unknown"
+
+uhgv.ordercheck <- select(uhgv.ordercheck, Accession, cherry_Species, Host, gtdb_f, f_spor, newgtdb_Order, newgtdb_Class, newgtdb_Phylum, newgtdb_Domain)
+
+uhgv.newtaxa <- rbind(uhgv.perf, uhgv.famcheck, uhgv.ordercheck)
+
+### WE ONLY WANT uhgv FROM METADATA SET, since the data is already dereplicated for the entire database (across ecosystems) 
+#uhgv.fin <- merge(uhgv.newtaxa, uhgv, by="Accession", all.x=FALSE, all.y=TRUE)
+uhgv.fin <- uhgv.newtaxa
+uhgv.fin$dataset <- "UHGV"
+uhgv.fin$data.group <- "UHGV"
+uhgv.fin$Study <- "UHGV"
+uhgv.fin[is.na(uhgv.fin)] <- "Unknown"
+###make sure it is in the right order for other datasets
+
+uhgv.fin <- select(uhgv.fin,  Accession, cherry_Species, Host, gtdb_f, f_spor, newgtdb_Order, newgtdb_Class, newgtdb_Phylum, newgtdb_Domain, dataset, data.group, Study)
+
+
+```
 
 
 
@@ -312,7 +383,7 @@ gsv.fin <- select(gsv.fin,  Accession, cherry_Species, Host, gtdb_f, f_spor, new
 
 ```{r}
 
-dataset <- rbind(inph.clean, gpdgvd.fin, gsv.fin)
+dataset <- rbind(inph.clean, gpdgvd.fin, gsv.fin, uhgv.fin)
 ## for phylum consistency, shouldn't be necessary but just in case.
 dataset$newgtdb_Phylum <- gsub("Firmicutes", "Bacillota", dataset$newgtdb_Phylum)
 

@@ -1,0 +1,472 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(here)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(PNWColors)
+loc <-  pnw_palette("Mushroom", 6)
+stage <-pnw_palette("Winter", 7)
+
+meta.func <-  read.csv(here("00_data", "03_func_data", "func_metadata", "mastercog_phrog.csv"), row.names=1)
+
+COG.master <- read.csv(here("00_data", "03_func_data", "func_metadata", "mastercog.csv"), header=TRUE)
+
+list <- read.csv(here("00_data", "03_func_data","func_metadata", "subti_wiki", "subtiwiki_listupdate_EB.csv"))
+
+list <- subset(list, list$SporExpression!="Unknown") ###more conservative 
+list <- subset(list, list$remove!="remove")
+list <- select(list, gene_name, type, func, sporulation_impact, sporulation_impact_simp, localization, stage, SporExpression, Spor_sigma, Other.Sigma, regulon )
+
+
+
+
+#Spor <- read.csv(here("03_func", "01_fishertests", "02_Spore", "unadj_pval", "SporBacil_Lifestyle_fisher_unadj.csv"), row.names=1)
+Spor <- read.csv(here("03_func", "01_fishertests", "02_Spore", "unadj_pval", "SporConsv_SporBacil_Lifestyle_fisher_unadj.csv"), row.names=1)
+
+#NoSpor <- read.csv(here("03_func", "01_fishertests", "02_Spore", "unadj_pval", "NonSporBacil_Lifestyle_fisher_unadj.csv"), row.names=1)
+NoSpor <- read.csv(here("03_func", "01_fishertests", "02_Spore", "unadj_pval", "SporConsv_NonSporBacil_Lifestyle_fisher_unadj.csv"), row.names=1)
+
+
+
+all.fisher <- bind_rows(Spor, NoSpor)
+
+
+all.fisher <- merge(all.fisher, COG.master, by="COGlet", all.x=TRUE, all.y=FALSE)
+
+###take out any that are flagged as remove
+all.fisher <- merge(all.fisher, list, by="gene_name", all.x=FALSE, all.y=FALSE)
+
+
+
+
+##this defeats the purpose of rbinding but is temporarily helpful for ddebugging code
+
+
+
+#all.fisher <- subset(all.fisher, all.fisher$fisher_test=="SporBacil_Lifestyle")
+
+#hmm<- subset(hmm, hmm$completeness >=
+```
+
+
+```{r}
+
+#all.fisher <- bind_rows(inph.fisher, gsv.fisher, uhgv.fisher)
+
+p.signif <- 1e-3
+
+k_threshold <- 5
+
+all.fisher <- subset(all.fisher, all.fisher$gene_name!="lytD" & all.fisher$gene_name!="nlpD")
+
+
+all.fisher <-  all.fisher %>%  mutate(p.adj = signif (p.adjust(p_two_sided, method = "BH"),5), neg_log10_p = -log10(p.adj),) %>% 
+  # mark significantly enriched genes
+   mutate(significant = (p.adj < p.signif) & (prevalence > k_threshold)) 
+
+sig.fisher <- subset(all.fisher, all.fisher$significant==TRUE)
+
+
+
+```
+
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+# --- NEW: allow two independent fill scales ---
+# install.packages("ggnewscale") if you don't have it
+library(ggnewscale)
+
+#sig.fisher <- subset(all.fisher, all.fisher$significant==TRUE & all.fisher$fisher_test=="SporBacil_Lifestyle")
+
+sig.fisher <- subset(sig.fisher, sig.fisher$SporExpression!="Unknown")
+
+#sig.fisher <- subset(sig.fisher, sig.fisher$fisher_test=="SporBacil_Lifestyle")
+
+
+
+
+localization_order <-  c("Pre-division", "Both", "Mother cell", "Forespore", "Spore", "Unknown")
+localization_order <- rev(localization_order)
+# (replace above with your real localization order)
+stage_order <- c("Initiation", "Early", "Middle", "Late", "Mother cell Lysis", "Germination",  "Unknown")
+stage_order <- rev(stage_order)
+
+# build pathway_levels (make sure you use the correct factor for localization)
+pathway_levels <- sig.fisher %>%
+  distinct(stage, localization, sporulation_impact_simp, sporulation_impact, gene_name) %>%
+  mutate(stage = factor(stage, levels = stage_order), localization = factor(localization, levels = localization_order)
+         ) %>%
+  arrange(stage, localization, sporulation_impact_simp, gene_name) %>%
+  pull(gene_name)
+
+sig.fisher.bubble <- sig.fisher %>%
+  mutate(gene_name = factor(gene_name, levels = pathway_levels),
+         localization = factor(localization, levels = localization_order),
+         stage = factor(stage, levels = stage_order))
+
+loc <-  pnw_palette("Winter", 8)
+loc.rev <- c("#ECECEC", "#AEC5C8", "#7AA1A6", "#60828C", "#496571", "#374B55", "#30383C", "#2D2926")
+loc.rev <- c("#ECECEC", "#AEC5C8", "#7AA1A6", "#60828C", "#496571", "#374B55", "#2D2926")
+#loc.rev <- pnw_palette("Shuksan2", 7)
+stage <- pnw_palette("Moth", 8)
+
+#sig.fisher.bubble <- subset(sig.fisher.bubble, sig.fisher.bubble$sporulation_impact!="Unknown")
+
+p <- ggplot(sig.fisher.bubble, aes(x = fisher_test, y = gene_name)) +
+  geom_point(aes(size = plot_OR,
+                # shape = direction,
+                 color= direction))+
+            # alpha = 0.7) +
+
+  scale_color_manual(values = c(
+    "Temperate" = "black",
+    "Lytic" = "grey70",
+    "Equal" = "grey70"
+  )) +
+#scale_shape_manual(values = c(
+#  "Temperate" = 16,  #1 # open circle
+#  "Lytic" = 16, #16     # filled circle
+#  "Equal" = 1        # optional — open circle
+#))+
+  labs(
+    x = "Dataset",
+    y = "Gene",
+    color = "Lifestyle Enriched In",
+    size = "|log2(OR)|"
+  ) +
+  
+  theme_minimal() 
+p 
+
+strip_df <- unique(select(sig.fisher.bubble, Spor_sigma, sporulation_impact_simp, sporulation_impact, stage, localization, gene_name))
+strip_df$Spor_sigma <- as.factor(strip_df$Spor_sigma)
+strip_df$sporulation_impact_simp <- as.factor(strip_df$sporulation_impact_simp)
+strip_df$sporulation_impact <- as.factor(strip_df$sporulation_impact)
+strip_df$stage <- as.factor(strip_df$stage)
+strip_df$localization <- as.factor(strip_df$localization)
+strip_df <- strip_df %>% mutate(xpos = as.numeric(sporulation_impact))
+
+strip_x <- min(strip_df$xpos) - 0.8   # ← ONLY CHANGE (was max + offset)
+
+strip_df <- strip_df %>%
+  select(Spor_sigma, sporulation_impact_simp, sporulation_impact, stage, localization, gene_name) %>%
+  distinct() %>%
+  mutate(x = strip_x, xend = strip_x + 0.4)
+
+# ------------------ MINIMAL NECESSARY CHANGES BELOW -----------------------
+# create two different x positions (so the second tile bar doesn't overlap)
+strip_df <- strip_df %>%
+  mutate(
+    x_local = x,                # left-most tile (keeps your original x)
+    x_stage = x - 0.45          # second tile shifted further left
+  )
+# ... your code up to first geom_tile() is unchanged ...
+
+p <- p +
+  geom_tile(
+    data = strip_df,
+    aes(x = x_local, y = gene_name, fill = localization),  # <- use x_local
+    width = 0.4,
+    height = 0.9,
+    inherit.aes = FALSE
+  ) +
+  coord_cartesian(clip = "off") +
+  scale_fill_manual(   # <-- added name here
+    name = "Location in Spore",
+    values = rev(loc.rev)
+    #values = loc.rev
+  )+  guides(fill = guide_legend(reverse = TRUE) )
+
+
+# start a new fill scale so the second geom_tile can use fill = stage independently
+p <- p + ggnewscale::new_scale_fill()
+
+p <- p +
+  geom_tile(
+    data = strip_df,
+    aes(x = x_stage, y = gene_name, fill = stage),       # <- use x_stage
+    width = 0.4,
+    height = 0.9,
+    inherit.aes = FALSE
+  ) +
+  coord_cartesian(clip = "off") +
+  scale_fill_manual(   # <-- added name here
+    name = "Sporulation Stage",
+    values = stage
+  )+  guides(fill = guide_legend(reverse = TRUE) )
+
+# Add legend and show — only set size guide so fill legends keep their scale names
+all.gg <- p + guides(
+  size = guide_legend(title = "Odds Ratio "),
+  color = guide_legend(
+    title = "Lifestyle Enriched In",
+    override.aes = list(size = 5)   # increase legend point size
+  )
+)
+all.gg
+all.gg + facet_wrap(~dataset)
+
+ggsave(here("03_func", "figs", "ConsvSpor_SporEnrichment_SporBacillLifestyle_Bubble.png"), width = 11, height = 8)
+
+###ggsave(here("03_func", "figs", "SporEnrichment_LifestylexBacillSpor_Bubble.png"), width = 11, height = 8)
+
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+# --- NEW: allow two independent fill scales ---
+# install.packages("ggnewscale") if you don't have it
+library(ggnewscale)
+
+#sig.fisher <- subset(all.fisher, all.fisher$significant==TRUE & all.fisher$fisher_test=="SporBacil_Lifestyle")
+
+sig.fisher <- subset(sig.fisher, sig.fisher$SporExpression!="Unknown")
+
+
+#localization_order <-  c("Pre-division", "Both", "Mother cell", "Forespore", "Spore", "Unknown")
+#localization_order <- rev(localization_order)
+# (replace above with your real localization order)
+#stage_order <- c("Initiation", "Early", "Middle", "Late", "Mother cell Lysis", "Germination",  "Unknown")
+#stage_order <- rev(stage_order)
+
+# build pathway_levels (make sure you use the correct factor for localization)
+pathway_levels <- sig.fisher %>%
+  distinct(Spor_sigma, localization, sporulation_impact_simp, sporulation_impact, gene_name) %>%
+       
+  arrange(Spor_sigma, sporulation_impact_simp, localization,  gene_name) %>%
+  pull(gene_name)
+
+sig.fisher.bubble <- sig.fisher %>%
+  mutate(gene_name = factor(gene_name, levels = pathway_levels))
+
+loc <-  pnw_palette("Winter", 8)
+loc.rev <- c("#ECECEC", "#AEC5C8", "#7AA1A6", "#60828C", "#496571", "#374B55", "#30383C", "#2D2926")
+loc.rev <- c("#ECECEC", "#AEC5C8", "#7AA1A6", "#60828C", "#496571", "#374B55", "#2D2926")
+impact <- pnw_palette("Shuksan2", 14)
+sig <- pnw_palette("Moth", 8)
+
+#sig.fisher.bubble <- subset(sig.fisher.bubble, sig.fisher.bubble$sporulation_impact!="Unknown")
+
+p <- ggplot(sig.fisher.bubble, aes(x = fisher_test, y = gene_name)) +
+  geom_point(aes(size = plot_OR,
+                # shape = direction,
+                 color= direction))+
+            # alpha = 0.7) +
+
+  scale_color_manual(values = c(
+    "Temperate" = "black",
+    "Lytic" = "grey70",
+    "Equal" = "grey70"
+  )) +
+#scale_shape_manual(values = c(
+#  "Temperate" = 16,  #1 # open circle
+#  "Lytic" = 16, #16     # filled circle
+#  "Equal" = 1        # optional — open circle
+#))+
+  labs(
+    x = "Dataset",
+    y = "Gene",
+    color = "Lifestyle Enriched In",
+    size = "|log2(OR)|"
+  ) +
+  
+  theme_minimal() 
+p 
+
+strip_df <- unique(select(sig.fisher.bubble, Spor_sigma, sporulation_impact_simp, sporulation_impact, stage, localization, gene_name))
+strip_df$Spor_sigma <- as.factor(strip_df$Spor_sigma)
+strip_df$sporulation_impact_simp <- as.factor(strip_df$sporulation_impact_simp)
+strip_df$sporulation_impact <- as.factor(strip_df$sporulation_impact)
+strip_df$stage <- as.factor(strip_df$stage)
+strip_df$localization <- as.factor(strip_df$localization)
+strip_df <- strip_df %>% mutate(xpos = as.numeric(sporulation_impact))
+
+strip_x <- min(strip_df$xpos) - 0.8   # ← ONLY CHANGE (was max + offset)
+
+strip_df <- strip_df %>%
+  select(Spor_sigma, sporulation_impact_simp, sporulation_impact, stage, localization, gene_name) %>%
+  distinct() %>%
+  mutate(x = strip_x, xend = strip_x + 0.4)
+
+# ------------------ MINIMAL NECESSARY CHANGES BELOW -----------------------
+# create two different x positions (so the second tile bar doesn't overlap)
+strip_df <- strip_df %>%
+  mutate(
+    x_local = x,                # left-most tile (keeps your original x)
+    x_stage = x - 0.45          # second tile shifted further left
+  )
+# ... your code up to first geom_tile() is unchanged ...
+
+p <- p +
+  geom_tile(
+    data = strip_df,
+    aes(x = x_local, y = gene_name, fill = sporulation_impact_simp),  # <- use x_local
+    width = 0.4,
+    height = 0.9,
+    inherit.aes = FALSE
+  ) +
+  coord_cartesian(clip = "off") +
+ scale_fill_manual(   # <-- added name here
+    name = "Location in Spore",
+    values = impact)
+    #values = loc.rev )
+   guides(fill = guide_legend(reverse = TRUE) )
+
+p
+# start a new fill scale so the second geom_tile can use fill = stage independently
+p <- p + ggnewscale::new_scale_fill()
+
+p <- p +
+  geom_tile(
+    data = strip_df,
+    aes(x = x_stage, y = gene_name, fill = Spor_sigma),       # <- use x_stage
+    width = 0.4,
+    height = 0.9,
+    inherit.aes = FALSE
+  ) +
+  coord_cartesian(clip = "off") +
+  scale_fill_manual(   # <-- added name here
+    name = "Sigma Factor Stage",
+    values = sig)+  guides(fill = guide_legend(reverse = TRUE) )
+
+# Add legend and show — only set size guide so fill legends keep their scale names
+all.gg <- p + guides(
+  size = guide_legend(title = "Odds Ratio "),
+  color = guide_legend(
+    title = "Lifestyle Enriched In",
+    override.aes = list(size = 5)   # increase legend point size
+  )
+)
+all.gg
+all.gg + facet_wrap(~dataset)
+
+ggsave(here("03_func", "figs", "ConsvSpor_ImpactSigSporEnrichment_SporBacillLifestyle_Bubble.png"), width = 11, height = 8)
+
+##ggsave(here("03_func", "figs", "ImpactSig_SporEnrichment_LifestylexBacillSpor_Bubble_OnlySpor.png"), width = 11, height = 8)
+
+```
+
+```{r}
+library(ggplot2)
+library(ggrepel)
+
+loc <-  pnw_palette("Starfish", 6)
+stage <-rev(pnw_palette("Moth", 8))
+
+sig.fisher <- subset(all.fisher, all.fisher$significant==TRUE & all.fisher$fisher_test=="SporBacil_Lifestyle")
+localization_order <-  c("Pre-division", "Both", "Mother cell", "Forespore", "Spore", "Unknown")
+localization_order <- rev(localization_order)
+# (replace above with your real localization order)
+stage_order <- c("Initiation", "Early", "Middle", "Late", "Mother cell Lysis", "Germination",  "Unknown")
+stage_order <- rev(stage_order)
+
+# build pathway_levels (make sure you use the correct factor for localization)
+pathway_levels <- sig.fisher %>%
+  distinct(stage, localization, sporulation_impact_simp, sporulation_impact, gene_name) %>%
+  mutate(stage = factor(stage, levels = stage_order), localization = factor(localization, levels = localization_order)
+         ) %>%
+  arrange(stage, localization, sporulation_impact_simp, gene_name) %>%
+  pull(gene_name)
+
+sig.fisher <- sig.fisher %>%
+  mutate(gene_name = factor(gene_name, levels = pathway_levels),
+         localization = factor(localization, levels = localization_order),
+         stage = factor(stage, levels = stage_order))
+
+
+###visualize by dataset and lifestyle color
+
+ggplot(sig.fisher, aes(x =plot_OR, y = neg_log10_p)) +
+  geom_point(aes(size = plot_OR,
+                 color = direction),
+             alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+  scale_size_continuous(name = "|log2(OR)|") +
+  scale_color_manual(values = c(
+    "Temperate" = "#1f78b4",
+    "Lytic" = "#e31a1c",
+    "Equal" = "grey70"
+  )) +
+  labs(
+    x = "log2(Odds Ratio)",
+    y = "-log10(BH-adjusted p-value)",
+    color = "Enriched in"
+  ) +
+  theme_minimal() +  # Add gene labels
+  geom_text_repel(aes(label = gene_name),
+                  size = 6,
+                  max.overlaps = Inf)  + facet_grid(dataset~direction) 
+
+
+
+library(ggplot2)
+library(ggrepel)
+
+###visualize by dataset and lifestyle color
+
+ggplot(sig.fisher, aes(x =plot_OR, y = neg_log10_p)) +
+  geom_point(aes(#size = plot_OR,
+                 color = stage),
+             alpha = 0.7, size=6) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+  scale_size_continuous(name = "|log2(OR)|") +
+  labs(
+    x = "log2(Odds Ratio)",
+    y = "-log10(BH-adjusted p-value)",
+    color = "Enriched in"
+  ) +   scale_color_manual(   # <-- added name here
+    name = "Location in Spore",
+    values = rev(stage) ) +
+  theme_minimal() +  # Add gene labels
+  geom_text_repel(aes(label = gene_name),
+                  size = 4,
+                  max.overlaps = Inf) +facet_wrap(~direction)  + facet_grid(dataset~direction) 
+
+##ggsave(here("03_func", "figs", "SporEnrichment_SporBacillLifestyle_PvalBubble.png"), width = 11, height = 8)
+
+
+```
+
+
+
+
+
+```{r}
+ggplot(sig.fisher, aes(x = dataset, y = reorder(gene_name, plot_OR))) +
+  geom_point(aes(size = plot_OR,
+                 color = direction),
+             alpha = 0.7) +
+
+  scale_color_manual(values = c(
+    "Temperate" = "#1f78b4",
+    "Lytic" = "#e31a1c",
+    "Equal" = "grey70"
+  )) +
+  
+  labs(
+    y = "Gene",
+    color = "Enriched in",
+    size = "|log2(OR)|"
+  ) +
+  
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x  = element_blank(),
+    axis.ticks.x = element_blank()
+  ) #+ facet_wrap(~stage, scales = "free_y")
+
+```
+
