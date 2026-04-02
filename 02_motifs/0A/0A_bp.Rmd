@@ -1,0 +1,139 @@
+```{r}
+library(here)
+library(tidyverse)
+library(ggpubr)
+library(epitools)
+library(seqinr)
+library(dplyr)
+library(DECIPHER)
+
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+here::here()
+set.seed(123)
+
+
+
+df <- read.csv(here("00_data", "01_desc", "CompleteMetadata.csv"), row.names=1)
+#df <- subset(df, df$dataset=="INPHARED" |df$dataset=="UHGV")
+df <- subset(df, df$dataset=="UHGV")
+#df <- subset(df, df$newgtdb_Phylum=="Bacillota")
+here::here()
+
+```
+
+### clean up 0A box hits
+```{r}
+#box <- read.delim2(here("00_data/02_motifs/0A_9bp/INPH_0A9.txt" ))
+#box <- read.delim2(here("00_data/02_motifs/0A_9bp/UHGV_INPH_0A9.txt" ))
+box <- read.delim2(here("00_data/02_motifs/0A_7bpconsensus/UHGV_hq_0A_7bpconsensus.txt" ))
+box <- as.data.frame(box)
+head(box)
+## remove extra .txt headers from catting files
+box <- subset(box, box$Context!="Context")
+### remove incomplete flanking regions
+box <- subset(box, box$Partial=="None")
+
+colnames(box)
+box <- dplyr::rename(box, product = Sequence, phage = Contig)
+
+box[,c(2)] <- "0A"
+
+#box <- box[,c(3,2,1)]
+box$is.0A <- 1
+
+
+box$strand2 <- ifelse(box$Strand=="+", "Fwd", "Rev")
+
+box <- unite(box, "Box_Contig", c("phage", "product", "strand2", "Position"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+box <- box %>% rename("product" = "motif_id", "phage" = "Accession")
+#box$motif_id <- "0A"
+gc_content <- function(seq) {
+  seq <- toupper(seq)
+  bases <- strsplit(seq, "")[[1]]
+  gc_count <- sum(bases %in% c("G", "C"))
+  total <- length(bases)
+  return(gc_count / total)
+}
+
+# Vectorized version for multiple sequences
+gc_content_vec <- function(seqs) {
+  sapply(seqs, gc_content)
+}
+
+
+box$GC.flanks <- gc_content_vec(box$Context_no_motif)
+
+
+box <- subset(box, box$GC.flanks<=0.40)
+
+all <- merge(box, df, by.x="Accession", by.y="Accession", all.x=FALSE, all.y=TRUE)
+
+all$motif_id[is.na(all$motif_id)] <- "no_hit"
+
+all$hit <- ifelse(all$motif_id=="0A", 1, 0)
+```
+
+
+
+
+```{r}
+
+## create binary list of phages w/ and w/out ParS hits
+boxA.pos <- all %>% group_by(Accession, phage_spor_host) %>%
+  summarise(total.boxA.hits = sum(hit), pos.boxA.hit = max(hit), .groups = "drop")
+
+#boxA.pos |> 
+#  group_by(phage_spor_host) |> 
+#  summarise(n_obs = n())
+
+
+
+
+boxA.sanity <- all %>%
+  summarise(total.boxA.hits = sum(hit), pos.boxA.hit = max(hit), .groups = "drop") #%>% 
+
+only.pos <- subset(boxA.sanity, boxA.sanity$total.boxA.hits>0)
+
+
+
+boxA.summary <- boxA.pos %>% 
+  group_by(phage_spor_host) %>% 
+  summarise(
+    total_boxA_hits = sum(total.boxA.hits, na.rm = TRUE),
+    Phage_has_boxA = sum(pos.boxA.hit, na.rm = TRUE),
+    total.phage = n(),
+    .groups = "drop"
+  ) %>% 
+  mutate(boxA.pos.perc = Phage_has_boxA / total.phage * 100)
+
+
+boxA.bin <- boxA.pos[,c(1,2,4)]
+
+
+```
+
+```{r}
+
+boxA.pos$totalhits2 <- ifelse(boxA.pos$total.boxA.hits>2, boxA.pos$total.boxA.hits, 0)
+boxA.pos$pos2 <- ifelse(boxA.pos$total.boxA.hits>1, 1, 0)
+
+ggplot(boxA.pos, aes(x = factor(phage_spor_host), fill = factor(phage_spor_host), y = total.boxA.hits )) +
+  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + ylab("Number of 0A boxes") +theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1)) + theme(legend.position = "right") + xlab("Phyla_Spor_Lifestyle")
+
+#ggplot(boxA.pos, aes(x = factor(phage_spor_host), fill = factor(phage_spor_host), y = totalhits2 )) +
+#  geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + ylab("Number of 0A boxes") +theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1)) + theme(legend.position = "right") + xlab("Phyla_Spor_Lifestyle")
+
+ggplot(boxA.pos, aes(x = factor(phage_spor_host), fill = factor(phage_spor_host), y = pos.boxA.hit )) +
+  geom_violin(binaxis = "y", stackdir = "center", position = "dodge")  + ylab("Number of 0A boxes") +theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1)) + theme(legend.position = "right") + xlab("Phyla_Spor_Lifestyle") #+ geom_jitter(width = 0.01)
+#ggplot(boxA.pos, aes(x = factor(phage_spor_host), fill = factor(phage_spor_host), y = pos2 )) +
+#  geom_violin(binaxis = "y", stackdir = "center", position = "dodge")  + ylab("Number of 0A boxes") +theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1)) + theme(legend.position = "right") + xlab("Phyla_Spor_Lifestyle") #+ geom_jitter(width = 0.01)
+
+
+```
+
+```{r}
+
+```
+

@@ -14,9 +14,10 @@ here::here()
 
 
 
-box <- read.delim2(here("data/inphared_db/14Apr2025inph_0A_v3.txt" ))
+box <- read.delim2(here("00_data/inphared_db/14Apr2025inph_0A_v3.txt" ))
 box <- subset(box, box$Header!="Header")
-box <- box %>% rename(product = Sequence, phage = Contig)
+box <- dplyr::rename(box, product = Sequence, phage = Contig)
+#box <- box %>% rename(product = Sequence, phage = Contig)
 box[,c(2)] <- "0A_box"
 #box <- box[,c(3,2,1)]
 box$count <- 1
@@ -47,7 +48,7 @@ box.all <- box
 box <-  box.all %>% group_by(phage, product) %>% summarise(sum=sum(count)) 
 
 
-phage <- read.csv(here("data/inphared_db/14Apr2025_knownsporestatus.csv"), row.names=1)
+phage <- read.csv(here("00_data/inphared_db/14Apr2025_knownsporestatus.csv"), row.names=1)
 
 
 
@@ -99,7 +100,7 @@ counts <- all %>% group_by(phyla_spor_type) %>% summarise(num.phage=sum(tally), 
 ggplot(all, aes(x = factor(phyla_spor_type), fill = factor(phyla_spor_type), y = GC )) +
   geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2) + ylab("Number of 0A boxes")+theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1)) + theme(legend.position = "right", legend.title = element_blank()) + xlab("Host + Sporulation Phenotype + Phage Lifestyle") + ggtitle(("% GC Content of Phage Genome"))
 
-ggsave(here("lab_pres/Inph0A_GC.png"))
+#ggsave(here("lab_pres/Inph0A_GC.png"))
 
 
 
@@ -113,7 +114,7 @@ ggplot(all, aes(x = factor(phyla_spor_type), fill = factor(phyla_spor_type), y =
   geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2) + ylab("Number of 0A boxes")+theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1)) + theme(legend.position = "right", legend.title = element_blank()) + xlab("Host + Sporulation Phenotype + Phage Lifestyle") + ggtitle(("# of 0A boxes in Bacillota vs. Other Phyla Phages"))
 
 
-ggsave(here("lab_pres/Unfilt_Inph0ACounts.png"))
+#ggsave(here("lab_pres/Unfilt_Inph0ACounts.png"))
 ## linear reg
 
 ggplot(all, aes(genome,sum, fill=phyla_spor_type, colour = phyla_spor_type)) +
@@ -122,13 +123,13 @@ ggplot(all, aes(genome,sum, fill=phyla_spor_type, colour = phyla_spor_type)) +
  stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
                         label.x.npc = "left", label.y.npc = "top" )   + ylab("Number of 0A boxes") +xlab("log10(Phage Genome Size, bp)")# Add
 
-ggsave(here("lab_pres/Unfilt_Inph0AReg.png"))
+#ggsave(here("lab_pres/Unfilt_Inph0AReg.png"))
 ggplot(all, aes(GC,sum, fill=phyla_spor_type, colour = phyla_spor_type)) +
   geom_point() +
    geom_smooth(method="lm")+ # Add regression line
  stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
                         label.x.npc = "left", label.y.npc = "top" )   + ylab("Number of 0A boxes") +xlab("log10(Phage Genome Size, bp)")# Add
-ggsave(here("lab_pres/Unfilt_Inph0AReg-GC.png"))
+#ggsave(here("lab_pres/Unfilt_Inph0AReg-GC.png"))
 
 ```
 
@@ -230,14 +231,14 @@ baci <- subset(all, all$HostPhyla=="Bacillota")
 ggplot(baci, aes(x = factor(spor_type), fill = factor(spor_type), y = sum )) +
   geom_boxplot(binaxis = "y", stackdir = "center", position = "dodge") + geom_jitter(width = 0.2) + ylab("Number of 0A boxes")+theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1)) + theme(legend.position = "bottom", legend.title = element_blank()) + xlab("Bacillota Sporulation Phenotype + Phage Lifestyle") + ggtitle(("# of 0A boxes in Bacillota Phages"))
 
-ggsave(here("lab_pres/Unfilt_Baci0ACounts.png"))
+#ggsave(here("lab_pres/Unfilt_Baci0ACounts.png"))
 
 ggplot(baci, aes(genome,sum, fill=phyla_spor_type, colour = phyla_spor_type)) +
   geom_point() +
    geom_smooth(method="lm")+ # Add regression line
  stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~~")),
                         label.x.npc = "left", label.y.npc = "top" )   + ylab("Number of 0A boxes") +xlab("log10(Phage Genome Size, bp)")# Add
-ggsave(here("lab_pres/Unfilt_Baci0AReg.png"))
+#ggsave(here("lab_pres/Unfilt_Baci0AReg.png"))
 
 
 

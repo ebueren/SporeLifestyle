@@ -31,10 +31,13 @@ df <- subset(df, df$dataset=="INPHARED")
 here::here()
 
 ### note the quartz script needs to be fixed, the headers are janky and wrong (had to be manually fixed)
+ParS.in <- read.csv(here("00_data", "02_motifs", "ParS", "01_INPH_hmm0ParS.csv")) #, row.names=1)
+ParS.uh <- read.csv(here("00_data", "02_motifs", "ParS", "02_UHGV_hmm0ParS.csv")) #, row.names=1)
+ParS <- rbind(ParS.in, ParS.uh)
 
 
+#ParS <- read.delim2(here("02_motifs/ParS/data/01_out_01_indiv_hmm1_ParS.tsv"))
 
-ParS <- read.delim2(here("02_motifs/ParS/data/01_out_01_indiv_hmm1_ParS.tsv"))
 
 ParS$q.value<- as.numeric(ParS$q.value)
 ParS$p.value<- as.numeric(ParS$p.value)
@@ -130,7 +133,7 @@ ParS.qual$hit <- ifelse(ParS.qual$q.value<1e-4, 1, 0)
 ## create binary list of phages w/ and w/out ParS hits
 ParS.pos <- ParS.qual %>% group_by(Accession, phage_spor_host) %>%
   summarise(total.ParS.hits = sum(hit), pos.ParS.hit = max(hit), .groups = "drop") #%>% 
-ParS.pos %>% count(phage_spor_host)
+#ParS.pos %>% count(phage_spor_host)
 
 
 #write.csv(ParS.pos, here("02_motifs/ParS/ParSpos_1e4.csv"))
@@ -145,7 +148,6 @@ ParS.sanity <- ParS.qual %>%
 only.pos <- subset(ParS.sanity, ParS.sanity$total.ParS.hits>0)
 
 
-ParS.pos %>% count(phage_spor_host)
 
 ParS.summary <- ParS.pos %>% 
   group_by(phage_spor_host) %>% 
@@ -290,12 +292,191 @@ res.contain <- select(res, PHAGE, motif_id, CONTAINING_ORF, hit)
 res.contain <- na.omit(res.contain)
 
 
+res.contain.multigene <- res.contain[grepl(",", res.contain$CONTAINING_ORF), ]
+res.contain.multigene <- res.contain.multigene %>% separate(CONTAINING_ORF, into=c("Cont1", "Cont2"), sep = ",", extra="merge", remove = TRUE)
+res.contain.multigene <- res.contain.multigene %>% pivot_longer(cols=c("Cont1", "Cont2"),  names_to = "gene")
+res.contain.multigene <- select(res.contain.multigene, PHAGE, motif_id, value, hit)
+colnames(res.contain.multigene) <- c("PHAGE", "motif_id", "CONTAINING_ORF", "hit")
+
+res.contain <- res.contain[!grepl(",", res.contain$CONTAINING_ORF), ]
+
+res.contain <- rbind(res.contain, res.contain.multigene)
+
+
 res.flank1 <- select(res, PHAGE, motif_id, UP_ORF, hit)
 colnames(res.flank1) <- c("PHAGE", "motif_id", "FLANK_ORF", "hit")
 res.flank2 <- select(res, PHAGE, motif_id, DOWN_ORF, hit )
 colnames(res.flank2) <- c("PHAGE", "motif_id", "FLANK_ORF", "hit")
 res.flank <- rbind(res.flank1, res.flank2)
 res.flank <- na.omit(res.flank)
+
+
+
+
+ParS.contain <- res.contain %>% 
+  group_by(CONTAINING_ORF) %>% 
+  summarise(
+    total_containParS = sum(hit, na.rm = TRUE),
+    gene_containsParS = sum(hit, na.rm = TRUE),
+    .groups = "drop"
+  ) 
+
+ParS.contain <- ParS.contain %>% rename(protein_id = CONTAINING_ORF)
+
+
+ParS.flanks <- res.flank %>% 
+  group_by(FLANK_ORF) %>% 
+  summarise(
+    total_flankParS = sum(hit, na.rm = TRUE),
+    gene_hasflankParS = sum(hit, na.rm = TRUE),
+    .groups = "drop"
+  ) 
+
+ParS.flanks <- ParS.flanks %>% rename(protein_id = FLANK_ORF)
+
+
+ParS.hits.merged <- bind_rows(ParS.contain, ParS.flanks)
+ParS.hits.merged[is.na(ParS.hits.merged)] <- 0
+
+ParS.hits.merged$gene_assocParS <- 1
+```
+
+```{r}
+ParS.func <- merge(ParS.hits.merged, func, by.x="protein_id", all.x=TRUE, all.y=TRUE)
+
+
+ParS.func[is.na(ParS.func)] <- 0
+
+ParS.func.bin <- subset(ParS.func, ParS.func$newgtdb_Phylum=="Bacillota" & ParS.func$gene_assocParS!=0)
+
+ParS.func.bin <- select(ParS.func.bin, protein_id, gene_assocParS, best_hit, gene_name, DetailedCat, lifestyle)
+
+source(here("utility-scripts", "03_func_fishertest_genecounts.R"),)
+
+inph.list <- prepare_gene_counts(ParS.func.bin, phage_col = "protein_id", gene_col  = "gene_name", lifestyle_col = "lifestyle", cog_col = "DetailedCat", temp_label = "Temperate", lytic_label = "Lytic")
+
+
+
+
+inph.gene_counts    <- inph.list$gene_counts
+inph.total_temp     <- inph.list$total_temp
+inph.total_lytic    <- inph.list$total_lytic
+inph_df <- inph.list$df_genome_gene
+
+inph_df <- inph_df %>%
+  group_by(gene_name, COGlet) %>%
+  summarise(prots.by.phage = n(), .groups = "drop")
+
+
+
+inph.fisher <- compute_fisher_minimal(
+  inph.gene_counts,
+  inph.total_temp,
+  inph.total_lytic
+)
+
+inph.fisher$dataset <- "INPHARED"
+
+
+
+all.fisher <- bind_rows(inph.fisher)
+p.signif <- 1e-3
+
+k_threshold <- 5
+
+#all.fisher <- subset(all.fisher, all.fisher$gene_name!="lytD" & all.fisher$gene_name!="nlpD")
+
+#all.fisher <- merge(all.fisher, cog_df, by="gene_name", all.x=TRUE, all.y=FALSE)
+TEST <- ggplot(all.fisher, aes(x = dataset, y = reorder(gene_name, plot_OR))) +
+  geom_point(aes(size = plot_OR,
+                 color = direction),
+             alpha = 0.7) +
+
+  scale_color_manual(values = c(
+    "Temperate" = "#1f78b4",
+    "Lytic" = "#e31a1c",
+    "Equal" = "grey70"
+  )) +
+  
+  labs(
+    y = "Gene Flanked/Containing ParS",
+    color = "Enriched in",
+    size = "|log2(OR)|"
+  ) +
+  
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x  = element_blank(),
+    axis.ticks.x = element_blank()
+  ) #+ facet_wrap(~stage, scales = "free_y")
+
+TEST
+
+
+
+```
+
+```{r}
+inph.list <- prepare_gene_counts(ParS.func.bin, phage_col = "protein_id", gene_col  = "DetailedCat", lifestyle_col = "lifestyle", cog_col = "gene_name", temp_label = "Temperate", lytic_label = "Lytic")
+
+
+
+
+inph.gene_counts    <- inph.list$gene_counts
+inph.total_temp     <- inph.list$total_temp
+inph.total_lytic    <- inph.list$total_lytic
+inph_df <- inph.list$df_genome_gene
+
+inph_df <- inph_df %>%
+  group_by(gene_name, COGlet) %>%
+  summarise(prots.by.phage = n(), .groups = "drop")
+
+
+
+inph.fisher <- compute_fisher_minimal(
+  inph.gene_counts,
+  inph.total_temp,
+  inph.total_lytic
+)
+
+inph.fisher$dataset <- "INPHARED"
+
+
+
+all.fisher <- bind_rows(inph.fisher)
+p.signif <- 1e-3
+
+k_threshold <- 5
+
+#all.fisher <- subset(all.fisher, all.fisher$gene_name!="lytD" & all.fisher$gene_name!="nlpD")
+
+#all.fisher <- merge(all.fisher, cog_df, by="gene_name", all.x=TRUE, all.y=FALSE)
+TEST <- ggplot(all.fisher, aes(x = dataset, y = reorder(gene_name, plot_OR))) +
+  geom_point(aes(size = plot_OR,
+                 color = direction),
+             alpha = 0.7) +
+
+  scale_color_manual(values = c(
+    "Temperate" = "#1f78b4",
+    "Lytic" = "#e31a1c",
+    "Equal" = "grey70"
+  )) +
+  
+  labs(
+    y = "Gene Flanked/Containing ParS",
+    color = "Enriched in",
+    size = "|log2(OR)|"
+  ) +
+  
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x  = element_blank(),
+    axis.ticks.x = element_blank()
+  ) #+ facet_wrap(~stage, scales = "free_y")
+
+TEST
 
 ```
 

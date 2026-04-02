@@ -1,0 +1,197 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(emmeans)
+library(ggsignif)
+library(here)
+library(tidyverse)
+library(grid)
+library(PNWColors)
+
+theme_eb <- theme_classic(base_size = 16) +
+  theme(
+    plot.title = element_text(size = 20),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 14)
+  )
+
+theme_set(theme_eb)
+pal3 <- pnw_palette("Sunset", 3, type=c("discrete"))
+pal7 <-  pnw_palette("Starfish", 7, type=c("discrete"))
+
+
+df <- read.csv(here("00_data", "01_desc", "CompleteMetadata.csv"), row.names=1)
+df <- subset(df, df$dataset=="INPHARED")
+df <- subset(df, df$newgtdb_Phylum=="Bacillota")
+here::here()
+
+### note the quartz script needs to be fixed, the headers are janky and wrong (had to be manually fixed)
+
+
+
+##Nnote the name says parS_stormo, b ut that is a typo -- this is 0A stormo
+#zeroA <- read.csv(here("00_data/02_motifs/0A_Stormo/01_INPH_hmm0ParS_Stormo.csv"))
+zeroA <- read.csv(here("00_data/02_motifs/0A_MX/01b_INPH_hmm00A_MX000019.csv"))
+
+zeroA$q.value<- as.numeric(zeroA$q.value)
+zeroA$p.value<- as.numeric(zeroA$p.value)
+zeroA$score<- as.numeric(zeroA$score)
+
+
+
+### remove any duplicate motifs (occasionally a motif will be a palindromic and hit both + and - strands) 
+zeroA <- zeroA %>%
+  group_by(sequence_name, start, stop) %>%  # group by coordinates
+  slice_max(order_by = score, n = 1) %>%    # keep only the row with highest score
+  ungroup()
+
+### phi3T KY030782, spbeta AF020713
+## redrock (actino phage with ParABS) GU339467, uses zeroA sites but of a different type than sporulation zeroA
+
+zeroA <- zeroA %>% separate(X, into=c("Accession2"), sep="\\.", extra="drop", remove =FALSE)
+
+zeroA$sequence_name[is.na(zeroA$sequence_name)] <- "no_hit"
+zeroA$sequence_name <- ifelse(zeroA$sequence_name=="no_hit", zeroA$Accession2, zeroA$sequence_name)
+```
+
+
+```{r}
+#inph <- select(inph, Accession, Host, Genome.Length..bp., gtdb_f, f_spor, newgtdb_Phylum,  host_phage_spor, phage_type, sporulation, lifestyle, nice)
+all <- merge(df, zeroA, by.x="Accession", by.y="sequence_name", all.x=TRUE, all.y=FALSE)
+all$motif_id[is.na(all$motif_id)] <- "no_hit"
+
+### create binary hit column of 1 for zeroA hit, 0 if no hit
+all$hit <- ifelse(all$motif_id=="0A_MX000019", 1, 0)
+all$q.value[is.na(all$q.value)] <- 1
+
+### remove duplicates (keep only reference strains)
+### currently this only works on bacilliota, 99.5% ANI over 100% alignment threshold
+## rest of inphared is pending 
+
+#all <- subset(all, all$ref=="not_run" | all$ref=="ref_seq")
+
+```
+
+
+### threshold testing
+```{r}
+
+
+### threshold testing
+
+library(dplyr)
+library(ggplot2)
+
+# Define thresholds
+thresholds <- 10^seq(-8, -1, by = 1)   # from 1e-6 to 1e-1
+thresholds <- c(thresholds, 0.05, 1)      # add 0.05 explicitly if desired
+results <- lapply(thresholds, function(th) {
+  all %>%
+    group_by(Accession, phage_spor_host) %>%
+    summarise(
+      pos.zeroA.hit = max(ifelse(!is.na(q.value) & q.value <= th, 1, 0)),
+      .groups = "drop"
+    ) %>%
+    group_by(phage_spor_host) %>%
+    summarise(
+      Phage_has_zeroA = sum(pos.zeroA.hit),
+      total.phage = n(),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      zeroA.pos.perc = Phage_has_zeroA / total.phage * 100,
+      threshold = th
+    )
+}) %>% bind_rows()
+
+thresholds <- c(thresholds, 0.05, 1)      # add 0.05 explicitly if desired
+results <- lapply(thresholds, function(th) {
+  all %>%
+    group_by(Accession, spor) %>%
+    summarise(
+      pos.zeroA.hit = max(ifelse(!is.na(p.value) & p.value <= th, 1, 0)),
+      .groups = "drop"
+    ) %>%
+    group_by(spor) %>%
+    summarise(
+      Phage_has_zeroA = sum(pos.zeroA.hit),
+      total.phage = n(),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      zeroA.pos.perc = Phage_has_zeroA / total.phage * 100,
+      threshold = th
+    )
+}) %>% bind_rows()
+
+#results.fig <- merge(results, meta.cats, by="phage_spor_host")
+
+# Plot
+p<- ggplot(results, aes(x = threshold, y = zeroA.pos.perc, color = spor)) +
+  geom_line(size = 1.2) +
+  geom_point() +
+  scale_x_log10() +  # log scale for q-values
+  labs(
+    x = "False Positive (q-value) Threshold",
+    y = "% Phages with 1 or more zeroA Binding Site"
+  ) + labs(linetype = "Phage Lifestyle", color="Bacterial Host") +geom_vline(xintercept = 1e-4, linetype = "dotted") #+ theme(legend.position="none")
+p + theme(legend.position = c(0.125, 0.82)) #+ scale_color_manual(values = rev(pal3))
+
+
+#ggsave(here("02_motifs/zeroA/QValueTresh1e4_line.png"),width=7, height=7)
+```
+
+
+
+## Filter w/ q value and summarize data
+```{r}
+
+
+#### Q FILTERING
+zeroA.qual <- all
+
+#zeroA.qual$hit <- ifelse(zeroA.qual$q.value<1e-4, 1, 0)
+#zeroA.qual$hit <- ifelse(zeroA.qual$q.value<1e-4, 1, 0)
+
+## create binary list of phages w/ and w/out zeroA hits
+zeroA.pos <- zeroA.qual %>% group_by(Accession, phage_spor_host) %>%
+  summarise(total.zeroA.hits = sum(hit), pos.zeroA.hit = max(hit), .groups = "drop") #%>% 
+#zeroA.pos %>% count(phage_spor_host)
+
+
+#write.csv(zeroA.pos, here("02_motifs/zeroA/zeroApos_1e4.csv"))
+## create binary list of phages w/ and w/out zeroA hits
+#zeroA.sanity <- zeroA.qual %>% group_by(Accession, phage_spor_host, Host, Description, Lowest.Taxa, Genus, Family, Genome.Length..bp., molGC....) %>%
+#  summarise(total.zeroA.hits = sum(hit), pos.zeroA.hit = max(hit), .groups = "drop") #%>% 
+
+
+zeroA.sanity <- zeroA.qual %>%
+  summarise(total.zeroA.hits = sum(hit), pos.zeroA.hit = max(hit), .groups = "drop") #%>% 
+
+only.pos <- subset(zeroA.sanity, zeroA.sanity$total.zeroA.hits>0)
+
+
+#zeroA.pos %>% count(phage_spor_host)
+
+zeroA.summary <- zeroA.pos %>% 
+  group_by(phage_spor_host) %>% 
+  summarise(
+    total_zeroA_hits = sum(total.zeroA.hits, na.rm = TRUE),
+    Phage_has_zeroA = sum(pos.zeroA.hit, na.rm = TRUE),
+    total.phage = n(),
+    .groups = "drop"
+  ) %>% 
+  mutate(zeroA.pos.perc = Phage_has_zeroA / total.phage * 100)
+
+
+zeroA.bin <- zeroA.pos[,c(1,2,4)]
+
+
+
+```

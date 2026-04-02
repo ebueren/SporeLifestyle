@@ -2,7 +2,7 @@
 library(dplyr)
 library(tidyr)
 library(purrr)
-
+library(here)
 # Labels (adjust if needed)
 temp_label <- "Temperate"
 lytic_label <- "Lytic"
@@ -16,7 +16,7 @@ hmm<- subset(hmm, hmm$COGlet=="Sp")
 
 # Basic cleaning
 df <- hmm %>%
-  rename(phage_id = Accession, gene_name = gene_name, lifestyle = lifestyle) %>%
+  dplyr::rename(phage_id = Accession, gene_name = gene_name, lifestyle = lifestyle) %>%
   filter(!is.na(phage_id) & !is.na(lifestyle) & !is.na(gene_name))
 
 
