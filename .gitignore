@@ -57,9 +57,9 @@ zz_archive/*
 .Rbuildignore
 
 ### new 03_func data files that are too large
-03_func/inphared/03_inph_raw/*
-03_func/03_metadata/*
-00_data/03_func_data/
+#03_func/inphared/03_inph_raw/*
+#03_func/03_metadata/*
+
 
 ### current entrappedOmics files that are too large
 old_EntrappedOmics/inphared/0a_withhost.csv
