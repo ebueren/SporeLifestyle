@@ -1,0 +1,613 @@
+```{r}
+library(here)
+library(tidyverse)
+library(ggpubr)
+library(epitools)
+library(seqinr)
+library(dplyr)
+library(PNWColors)
+
+theme_eb <- theme_classic(base_size = 20) +
+  theme(
+    plot.title = element_text(size = 20),
+    axis.text.x = element_text(size = 20),
+    axis.text.y = element_text(size = 20)
+  )
+
+theme_set(theme_eb)
+pal3 <- pnw_palette("Sunset", 3, type=c("discrete"))
+pal7 <-  pnw_palette("Starfish", 7, type=c("discrete"))
+
+
+
+df <- read.csv(here("00_data", "01_desc", "CompleteMetadata.csv"), row.names=1)
+#df <- subset(df, df$dataset=="INPHARED" |df$dataset=="UHGV")
+df <- subset(df, df$dataset=="INPHARED")
+#df <- subset(df, df$newgtdb_Phylum=="Bacillota")
+here::here()
+
+```
+
+### clean up 0A box hits
+```{r}
+#box <- read.delim2(here("00_data/02_motifs/0A_9bp/INPH_0A9.txt" ))
+#box <- read.delim2(here("00_data/02_motifs/0A_9bp/UHGV_INPH_0A9.txt" ))
+#box <- read.delim2(here("00_data/02_motifs/0A_9bp/INPH_0A9.txt" ))
+box <- read.delim2(here("00_data/02_motifs/0A_7bpconsensus/14Apr2025inph_0A_v3.txt" ))
+box <- as.data.frame(box)
+head(box)
+## remove extra .txt headers from catting files
+box <- subset(box, box$Context!="Context")
+### remove incomplete flanking regions
+box <- subset(box, box$Partial=="None")
+
+colnames(box)
+box <- dplyr::rename(box, product = Sequence, phage = Contig)
+
+box[,c(2)] <- "0A"
+
+#box <- box[,c(3,2,1)]
+box$is.0A <- 1
+
+
+box$strand2 <- ifelse(box$Strand=="+", "Fwd", "Rev")
+
+box <- unite(box, "Box_Contig", c("phage", "product", "strand2", "Position"), sep = "_", remove = FALSE, na.rm = FALSE)
+
+box <- box %>% dplyr::rename("motif_id" = "product", "Accession" = "phage")
+#box$motif_id <- "0A"
+gc_content <- function(seq) {
+  seq <- toupper(seq)
+  bases <- strsplit(seq, "")[[1]]
+  gc_count <- sum(bases %in% c("G", "C"))
+  total <- length(bases)
+  return(gc_count / total)
+}
+
+# Vectorized version for multiple sequences
+gc_content_vec <- function(seqs) {
+  sapply(seqs, gc_content)
+}
+
+
+box$GC.flanks <- gc_content_vec(box$Context_no_motif)
+
+
+box <- subset(box, box$GC.flanks<=0.30)
+
+all <- merge(box, df, by.x="Accession", by.y="Accession", all.x=FALSE, all.y=TRUE)
+
+all$motif_id[is.na(all$motif_id)] <- "no_hit"
+
+all$hit <- ifelse(all$motif_id=="0A", 1, 0)
+```
+
+
+
+
+```{r}
+
+## create binary list of phages w/ and w/out ParS hits
+boxA.pos <- all %>% group_by(Accession, phage_spor_host) %>%
+  summarise(total.boxA.hits = sum(hit), pos.boxA.hit = max(hit), .groups = "drop")
+
+#boxA.pos |> 
+#  group_by(phage_spor_host) |> 
+#  summarise(n_obs = n())
+
+
+
+
+boxA.sanity <- all %>%
+  summarise(total.boxA.hits = sum(hit), pos.boxA.hit = max(hit), .groups = "drop") #%>% 
+
+only.pos <- subset(boxA.sanity, boxA.sanity$total.boxA.hits>0)
+
+
+
+boxA.summary <- boxA.pos %>% 
+  group_by(phage_spor_host) %>% 
+  summarise(
+    total_boxA_hits = sum(total.boxA.hits, na.rm = TRUE),
+    Phage_has_boxA = sum(pos.boxA.hit, na.rm = TRUE),
+    total.phage = n(),
+    .groups = "drop"
+  ) %>% 
+  mutate(boxA.pos.perc = Phage_has_boxA / total.phage * 100)
+
+
+boxA.bin <- boxA.pos[,c(1,2,4)]
+
+
+```
+
+
+### Enrichment
+```{r}
+# -----------------------------
+pairwise_fisher_both_directions <- function(df, group_col, hits_col, total_col, p.adjust.method = "BH") {
+  
+  groups <- unique(df[[group_col]])
+  combs <- combn(groups, 2, simplify = FALSE)
+  
+  results <- data.frame(
+    group1 = character(),
+    group2 = character(),
+    odds_ratio = numeric(),
+    conf_low = numeric(),
+    conf_high = numeric(),
+    p.value = numeric(),
+    p.adj = numeric(),
+    stringsAsFactors = FALSE
+  )
+  
+  pvals <- numeric()
+  
+  for (c in combs) {
+    g1 <- df[df[[group_col]] == c[1], ]
+    g2 <- df[df[[group_col]] == c[2], ]
+    
+    tab <- matrix(c(
+      g1[[hits_col]], g1[[total_col]] - g1[[hits_col]],
+      g2[[hits_col]], g2[[total_col]] - g2[[hits_col]]
+    ), nrow = 2, byrow = TRUE)
+    
+    rownames(tab) <- c(c[1], c[2])
+    colnames(tab) <- c("Present", "Absent")
+    
+    ft <- fisher.test(tab)
+    
+    # group1 vs group2
+    results <- rbind(results, data.frame(
+      group1 = c[1],
+      group2 = c[2],
+      odds_ratio = ft$estimate,
+      conf_low = ft$conf.int[1],
+      conf_high = ft$conf.int[2],
+      p.value = ft$p.value,
+      p.adj = NA
+    ))
+    
+    # group2 vs group1 (inverse OR)
+    results <- rbind(results, data.frame(
+      group1 = c[2],
+      group2 = c[1],
+      odds_ratio = 1 / ft$estimate,
+      conf_low = 1 / ft$conf.int[2],
+      conf_high = 1 / ft$conf.int[1],
+      p.value = ft$p.value,
+      p.adj = NA
+    ))
+    
+    pvals <- c(pvals, ft$p.value, ft$p.value)
+  }
+  
+  results$p.adj <- p.adjust(pvals, method = p.adjust.method)
+  return(results)
+}
+
+```
+
+```{r}
+# -----------------------------
+# Compute Fisher tests
+t <- pairwise_fisher_both_directions(
+  df = boxA.summary,
+  group_col = "phage_spor_host",
+  hits_col = "Phage_has_boxA",
+  total_col = "total.phage",
+  p.adjust.method = "BH"
+)
+
+# Specify pairs of interest (with direction)
+selected_pairs <- list(
+  c("Lytic Non-Bacillota", "Temperate Non-Bacillota"), 
+  c("Lytic Nonsporulating Bacillota", "Temperate Nonsporulating Bacillota"),
+  c("Lytic Sporulating Bacillota", "Temperate Sporulating Bacillota"),
+  c("Temperate Sporulating Bacillota", "Temperate Nonsporulating Bacillota"),
+  c("Lytic Sporulating Bacillota", "Temperate Nonsporulating Bacillota"),
+  c("Lytic Sporulating Bacillota", "Lytic Nonsporulating Bacillota"),
+  c("Lytic Sporulating Bacillota", "Temperate Sporulating Bacillota")
+)
+
+pairs_df <- do.call(rbind, lapply(selected_pairs, function(x) {
+  data.frame(group1 = x[1], group2 = x[2], stringsAsFactors = FALSE)
+}))
+
+
+
+pairwise_res_subset <- t %>%
+  semi_join(pairs_df, by = c("group1", "group2")) 
+
+
+
+pairwise_res_subset <- pairwise_res_subset %>%
+  mutate(
+    label_combined = ifelse(
+      p.adj < 0.05,
+      ifelse(
+        p.adj < 0.0001,
+        paste0("OR=", round(odds_ratio, 2), ", p<0.0001"),
+        paste0("OR=", round(odds_ratio, 2), ", p=", signif(p.adj, 3))
+      ),
+      "n.s."
+    )
+  )
+
+
+
+```
+
+```{r}
+# -----------------------------
+# Factor order
+levels_order <- c(
+  'Lytic Sporulating Bacillota',
+  'Temperate Sporulating Bacillota',
+  'Lytic Nonsporulating Bacillota',
+  'Temperate Nonsporulating Bacillota',
+  'Lytic Non-Bacillota',
+  'Temperate Non-Bacillota'
+)
+
+
+df_all <- boxA.pos
+
+# Sample sizes
+n_counts <- df_all %>%
+  group_by(phage_spor_host) %>%
+  summarise(
+    positive = sum(pos.boxA.hit == 1, na.rm = TRUE),
+    total    = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    perc  = round(100 * positive / total, 1),
+    label = paste0(positive, "/", total, " (", perc, "%)")
+  )
+
+# Base plot
+pd <- position_jitter(width = 0.25, height = 0.05)
+
+vp <- ggplot(df_all, aes(x = phage_spor_host, y = pos.boxA.hit, color = phage_spor_host)) +
+  geom_point(
+    aes(fill = phage_spor_host),
+    position = pd,
+    size = 2,
+    alpha = 0.6,
+    shape = 21,
+    color = "black",
+    stroke = 0.3
+  ) +
+  scale_y_continuous(
+    #limits = c(-0.5, 10),  # make room for bars above
+    breaks = c(0, 1),
+    labels = c("Absent", "Present")
+  ) +
+  scale_x_discrete(limits = levels_order, drop = FALSE, labels = c(
+      'Lytic Sporulating Bacillota'    = 'Lytic',
+      'Temperate Sporulating Bacillota'     = 'Temperate',
+      'Lytic Nonsporulating Bacillota' = 'Lytic',
+      'Temperate Nonsporulating Bacillota'  = 'Temperate',
+      'Lytic Non-Bacillota' = 'Lytic',
+      'Temperate Non-Bacillota'  = 'Temperate'
+    )) +
+  coord_cartesian(clip = "off") +
+  theme(
+    legend.position = "none",
+    plot.margin = margin(10, 10, 50, 10)
+  ) +
+  xlab("") + ylab("Presence of 0A box in phage genomes") +
+  geom_text(
+    data = n_counts,
+    aes(x = phage_spor_host, y = -0.3, label = paste0("n=", label)),
+    inherit.aes = FALSE,
+    size = 4
+  )
+# -----------------------------
+
+#vp
+
+
+spor_label    <- textGrob("Sporulating \n Bacilliota Host", gp = gpar(fontsize = 20, fontface = "bold"), x = 1/6, y = -0.15, just = "center")
+nonspor_label <- textGrob("Non-Sporulating \n Bacilliota Host", gp = gpar(fontsize = 20, fontface = "bold"), x = 3/6, y = -0.15, just = "center")
+other_label   <- textGrob("Non-Bacilliota \n Host", gp = gpar(fontsize = 20, fontface = "bold"), x = 5/6, y = -0.15, just = "center")
+
+vp <- vp + annotation_custom(spor_label) + annotation_custom(nonspor_label) + annotation_custom(other_label)
+
+
+pairwise_res_subset$group1 <- factor(pairwise_res_subset$group1, levels = levels_order, ordered = TRUE)
+pairwise_res_subset <- pairwise_res_subset %>%
+  arrange(factor(group1, levels = levels_order),
+          factor(group2, levels = levels_order)) %>%
+  mutate(y.position = max(df_all$pos.boxA.hit, na.rm = TRUE) + 
+           0.5 + (nrow(.) - row_number()) * 0.3)
+
+
+
+# Add significance bars
+vp_fisher <- vp +
+  stat_pvalue_manual(
+    pairwise_res_subset,
+    label = "label_combined",
+    hide.ns = FALSE,
+    tip.length = 0.02,
+    size = 6
+  )
+#vp #+ expand_limits(y = c(-1, max(df_all$total.ParS.hits) * 1.2))
+
+
+spor_label    <- textGrob("Sporulating \n Bacilliota Host", gp = gpar(fontsize = 20, fontface = "bold"), x = 1/6, y = -0.15, just = "center")
+nonspor_label <- textGrob("Non-Sporulating \n Bacilliota Host", gp = gpar(fontsize = 20, fontface = "bold"), x = 3/6, y = -0.15, just = "center")
+other_label   <- textGrob("Non-Bacilliota \n Host", gp = gpar(fontsize = 20, fontface = "bold"), x = 5/6, y = -0.15, just = "center")
+
+
+#ggsave(here("02_motifs/ParS/figs/ParS_Enrichment_1e4.png"), width=7, height=7)
+
+```
+
+
+```{r}
+
+
+df_all$hit0Abool <- ifelse(df_all$pos.boxA.hit==0, "No0A", "0Ahit")
+
+inph.sum <- df_all %>%
+  dplyr::count(phage_spor_host, hit0Abool, name = "prots.by.phage") %>%
+  group_by(phage_spor_host) %>%
+  mutate(total_in_category = sum(prots.by.phage)) %>%
+  ungroup()
+ 
+ inph.sum$prop <- inph.sum$prots.by.phage/inph.sum$total_in_category*100
+ 
+pal2.flip <- c("#5962b5", "#015b58")
+
+rel <- inph.sum %>%
+  ggplot(aes(phage_spor_host, prop, fill= hit0Abool)) +
+  #geom_point(shape = 21, size = 2) +
+  geom_bar(stat="identity",  position="stack") +
+  ylab("% with 0A Site") +
+  labs(fill = "0A Presence") +theme(axis.text.x = element_text(angle = 0, hjust = 0.5)) + xlab("") + ggtitle("INPHARED") +theme(
+    legend.position = "bottom",
+    plot.margin = margin(30, 10, 10, 10)) + scale_fill_manual(values=pal2.flip)  +scale_x_discrete(limits = levels_order, drop = FALSE, labels = c(
+      'Lytic Sporulating Bacillota'    = 'Lytic',
+      'Temperate Sporulating Bacillota'     = 'Temperate',
+      'Lytic Nonsporulating Bacillota' = 'Lytic',
+      'Temperate Nonsporulating Bacillota'  = 'Temperate',
+      'Lytic Non-Bacillota' = 'Lytic',
+      'Temperate Non-Bacillota'  = 'Temperate'
+    ))   +    coord_cartesian(ylim = c(0, 175), clip = "off")
+
+rel 
+
+
+
+pairwise_res_subset <- pairwise_res_subset %>%
+  arrange(factor(group1, levels = levels_order),
+          factor(group2, levels = levels_order)) %>%
+  mutate(y.position = max(inph.sum$prop, na.rm = TRUE) + 
+           15 + (nrow(.) - row_number()) * 12)
+
+vp_fisher <- rel +
+  stat_pvalue_manual(
+    pairwise_res_subset,
+    label = "label_combined",
+    hide.ns = TRUE,
+    tip.length = 0.02,
+    size = 6
+  ) 
+vp_fisher 
+```
+
+
+
+##### Kruskal
+```{r}
+# -----------------------------
+# Count positives and totals per group
+n_counts <- df_all %>%
+  group_by(phage_spor_host) %>%
+  summarise(
+    positive = sum(total.boxA.hits > 0, na.rm = TRUE),
+    total    = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    perc  = round(100 * positive / total, 1),
+    label = paste0(positive, "/", total, " (", perc, "%)")
+  )
+
+# -----------------------------
+kruskal_res <- kruskal.test(total.boxA.hits ~ phage_spor_host, data = df_all)
+#print(kruskal_res)
+
+# -----------------------------
+# Define comparisons
+comparisons_list <- combn(unique(df_all$phage_spor_host), 2, simplify = FALSE)
+
+# Bar placement settings
+offset <- 1     # push bars higher than max data
+y_step <- 1.5   # vertical spacing
+y_start <- max(df_all$total.boxA.hits, na.rm = TRUE) + offset
+
+# Compute raw p-values
+pairwise_res <- lapply(seq_along(comparisons_list), function(i){
+  comp <- comparisons_list[[i]]
+  x <- df_all$total.boxA.hits[df_all$phage_spor_host == comp[1]]
+  y <- df_all$total.boxA.hits[df_all$phage_spor_host == comp[2]]
+  wt <- wilcox.test(x, y)
+  data.frame(
+    group1 = comp[1],
+    group2 = comp[2],
+    p.value = wt$p.value,
+    y.position = y_start + (i - 1) * y_step
+  )
+}) %>% bind_rows()
+
+# Adjust p-values (BH)
+pairwise_res$p.adj <- p.adjust(pairwise_res$p.value, method = "BH")
+
+# Label formatting
+pairwise_res <- pairwise_res %>%
+  mutate(
+    label = case_when(
+      p.adj < 0.0001 ~ "p < 0.0001",
+      p.adj < 0.05   ~ paste0("p = ", signif(p.adj, 3)),
+      TRUE           ~ "n.s."
+    )
+  )
+
+# -----------------------------
+levels_order <- c(
+  'Lytic Sporulating Bacillota',
+  'Temperate Sporulating Bacillota',
+  'Lytic Nonsporulating Bacillota',
+  'Temperate Nonsporulating Bacillota',
+  'Lytic Non-Bacillota',
+  'Temperate Non-Bacillota'
+)
+
+
+
+```
+
+visualize 
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(rstatix)
+
+
+df_all <- boxA.pos %>%
+  mutate(host_phage_spor = factor(phage_spor_host, levels = levels_order))
+
+df_violin <- df_all %>%
+  filter(total.boxA.hits > 0)
+
+# --- n counts ---
+n_counts <- df_all %>%
+  group_by(phage_spor_host) %>%
+  summarise(
+    positive = sum(total.boxA.hits > 0, na.rm = TRUE),
+    total    = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    perc  = round(100 * positive / total, 1),
+    label = paste0(positive, "/", total, " (", perc, "%)")
+  )
+
+# --- Stats ---
+# Kruskal–Wallis
+kw_res <- kruskal_test(df_all, total.boxA.hits ~ phage_spor_host)
+
+# Pairwise Wilcoxon with BH correction
+wilc_test <- df_all %>%
+  pairwise_wilcox_test(total.boxA.hits ~ phage_spor_host,
+                       p.adjust.method = "BH") #%>%
+
+wilc_test <- wilc_test %>% unite(col = "test", c("group1", "group2"), remove = FALSE, sep = "_")
+
+
+### subset tests you want to show
+wilc_test <- subset(wilc_test, wilc_test$test=="Lytic Sporulating Bacillota_Temperate Sporulating Bacillota" |
+                      wilc_test$test=="Lytic Nonsporulating Bacillota_Lytic Sporulating Bacillota" |
+                      wilc_test$test=="Lytic Non-Bacillota_Lytic Sporulating Bacillota" |
+                      wilc_test$test=="Temperate Nonsporulating Bacillota_Temperate Sporulating Bacillota" |
+                      wilc_test$test=="Lytic Nonsporulating Bacillota_Temperate Nonsporulating Bacillota" |
+                      wilc_test$test=="Lytic Non-Bacillota_Temperate Non-Bacillota")
+
+
+
+max_y <- max(df_all$total.boxA.hits, na.rm = TRUE)
+step <- .85
+wilc_test <- wilc_test %>%
+  mutate(y.position = max_y + rev(seq(1, nrow(.)))*step)
+
+
+# Make label: OR not relevant here (Wilcoxon), so p only
+wilc_test <- wilc_test %>%
+  mutate(
+    p_label = ifelse(p.adj < 0.0001, "p < 0.0001",
+              ifelse(p.adj < 0.05, paste0("p=", signif(p.adj, 3)), "n.s."))
+  )
+
+
+
+  
+# --- Plot ---
+pd <- position_jitter(width = 0.25, height = 0.25)
+
+vp <- ggplot(df_all, aes(x = phage_spor_host,
+                         y = total.boxA.hits,
+                         color = phage_spor_host)) +
+  # Violin for positives
+  geom_violin(
+    data = df_violin,
+    inherit.aes = TRUE,
+    color = "black",
+    fill = NA,
+    scale = "width",
+    width = 0.8,
+    trim = TRUE
+  ) +
+  # Jittered points
+  geom_point(
+    aes(fill = phage_spor_host),
+    position = pd,
+    size = 2,
+    alpha = 0.5,
+    shape = 21,
+    color = "black",
+    stroke = 0.3
+  ) +
+  # Total n
+  geom_text(
+  data = n_counts,
+  aes(
+    x = phage_spor_host,
+    y = -0.75,   # slightly below 0; adjust as needed
+    label = label
+  ),
+  inherit.aes = FALSE,
+  size = 3,
+  vjust = 1  # align text above the y position
+) +
+  # Add significance bars
+  stat_pvalue_manual(
+    wilc_test,
+    label = "p_label",
+    hide.ns = FALSE,
+    tip.length = 0.02,
+    size = 6
+  ) +
+  # Axis order
+  scale_x_discrete(limits = levels_order, drop = FALSE, labels = c(
+      'Lytic Sporulating Bacillota'    = 'Lytic',
+      'Temperate Sporulating Bacillota'     = 'Temperate',
+      'Lytic Nonsporulating Bacillota' = 'Lytic',
+      'Temperate Nonsporulating Bacillota'  = 'Temperate',
+      'Lytic Non-Bacillota' = 'Lytic',
+      'Temperate Non-Bacillota'  = 'Temperate'
+    )) +# Give room for n labels and bars
+  #expand_limits(y = max(df_all$total.ParS.hits, na.rm = TRUE) * 4) +
+  coord_cartesian(clip = "off") +
+  theme(legend.position = "none",
+        plot.margin = margin(10, 10, 50, 10)) +
+  xlab("") #+ scale_y_continuous(limits=c(0,12.5,2),  breaks=c(0,2,4,6,8))
+#vp #+ expand_limits(y = c(-1, max(df_all$total.ParS.hits) * 1.2))
+vp
+
+spor_label    <- textGrob("Sporulating \n Bacilliota Host", gp = gpar(fontsize = 20, fontface = "bold"), x = 1/6, y = -0.15, just = "center")
+nonspor_label <- textGrob("Non-Sporulating \n Bacilliota Host", gp = gpar(fontsize = 20, fontface = "bold"), x = 3/6, y = -0.15, just = "center")
+other_label   <- textGrob("Non-Bacilliota Host", gp = gpar(fontsize = 20, fontface = "bold"), x = 5/6, y = -0.15, just = "center")
+
+vp.krusk <- vp + annotation_custom(spor_label) + annotation_custom(nonspor_label) + annotation_custom(other_label)+ scale_fill_manual(values = pal7)
+
+
+vp.krusk
+
+#ggsave(here("02_motifs/ParS/figs/ParS_Hits_Kruskal_1e4.png"), width=7, height=7)
+```

@@ -1,0 +1,237 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(emmeans)
+library(ggsignif)
+library(here)
+library(tidyverse)
+library(grid)
+library(PNWColors)
+
+theme_eb <- theme_classic(base_size = 16) +
+  theme(
+    plot.title = element_text(size = 20),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 14)
+  )
+
+theme_set(theme_eb)
+pal3 <- pnw_palette("Sunset", 3, type=c("discrete"))
+pal7 <-  pnw_palette("Starfish", 7, type=c("discrete"))
+
+
+df <- read.csv(here("00_data", "01_desc", "CompleteMetadata.csv"), row.names=1)
+#df <- subset(df, df$newgtdb_Phylum=="Bacillota")
+df <- subset(df, df$dataset=="INPHARED")
+#df <- subset(df, df$dataset=="INPHARED" | df$dataset=="UHGV")
+
+list <- read.csv(here("00_data", "03_func_data","func_metadata", "subti_wiki", "subtiwiki_listupdate_EB.csv"))
+
+list <- subset(list, list$SporExpression!="Unknown") ###more conservative 
+list <- subset(list, list$remove!="remove")
+list <- select(list, gene_name, type, func, sporulation_impact, sporulation_impact_simp, localization, stage, SporExpression, Spor_sigma, Other.Sigma, regulon )
+
+
+
+ParS <- read.csv(here("00_data", "02_motifs", "ParS", "ParS.pos_hitlist.csv"), row.name=1)
+ParS$spor_gene_name <- "parS"
+ParS <- select(ParS, Accession, spor_gene_name, total.ParS.hits, pos.ParS.hit)
+colnames(ParS) <- c("Accession", "spor_gene_name", "total.count", "pos.hit")
+ParS <- subset(ParS, ParS$pos.hit!=0)
+
+func.in <- read.csv(here("00_data", "03_func_data", "output", "inph_functional_data.csv"),row.name=1)
+func.uh <- read.csv(here("00_data", "03_func_data", "output", "UHGV_functional_data.csv"),row.name=1)
+func <- rbind(func.in, func.uh)
+func <- subset(func, func$SporHitRelax==TRUE)
+func$spor_gene_name <- ifelse(func$spor_gene_name=="parA, soj" | func$spor_gene_name=="soj", "parA", func$spor_gene_name )
+
+
+func1 <- select(func, protein_id, Accession, best_hit, spor_gene_name, dataset, phage_spor_host)
+func1$hit <- 1
+
+## create total count and binary list of phages w/ and w/out gene hits
+func1.pos <- func1 %>% group_by(Accession, spor_gene_name) %>%
+  summarise(total.count = sum(hit), pos.hit = max(hit), .groups = "drop") #%>% 
+
+hits <- rbind(func1.pos, ParS)
+
+hits <- merge(hits, df, by="Accession", all.x=FALSE, all.y=FALSE)
+
+
+hits <- merge(hits, list, by.x="spor_gene_name", by.y="gene_name", all.x=TRUE, all.y=FALSE)
+#hits <- subset(hits, hits$f_spor==TRUE)
+hits2 <- unique(select(hits, spor_gene_name, type, func))
+#write.csv(hits2, here("00_data","03_func_data","func_metadata", "subti_wiki", "SporGeneHits_raw.csv"))
+
+##for now, going to set all unknown hits (not yet annotated to unknown just for workflow)
+
+hits[is.na(hits)] <- "Unknown"
+
+
+partition.hit <- subset(hits, hits$sporulation_impact=="Partitioning")
+
+partition.hit <- select(partition.hit, Accession, spor_gene_name, pos.hit)
+partition.hit$parthit <- 1
+
+part <- pivot_wider(
+  partition.hit,
+  names_from = spor_gene_name,
+  values_from = pos.hit
+)
+
+gene_list <- partition.hit %>%
+  group_by(Accession) %>%
+  summarise(genes_present = paste(unique(spor_gene_name), collapse = ", "),
+  gene_class = if_else(n_distinct(spor_gene_name) > 1, ">1 Partioning Genes", genes_present))
+
+
+
+part <- part %>%
+  left_join(gene_list, by = "Accession")
+
+part[is.na(part)] <- 0
+
+part$total.part <- part$parA+part$parB+part$parS+part$spoIIIE+part$spoIIQ+ part$spoVG
+
+part$gene_AND_motif <- ifelse(part$parS==1 & part$total.part>1, TRUE, FALSE)
+
+
+part.df <- merge(part, df, by="Accession", all.x=TRUE, all.y=TRUE)
+
+part.df[is.na(part.df)] <- 0
+
+#part.df <- subset(part.df, part.df$f_spor==TRUE & part.df$newgtdb_Phylum=="Bacillota")
+```
+
+```{r}
+
+partition.sum <- part.df %>% 
+  group_by(spor, phage_spor_host, dataset) %>% 
+  summarise(
+    phage_has_part = sum(parthit, na.rm = TRUE),
+    total.phage = n(),
+    .groups = "drop"
+  ) %>% 
+  mutate(partition.perc = phage_has_part / total.phage * 100)
+
+totals <- select(partition.sum, phage_spor_host, total.phage)
+
+partition.sum2 <- part.df %>% 
+  group_by(spor, phage_spor_host, gene_class, dataset) %>% 
+  summarise(
+    total.gene.per.phage = n(),
+    .groups = "drop"
+  ) 
+
+partition.sum2 <- merge(partition.sum2, totals, by="phage_spor_host")
+
+partition.sum2$perc <- partition.sum2$total.gene.per.phage/partition.sum2$total.phage*100
+
+```
+
+```{r}
+levels_order <- c(
+  'Lytic Sporulating Bacillota',
+  'Temperate Sporulating Bacillota',
+  'Lytic Nonsporulating Bacillota',
+  'Temperate Nonsporulating Bacillota',
+  'Lytic Non-Bacillota',
+  'Temperate Non-Bacillota'
+)
+
+
+pd <- position_jitter(width = 0.25, height = 0.05)
+vp <- ggplot(part.df, aes(x = phage_spor_host, y = parthit, fill = gene_class)) +
+  geom_point(
+    aes(fill = gene_class),
+    position = pd,
+    size = 2,
+    alpha = 0.6,
+    shape = 21,
+    color = "black",
+    stroke = 0.3
+  ) +
+  scale_y_continuous(
+    #limits = c(-0.5, 10),  # make room for bars above
+    breaks = c(0, 1),
+    labels = c("Absent", "Present")
+  ) +
+scale_x_discrete(limits = levels_order, drop = FALSE, labels = c(
+      'Lytic Sporulating Bacillota'    = 'Lytic',
+      'Temperate Sporulating Bacillota'     = 'Temperate',
+      'Lytic Nonsporulating Bacillota' = 'Lytic',
+      'Temperate Nonsporulating Bacillota'  = 'Temperate',
+      'Lytic Non-Bacillota' = 'Lytic',
+      'Temperate Non-Bacillota'  = 'Temperate'
+    )) +
+  coord_cartesian(clip = "off") +
+  theme(
+    legend.position = "right",
+    plot.margin = margin(10, 10, 60, 10)
+  ) + xlab("")
+
+
+
+spor_label    <- textGrob("Sporulating \n Bacilliota Host", gp = gpar(fontsize = 20, fontface = "bold"), x = 1/6, y = -0.15, just = "center")
+nonspor_label <- textGrob("Non-Sporulating \n Bacilliota Host", gp = gpar(fontsize = 20, fontface = "bold"), x = 3/6, y = -0.15, just = "center")
+other_label   <- textGrob("Non-Bacilliota \n Host", gp = gpar(fontsize = 20, fontface = "bold"), x = 5/6, y = -0.15, just = "center")
+
+vp <- vp + annotation_custom(spor_label) + annotation_custom(nonspor_label) + annotation_custom(other_label)
+
+vp
+
+
+ggsave(here("03_func/figs/PartitioningGenes_Dot.png"), width=15, height=7)
+
+```
+
+
+
+```{r}
+partition.sum3 <- subset(partition.sum2, partition.sum2$gene_class!=0)
+
+rel <- partition.sum3 %>%
+  ggplot(aes(phage_spor_host, perc, fill= gene_class)) +
+  #geom_point(shape = 21, size = 2) +
+  geom_bar(stat="identity",  position="stack") +
+  ylab("% with Partitioning Genetic Element") +
+  labs(fill = "Partitioning") +theme(axis.text.x = element_text(angle = 0, hjust = 0.5)) + xlab("") + ggtitle("INPHARED")  +
+scale_x_discrete(limits = levels_order, drop = FALSE, labels = c(
+      'Lytic Sporulating Bacillota'    = 'Lytic',
+      'Temperate Sporulating Bacillota'     = 'Temperate',
+      'Lytic Nonsporulating Bacillota' = 'Lytic',
+      'Temperate Nonsporulating Bacillota'  = 'Temperate',
+      'Lytic Non-Bacillota' = 'Lytic',
+      'Temperate Non-Bacillota'  = 'Temperate'
+    )) +
+  coord_cartesian(clip = "off") +
+  theme(
+    legend.position = "right",
+    plot.margin = margin(10, 10, 60, 10)
+  ) 
+
+
+rel
+
+
+spor_label    <- textGrob("Sporulating \n Bacilliota Host", gp = gpar(fontsize = 20, fontface = "bold"), x = 1/6, y = -0.15, just = "center")
+nonspor_label <- textGrob("Non-Sporulating \n Bacilliota Host", gp = gpar(fontsize = 20, fontface = "bold"), x = 3/6, y = -0.15, just = "center")
+other_label   <- textGrob("Non-Bacilliota \n Host", gp = gpar(fontsize = 20, fontface = "bold"), x = 5/6, y = -0.15, just = "center")
+
+vp <- rel + annotation_custom(spor_label) + annotation_custom(nonspor_label) + annotation_custom(other_label)
+
+vp
+
+ggsave(here("03_func/figs/PartitioningGenes_Bar.png"), width=15, height=7)
+
+
+```
+
+
+

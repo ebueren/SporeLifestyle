@@ -1,0 +1,590 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(emmeans)
+library(ggsignif)
+library(here)
+library(tidyverse)
+library(grid)
+library(PNWColors)
+pal2 <- c("#015b58", "#5962b5")
+pal2.flip <- c("#5962b5", "#015b58")
+
+theme_eb <- theme_classic(base_size = 16) +
+  theme(
+    plot.title = element_text(size = 20),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 14)
+  )
+
+theme_set(theme_eb)
+pal3 <- pnw_palette("Sunset", 3, type=c("discrete"))
+pal7 <-  pnw_palette("Starfish", 7, type=c("discrete"))
+
+
+df <- read.csv(here("00_data", "01_desc", "CompleteMetadata.csv"), row.names=1)
+df <- subset(df, df$dataset=="INPHARED" | df$dataset=="UHGV")
+#df <- subset(df, df$newgtdb_Phylum=="Bacillota")
+here::here()
+
+### note the quartz script needs to be fixed, the headers are janky and wrong (had to be manually fixed)
+
+
+
+##Nnote the name says parS_stormo, b ut that is a typo -- this is 0A stormo
+#zeroA <- read.csv(here("00_data/02_motifs/0A_Stormo/01_INPH_hmm0ParS_Stormo.csv"))
+zeroA.uh <- read.csv(here("00_data/02_motifs/0A_MX/02b_UHGV_hmm00A_MX000019.csv"))
+zeroA.in <- read.csv(here("00_data/02_motifs/0A_MX/01b_INPH_hmm00A_MX000019.csv"))
+zeroA <- rbind(zeroA.uh, zeroA.in)
+
+zeroA$q.value<- as.numeric(zeroA$q.value)
+zeroA$p.value<- as.numeric(zeroA$p.value)
+zeroA$score<- as.numeric(zeroA$score)
+
+
+
+### remove any duplicate motifs (occasionally a motif will be a palindromic and hit both + and - strands) 
+zeroA <- zeroA %>%
+  group_by(sequence_name, start, stop) %>%  # group by coordinates
+  slice_max(order_by = score, n = 1) %>%    # keep only the row with highest score
+  ungroup()
+
+### phi3T KY030782, spbeta AF020713
+## redrock (actino phage with ParABS) GU339467, uses zeroA sites but of a different type than sporulation zeroA
+
+zeroA <- zeroA %>% separate(X, into=c("Accession2"), sep="\\.", extra="drop", remove =FALSE)
+
+zeroA$sequence_name[is.na(zeroA$sequence_name)] <- "no_hit"
+zeroA$sequence_name <- ifelse(zeroA$sequence_name=="no_hit", zeroA$Accession2, zeroA$sequence_name)
+```
+
+
+```{r}
+#inph <- select(inph, Accession, Host, Genome.Length..bp., gtdb_f, f_spor, newgtdb_Phylum,  host_phage_spor, phage_type, sporulation, lifestyle, nice)
+all <- merge(df, zeroA, by.x="Accession", by.y="sequence_name", all.x=TRUE, all.y=FALSE)
+all$motif_id[is.na(all$motif_id)] <- "no_hit"
+
+#all$hit <- ifelse(all$motif_id=="0A_STORMO", 1, 0)
+all$hit <- ifelse(all$motif_id=="0A_MX000019", 1, 0)
+all$p.value <- ifelse(all$hit==1, all$p.value, 1)
+all$q.value <- ifelse(all$hit==1, all$q.value, 1)
+all$q.value[is.na(all$q.value)] <- 1
+all$p.value[is.na(all$p.value)] <- 1
+
+all$q.adjust <- p.adjust(all$p.value, method = "BH")
+```
+
+```{r}
+
+#### Q FILTERING
+zeroA.qual <- all
+zeroA.qual <- subset(zeroA.qual, zeroA.qual$phage_spor_host!="Lytic Bacillota" & zeroA.qual$phage_spor_host!="Temperate Bacillota") ###weird error
+
+#zeroA.qual$hit <- ifelse(zeroA.qual$q.value<1e-4, 1, 0)
+zeroA.qual$hit <- ifelse(zeroA.qual$q.adjust<=1e-3& zeroA.qual$p.value<=1e-6, 1, 0)
+
+
+## create binary list of phages w/ and w/out ParS hits
+boxA.pos <- zeroA.qual %>% group_by(Accession, dataset, phage_spor_host) %>%
+  summarise(total.boxA.hits = sum(hit), pos.boxA.hit = max(hit), .groups = "drop")
+
+#boxA.pos |> 
+#  group_by(phage_spor_host) |> 
+#  summarise(n_obs = n())
+
+
+
+
+boxA.sanity <- zeroA.qual %>%
+  summarise(total.boxA.hits = sum(hit), pos.boxA.hit = max(hit), .groups = "drop") #%>% 
+
+only.pos <- subset(boxA.sanity, boxA.sanity$total.boxA.hits>0)
+
+
+
+boxA.summary <- boxA.pos %>% 
+  group_by(phage_spor_host, dataset) %>% 
+  summarise(
+    total_boxA_hits = sum(total.boxA.hits, na.rm = TRUE),
+    Phage_has_boxA = sum(pos.boxA.hit, na.rm = TRUE),
+    total.phage = n(),
+    .groups = "drop"
+  ) %>% 
+  mutate(boxA.pos.perc = Phage_has_boxA / total.phage * 100)
+
+
+boxA.bin <- boxA.pos[,c(1,2,4)]
+
+
+```
+
+
+
+
+
+```{r}
+ParS.hits <- subset(zeroA.qual, zeroA.qual$hit==1)
+## find center of motif 
+ParS.hits$motif.mdpt <- round((ParS.hits$stop + ParS.hits$start )/ 2, 0)
+
+func.in <- read.csv(here("00_data", "03_func_data", "output", "inph_functional_data.csv"),row.name=1)
+func.uh <- read.csv(here("00_data", "03_func_data", "output", "UHGV_functional_data.csv"),row.name=1)
+func <- rbind(func.in, func.uh)
+func1 <- select(func, protein_id, Accession, best_hit, gene_start, gene_end, gene_length, gene_strand, gene_gc )
+
+##make strand symbol into -1 / 1
+ParS.hits2 <- select(ParS.hits, Accession, motif_id, start, stop, motif.mdpt,score, strand)
+ParS.hits2$strand <- ifelse(ParS.hits2$strand=="-", -1, 1)
+
+
+```
+
+
+```{r}
+library(data.table)
+#ParS.hits2 <- select(ParS.hits, Accession, motif_id, start, stop, motif.mdpt,score, strand)
+#ParS.hits2$strand <- ifelse(ParS.hits2$strand=="-", -1, 1)
+
+
+ParS.hits2 <- ParS.hits2 %>%
+  group_by(Accession) %>%
+  mutate(motif_id = paste0(Accession, "_ParS_", sprintf("%02d", row_number()))) %>%
+  ungroup()
+
+
+motifs <- select(ParS.hits2, Accession, start, stop, strand, motif_id)
+colnames(motifs) <- c("PHAGE", "motif_start", "motif_end", "motif_strand", "motif_id")
+motifs <- as.data.table(motifs)
+
+ORFs <- select(func1, Accession, gene_start, gene_end, protein_id, gene_strand)
+
+colnames(ORFs) <- c("PHAGE", "OSTART", "OEND", "ORF_ID", "orf_strand")
+ORFs   <- as.data.table(ORFs)
+
+setkey(ORFs, PHAGE, OSTART, OEND, orf_strand)
+
+
+library(data.table)
+
+find_motifs_flanks_final <- function(motifs, orfs, 
+                                     motif_id_col = "motif_id",
+                                     motif_strand_col = "motif_strand",
+                                     orf_strand_col = "orf_strand",
+                                     require_same_strand = FALSE) {
+  # defensive copies
+  mot_dt <- as.data.table(motifs)
+  orf_dt <- as.data.table(orfs)
+
+  # build motif table keeping motif_id and optional strand
+  M <- mot_dt[, .(motif_id = get(motif_id_col), PHAGE, motif_start, motif_end)]
+  M[, MID := floor((motif_start + motif_end) / 2)]
+
+  if (motif_strand_col %in% names(mot_dt)) M[, motif_strand := as.character(mot_dt[[motif_strand_col]])]
+  else M[, motif_strand := NA_character_]
+
+  # build ORF table keeping strand if present
+  G <- orf_dt[, .(PHAGE, OSTART, OEND, ORF_ID)]
+  if (orf_strand_col %in% names(orf_dt)) G[, orf_strand := as.character(orf_dt[[orf_strand_col]])]
+  else G[, orf_strand := NA_character_]
+
+  # optionally require same strand by creating a shared STRAND column
+  if (require_same_strand) {
+    M[, STRAND := motif_strand]
+    G[, STRAND := orf_strand]
+
+    cont <- G[M, on = .(PHAGE, STRAND, OSTART <= MID, OEND >= MID), nomatch = 0L, allow.cartesian = TRUE]
+    cont_agg <- cont[, .(
+      CONTAINING_ORF = paste(unique(ORF_ID), collapse = ","),
+      CONTAINING_STRAND = paste(unique(STRAND), collapse = ",")
+    ), by = .(motif_id)]
+
+    up <- G[M, on = .(PHAGE, STRAND, OEND < MID), mult = "last",
+            .(motif_id = i.motif_id, UP_ORF = ORF_ID, UP_STRAND = STRAND, UP_DIST = pmax(0L, i.MID - OEND))]
+    down <- G[M, on = .(PHAGE, STRAND, OSTART > MID), mult = "first",
+               .(motif_id = i.motif_id, DOWN_ORF = ORF_ID, DOWN_STRAND = STRAND, DOWN_DIST = pmax(0L, OSTART - i.MID))]
+  } else {
+    cont <- G[M, on = .(PHAGE, OSTART <= MID, OEND >= MID), nomatch = 0L, allow.cartesian = TRUE]
+    cont_agg <- cont[, .(
+      CONTAINING_ORF = paste(unique(ORF_ID), collapse = ","),
+      CONTAINING_STRAND = paste(unique(orf_strand), collapse = ",")
+    ), by = .(motif_id)]
+
+    up <- G[M, on = .(PHAGE, OEND < MID), mult = "last",
+            .(motif_id = i.motif_id, UP_ORF = ORF_ID, UP_STRAND = orf_strand, UP_DIST = pmax(0L, i.MID - OEND))]
+    down <- G[M, on = .(PHAGE, OSTART > MID), mult = "first",
+               .(motif_id = i.motif_id, DOWN_ORF = ORF_ID, DOWN_STRAND = orf_strand, DOWN_DIST = pmax(0L, OSTART - i.MID))]
+  }
+
+  # assemble (left join so motifs with no matches remain)
+  out <- merge(M, cont_agg, by = "motif_id", all.x = TRUE)
+  out <- merge(out, up, by = "motif_id", all.x = TRUE)
+  out <- merge(out, down, by = "motif_id", all.x = TRUE)
+
+  # final tidy columns, ensure character NAs
+  out[, .(motif_id,
+          PHAGE,
+          motif_start,
+          motif_end,
+          MID,
+          motif_strand = if ("motif_strand" %in% names(out)) motif_strand else NA_character_,
+          CONTAINING_ORF = ifelse(is.na(CONTAINING_ORF), NA_character_, CONTAINING_ORF),
+          CONTAINING_STRAND = ifelse(is.na(CONTAINING_STRAND), NA_character_, CONTAINING_STRAND),
+          UP_ORF = ifelse(is.na(UP_ORF), NA_character_, UP_ORF),
+          UP_STRAND = ifelse(is.na(UP_STRAND), NA_character_, UP_STRAND),
+          UP_DIST,
+          DOWN_ORF = ifelse(is.na(DOWN_ORF), NA_character_, DOWN_ORF),
+          DOWN_STRAND = ifelse(is.na(DOWN_STRAND), NA_character_, DOWN_STRAND),
+          DOWN_DIST)]
+}
+
+
+res <- find_motifs_flanks_final(motifs, ORFs)
+
+```
+
+```{r}
+res$hit <- 1
+res <- select(res, motif_start, motif_end, MID, PHAGE, motif_id, CONTAINING_ORF, UP_ORF, DOWN_ORF, hit)
+
+res.contain <- select(res, PHAGE, motif_id, CONTAINING_ORF, hit)
+res.contain <- na.omit(res.contain)
+
+
+res.contain.multigene <- res.contain[grepl(",", res.contain$CONTAINING_ORF), ]
+res.contain.multigene <- res.contain.multigene %>% separate(CONTAINING_ORF, into=c("Cont1", "Cont2"), sep = ",", extra="merge", remove = TRUE)
+res.contain.multigene <- res.contain.multigene %>% pivot_longer(cols=c("Cont1", "Cont2"),  names_to = "gene")
+res.contain.multigene <- select(res.contain.multigene, PHAGE, motif_id, value, hit)
+colnames(res.contain.multigene) <- c("PHAGE", "motif_id", "CONTAINING_ORF", "hit")
+
+res.contain <- res.contain[!grepl(",", res.contain$CONTAINING_ORF), ]
+
+res.contain <- rbind(res.contain, res.contain.multigene)
+
+
+res.flank1 <- select(res, PHAGE, motif_id, UP_ORF, hit)
+colnames(res.flank1) <- c("PHAGE", "motif_id", "FLANK_ORF", "hit")
+res.flank2 <- select(res, PHAGE, motif_id, DOWN_ORF, hit )
+colnames(res.flank2) <- c("PHAGE", "motif_id", "FLANK_ORF", "hit")
+res.flank <- rbind(res.flank1, res.flank2)
+res.flank <- na.omit(res.flank)
+
+
+
+
+ParS.contain <- res.contain %>% 
+  group_by(CONTAINING_ORF) %>% 
+  summarise(
+    total_containParS = sum(hit, na.rm = TRUE),
+    gene_containsParS = sum(hit, na.rm = TRUE),
+    .groups = "drop"
+  ) 
+
+ParS.contain <- ParS.contain %>% rename(protein_id = CONTAINING_ORF)
+
+
+ParS.flanks <- res.flank %>% 
+  group_by(FLANK_ORF) %>% 
+  summarise(
+    total_flankParS = sum(hit, na.rm = TRUE),
+    gene_hasflankParS = sum(hit, na.rm = TRUE),
+    .groups = "drop"
+  ) 
+
+ParS.flanks <- ParS.flanks %>% rename(protein_id = FLANK_ORF)
+
+
+ParS.hits.merged <- bind_rows(ParS.contain, ParS.flanks)
+ParS.hits.merged[is.na(ParS.hits.merged)] <- 0
+
+ParS.hits.merged$gene_assocParS <- 1
+```
+
+```{r}
+ParS.func <- merge(ParS.hits.merged, func, by.x="protein_id", all.x=TRUE, all.y=TRUE)
+
+
+ParS.func[is.na(ParS.func)] <- 0
+
+
+ParS.func.bin <- subset(ParS.func, ParS.func$newgtdb_Phylum=="Bacillota" & ParS.func$f_spor==TRUE)# & ParS.func$gene_assocParS!=0)
+
+#ParS.func.bin <- subset(ParS.func, ParS.func$newgtdb_Phylum!="Bacillota" & ParS.func$gene_assocParS!=0)
+
+ParS.func.bin <- select(ParS.func.bin, protein_id, gene_assocParS, best_hit, gene_name, DetailedCat, lifestyle, SporHitRelax, spor_gene_name )
+
+ParS.func.bin.clean <- ParS.func.bin
+```
+
+```{r}
+prot.dataset <- select(func,protein_id,dataset)
+ParS.func.bin <- merge(ParS.func.bin.clean, prot.dataset, by="protein_id", all.x=TRUE, all.y=FALSE)
+
+
+source(here("utility-scripts", "03_func_fishertest_genecounts.R"),)
+
+
+inph.list <-subset(ParS.func.bin, ParS.func.bin$dataset=="INPHARED")
+uhgv.list <-subset(ParS.func.bin, ParS.func.bin$dataset=="UHGV")
+inph.list$gene_assocParS <- ifelse(inph.list$gene_assocParS==0, "NoParS", "ParSHit")
+
+
+
+inph.sum <- inph.list %>%
+  group_by(lifestyle, DetailedCat, gene_assocParS) %>%
+  summarise(prots.by.phage = n(), .groups = "drop") 
+
+inph.parsum <- inph.list %>%
+  group_by(lifestyle, DetailedCat, gene_assocParS) %>%
+  summarise(prots.by.phage = n(), .groups = "drop") 
+
+ inph.sum <- inph.list %>%
+  count(lifestyle, DetailedCat, gene_assocParS, name = "prots.by.phage") %>%
+  group_by(lifestyle, DetailedCat) %>%
+  mutate(total_in_category = sum(prots.by.phage)) %>%
+  ungroup()
+ 
+ inph.sum$prop <- inph.sum$prots.by.phage/inph.sum$total_in_category*100
+ 
+ 
+# inph.lytic <- subset(inph.sum, inph.sum$lifestyle=="Lytic")
+  
+ inph.ParShit <- subset(inph.sum, inph.sum$gene_assocParS=="ParSHit")
+ 
+ 
+ rel <- inph.ParShit %>%
+  ggplot(aes(DetailedCat, prop, fill= lifestyle)) +
+  #geom_point(shape = 21, size = 2) +
+  geom_bar(stat="identity",  position=position_dodge()) +
+  ylab("% with 0A Site") +
+  theme_bw() +
+  labs(color = "Lifestyle", fill = "Phage Lifestyle") +
+  scale_color_hue(labels = c("Virulent", "Temperate")) + scale_fill_manual(labels = c ("Lytic", "Temperate"), values=pal2.flip) +theme(axis.text.x = element_text(angle = 60, hjust = 1)) + xlab("Gene Category") + ggtitle("INPHARED") #+ coord_flip()
+
+
+rel
+
+```
+
+```{r}
+prot.dataset <- select(func,protein_id,dataset)
+ParS.func.bin <- merge(ParS.func.bin.clean, prot.dataset, by="protein_id", all.x=TRUE, all.y=FALSE)
+
+
+source(here("utility-scripts", "03_func_fishertest_genecounts.R"),)
+
+
+inph.list <-subset(ParS.func.bin, ParS.func.bin$dataset=="INPHARED")
+uhgv.list <-subset(ParS.func.bin, ParS.func.bin$dataset=="UHGV")
+
+inph.list <- prepare_gene_counts(inph.list, phage_col = "protein_id", gene_col  = "gene_name", lifestyle_col = "lifestyle", cog_col = "DetailedCat", temp_label = "Temperate", lytic_label = "Lytic")
+uhgv.list <- prepare_gene_counts(uhgv.list, phage_col = "protein_id", gene_col  = "gene_name", lifestyle_col = "lifestyle", cog_col = "DetailedCat", temp_label = "Temperate", lytic_label = "Lytic")
+
+#combined.list <- prepare_gene_counts(ParS.func.bin, phage_col = "protein_id", gene_col  = "gene_name", lifestyle_col = "lifestyle", cog_col = "DetailedCat", temp_label = "Temperate", lytic_label = "Lytic")
+
+
+
+inph.gene_counts    <- inph.list$gene_counts
+inph.total_temp     <- inph.list$total_temp
+inph.total_lytic    <- inph.list$total_lytic
+inph_df <- inph.list$df_genome_gene
+
+inph_df <- inph_df %>%
+  group_by(gene_name, COGlet) %>%
+  summarise(prots.by.phage = n(), .groups = "drop")
+
+
+
+inph.fisher <- compute_fisher_minimal(
+  inph.gene_counts,
+  inph.total_temp,
+  inph.total_lytic
+)
+
+inph.fisher$dataset <- "INPHARED"
+
+
+UHGV.gene_counts    <- uhgv.list$gene_counts
+UHGV.total_temp     <- uhgv.list$total_temp
+UHGV.total_lytic    <- uhgv.list$total_lytic
+uhgv_df <- uhgv.list$df_genome_gene
+
+uhgv_df <- uhgv_df %>%
+  group_by(gene_name, COGlet) %>%
+  summarise(prots.by.phage = n(), .groups = "drop")
+
+
+
+UHGV.fisher <- compute_fisher_minimal(
+  UHGV.gene_counts,
+  UHGV.total_temp,
+  UHGV.total_lytic
+)
+
+UHGV.fisher$dataset <- "UHGV"
+
+
+
+all.fisher <- bind_rows(inph.fisher, UHGV.fisher)#, combined.fisher)
+all.fisher$p.adj <- p.adjust(all.fisher$p_two_sided, method = "BH")
+
+#all.fisher <- subset(all.fisher, all.fisher$gene_name!="lytD" & all.fisher$gene_name!="nlpD")
+p.signif <- 1e-4
+
+k_threshold <- 10
+
+all.fisher <- subset(all.fisher, all.fisher$p.adj<p.signif & all.fisher$prevalence>k_threshold)
+
+#all.fisher <- merge(all.fisher, cog_df, by="gene_name", all.x=TRUE, all.y=FALSE)
+TEST <- ggplot(all.fisher, aes(x = dataset, y = reorder(gene_name, plot_OR))) +
+  geom_point(aes(size = plot_OR,
+                 color = direction),
+             alpha = 0.7) +
+
+  scale_color_manual(values = c(
+    "Temperate" = "#1f78b4",
+    "Lytic" = "#e31a1c",
+    "Equal" = "grey70"
+  )) +
+  
+  labs(
+    y = "Gene Flanked/Containing ParS",
+    color = "Enriched in",
+    size = "|log2(OR)|"
+  ) +
+  
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),
+  #  axis.text.x  = element_blank(),
+    axis.ticks.x = element_blank()
+  ) #+ facet_wrap(~stage, scales = "free_y")
+
+TEST
+
+
+
+```
+
+
+```{r}
+ParS.func.bin$DetailedCat2 <- ParS.func.bin$DetailedCat
+
+#ParS.func.bin$DetailedCat2 <- ifelse(ParS.func.bin$SporHitRelax==TRUE, "Sporulation", ParS.func.bin$DetailedCat2)
+
+inph.list <-subset(ParS.func.bin, ParS.func.bin$dataset=="INPHARED")
+uhgv.list <-subset(ParS.func.bin, ParS.func.bin$dataset=="UHGV")
+
+
+inph.list <- prepare_gene_counts(inph.list, phage_col = "protein_id", gene_col  = "DetailedCat2", lifestyle_col = "lifestyle", cog_col = "gene_name", temp_label = "Temperate", lytic_label = "Lytic")
+
+uhgv.list <- prepare_gene_counts(uhgv.list, phage_col = "protein_id", gene_col  = "DetailedCat2", lifestyle_col = "lifestyle", cog_col = "gene_name", temp_label = "Temperate", lytic_label = "Lytic")
+
+
+#combined.list <- prepare_gene_counts(ParS.func.bin, phage_col = "protein_id", gene_col  = "DetailedCat2", lifestyle_col = "lifestyle", cog_col = "gene_name", temp_label = "Temperate", lytic_label = "Lytic")
+
+
+
+inph.gene_counts    <- inph.list$gene_counts
+inph.total_temp     <- inph.list$total_temp
+inph.total_lytic    <- inph.list$total_lytic
+inph_df <- inph.list$df_genome_gene
+
+inph_df <- inph_df %>%
+  group_by(gene_name, COGlet) %>%
+  summarise(prots.by.phage = n(), .groups = "drop")
+
+
+
+inph.fisher <- compute_fisher_minimal(
+  inph.gene_counts,
+  inph.total_temp,
+  inph.total_lytic
+)
+
+
+
+
+inph.gene_counts    <- inph.list$gene_counts
+inph.total_temp     <- inph.list$total_temp
+inph.total_lytic    <- inph.list$total_lytic
+inph_df <- inph.list$df_genome_gene
+
+inph_df <- inph_df %>%
+  group_by(gene_name, COGlet) %>%
+  summarise(prots.by.phage = n(), .groups = "drop")
+
+
+
+inph.fisher <- compute_fisher_minimal(
+  inph.gene_counts,
+  inph.total_temp,
+  inph.total_lytic
+)
+
+inph.fisher$dataset <- "INPHARED"
+
+
+UHGV.gene_counts    <- uhgv.list$gene_counts
+UHGV.total_temp     <- uhgv.list$total_temp
+UHGV.total_lytic    <- uhgv.list$total_lytic
+uhgv_df <- uhgv.list$df_genome_gene
+
+uhgv_df <- uhgv_df %>%
+  group_by(gene_name, COGlet) %>%
+  summarise(prots.by.phage = n(), .groups = "drop")
+
+
+
+UHGV.fisher <- compute_fisher_minimal(
+  UHGV.gene_counts,
+  UHGV.total_temp,
+  UHGV.total_lytic
+)
+
+UHGV.fisher$dataset <- "UHGV"
+
+
+
+all.fisher <- bind_rows(inph.fisher, UHGV.fisher)#, combined.fisher)
+all.fisher$p.adj <- p.adjust(all.fisher$p_two_sided, method = "BH")
+
+#all.fisher <- subset(all.fisher, all.fisher$gene_name!="lytD" & all.fisher$gene_name!="nlpD")
+p.signif <- 1e-4
+
+k_threshold <- 10
+
+all.fisher <- subset(all.fisher, all.fisher$p.adj<p.signif & all.fisher$prevalence>k_threshold)
+
+TEST <- ggplot(all.fisher, aes(x = dataset, y = reorder(gene_name, plot_OR))) +
+  geom_point(aes(size = plot_OR,
+                 color = direction),
+             alpha = 0.7) +
+
+  scale_color_manual(values = c(
+    "Temperate" = "#1f78b4",
+    "Lytic" = "#e31a1c",
+    "Equal" = "grey70"
+  )) +
+  
+  labs(
+    y = "Gene Flanked/Containing ParS",
+    color = "Enriched in",
+    size = "|log2(OR)|"
+  ) +
+  
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),
+  #  axis.text.x  = element_blank(),
+    axis.ticks.x = element_blank()
+  ) #+ facet_wrap(~stage, scales = "free_y")
+
+TEST
+
+```
