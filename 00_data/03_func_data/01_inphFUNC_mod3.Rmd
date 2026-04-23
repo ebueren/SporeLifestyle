@@ -1,0 +1,252 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+#### INPHARED functional clean, test case
+#OK040787
+#OR846603
+#OR846716
+OR846600
+OR846722
+
+geNomad end-to-end --disable-find-proviruses <input_fasta> <output_dir> <database>
+
+
+```{r}
+library(tidyverse)
+library(here)
+library(dplyr)
+here()
+
+dr_here()
+
+ORFs <- read.delim2(here("00_data", "03_func_data", "all_prot_ORFs", "prot_sites", "14Apr2025_virus_genes.tsv"))
+
+ORFs <- select(ORFs, gene, start, end, length, strand, gc_content)
+
+ORFs <- ORFs %>% rename(protein_id = gene, gene_start = start,  gene_end = end, gene_strand=strand, gene_gc = gc_content, gene_length=length)
+
+ORFs$Accession <- sub("^([^_]+).*", "\\1", ORFs$protein_id)
+
+meta.func <-  read.csv(here("00_data", "03_func_data", "func_metadata", "mastercog_phrog.csv"), row.names=1)
+
+#PHROG.meta <- read.delim2(here("00_data", "03_func_data", "func_metadata", "phrog_annot_v4.tsv"))
+
+PHROG <- read.delim2(here("00_data", "03_func_data", "metacerb", "indiv_dbs", "PHROG", "INPHARED_metacerb_PHROG.tsv"))
+
+## keep only highest scoring phrog hits, not sure why duplicate. re-run?
+PHROG$score <- as.numeric(PHROG$score)
+PHROG_clean <- PHROG[order(PHROG$target, -PHROG$score), ]
+PHROG_clean <- PHROG_clean[!duplicated(PHROG_clean$target), ]
+PHROG <- PHROG_clean
+colnames(PHROG) <- paste0("phrog_", colnames(PHROG))
+duplicated_rows <- PHROG[duplicated(PHROG$target), ]
+
+prot_loc <- select(PHROG_clean, target, ORF_start, ORF_end)
+
+KEGG  <- read.csv(here("00_data", "03_func_data","metacerb", "indiv_dbs", "SporulationKEGG_metacerb.csv"), row.names=1)
+KEGG <- subset(KEGG, KEGG$data.set=="INPHARED")
+KEGG_clean <- KEGG[order(KEGG$target, -KEGG$score), ]
+KEGG_clean <- KEGG_clean[!duplicated(KEGG_clean$target), ]
+KEGG <- KEGG_clean
+#duplicated_rows <- KEGG[duplicated(KEGG$target), ]
+
+colnames(KEGG) <- paste0("kegg_", colnames(KEGG))
+
+
+
+DRAM  <- read.csv(here("00_data", "03_func_data", "DRAM", "DRAM_sporhits_IDs.csv"), row.names=1)
+DRAM <- subset(DRAM, DRAM$data.set=="INPHARED")
+#duplicated_rows <- DRAM[duplicated(DRAM$target), ]
+colnames(DRAM) <- paste0("dram_", colnames(DRAM))
+
+COG  <- read.delim2(here("00_data", "03_func_data", "metacerb", "indiv_dbs", "COG", "INPHARED_metacerb_COG.tsv"))
+COG$score <- as.numeric(COG$score)
+COG_clean <- COG[order(COG$target, -COG$score), ]
+COG_clean <- COG_clean[!duplicated(COG_clean$target), ]
+COG <- COG_clean
+colnames(COG) <- paste0("cog_", colnames(COG))
+
+```
+
+```{r}
+
+
+
+df <- read.csv(here("00_data", "01_desc", "CompleteMetadata.csv"), row.names=1)
+df <- subset(df, df$dataset=="INPHARED")
+
+
+PHROG$Accession <- sub("^([^_]+).*", "\\1", PHROG$phrog_target)
+
+
+###only keep phages which pass QC in step 01
+#phage <- merge(ORFs, df, by="Accession", all.x=FALSE, all.y=TRUE)
+#phage <- select(phage, Accession, protein_id)
+#PHROG <- merge(phage, PHROG, by.x="protein_id", by.y="phrog_target", all.x=TRUE, all.y=FALSE)
+
+
+PHROG <- merge(df, PHROG, by.x="Accession", by.y="Accession", all.x=TRUE, all.y=FALSE)
+
+```
+
+```{r}
+PHROG.meta <- merge(PHROG, meta.func, by.x="phrog_best_hit", by.y="ID", all.x=TRUE, all.y=FALSE)
+PHROG.meta[is.na(PHROG.meta)] <- "NO_HIT"
+
+PHROG.meta$phrog_best_hit <- ifelse(PHROG.meta$phrog_best_hit=="", "NO_HIT", PHROG.meta$phrog_best_hit)
+
+
+
+PHROG.meta$phrog_best_hit <- ifelse(PHROG.meta$DetailedCat=="unknown function", "NO_HIT", PHROG.meta$phrog_best_hit)
+
+PHROG.meta$phrog_best_hit <- ifelse(PHROG.meta$DetailedCat=="moron, auxiliary metabolic gene and host takeover", "NO_HIT", PHROG.meta$phrog_best_hit)
+
+PHROG.meta$phrog_best_hit <- ifelse(PHROG.meta$DetailedCat=="other", "NO_HIT", PHROG.meta$phrog_best_hit)
+
+PHROG.meta <- select(PHROG.meta, COGlet, phrog_best_hit, protein_id, Accession)
+
+PHROG.meta.hits <- subset(PHROG.meta, PHROG.meta$phrog_best_hit!="NO_HIT")
+
+PHROG.meta.hits <- PHROG.meta.hits %>% rename(best_hit = phrog_best_hit)
+
+
+CheckCOG <- subset(PHROG.meta, PHROG.meta$phrog_best_hit=="NO_HIT")
+
+CheckCOG <- select(CheckCOG, protein_id, Accession)
+
+```
+
+
+```{r}
+
+COG1 <- merge(CheckCOG, COG, by.x="protein_id", by.y="cog_target", all.x=TRUE, all.y=FALSE)
+
+duplicated_rows <- COG1[duplicated(COG1$protein_id), ]
+
+
+
+COG1[is.na(COG1)] <- "NO_HIT"
+COG1$cog_best_hit <- ifelse(COG1$cog_best_hit=="", "NO_HIT", COG1$cog_best_hit)
+
+COG.meta <- merge(COG1, meta.func, by.x="cog_best_hit", by.y="ID", all.x=TRUE, all.y=FALSE)
+
+COG.meta.hits <- select(COG.meta, COGlet, cog_best_hit, protein_id, Accession)
+
+COG.meta.hits <- COG.meta.hits %>% rename(best_hit = cog_best_hit)
+
+
+hits <- bind_rows(PHROG.meta.hits, COG.meta.hits)
+hits <-select(hits, best_hit, protein_id, Accession)
+
+hits.meta <- merge(hits, meta.func, by.x="best_hit", by.y="ID", all.x=TRUE, all.y=FALSE)
+
+```
+
+### NOW ADD in sporulation info
+
+```{r}
+
+spor.hit.master <- read.csv(here("00_data", "03_func_data", "func_metadata", "all_sporProt_IDs.csv"), header=TRUE, row.name=1)
+spor.hit.master.abb <- select(spor.hit.master, ID, sporprot)
+spor.hit.master.abb$sporprot <- TRUE
+
+
+hits.meta.spor <- merge(hits.meta, spor.hit.master.abb, by.x="best_hit", by.y="ID", all.x=TRUE, all.y=FALSE)
+
+hits.meta.spor$sporprot[is.na(hits.meta.spor$sporprot)] <- FALSE
+
+```
+### check for dram spor hits
+
+```{r}
+
+
+DRAM <- select(DRAM, dram_spor_db_id, dram_protein_id, dram_spor_db_identity, dram_spor_db_bitScore, dram_spor_db_eVal)
+DRAM$DRAM_spor_hit <- TRUE
+
+#SPOR.meta <- read.csv(here("00_data", "03_func_data", "func_metadata", "UniprotSporGerm_Master.csv"), row.names=1)
+
+combined.dram <- merge(hits.meta.spor, DRAM, by.x="protein_id", by.y="dram_protein_id", all.x=TRUE, all.y=FALSE)
+
+combined.dram$DRAM_spor_hit[is.na(combined.dram$DRAM_spor_hit)] <- FALSE
+```
+
+### add in kegg hits
+```{r}
+
+kegg.meta <- read.csv(here("00_data", "03_func_data", "func_metadata", "viral_sporGenes.csv"))
+
+KEGG <- select(KEGG, kegg_best_hit, kegg_target, kegg_evalue, kegg_score)
+KEGG$KEGG_spor_hit <- TRUE
+
+combined.kegg <- merge(combined.dram, KEGG, by.x="protein_id", by.y="kegg_target", all.x=TRUE, all.y=FALSE)
+                       
+combined.kegg$KEGG_spor_hit[is.na(combined.kegg$KEGG_spor_hit)] <- FALSE
+                      
+```
+
+
+```{r}
+combined.spor <- combined.kegg
+###RELAX SPORULATION 
+combined.spor$SporHitRelax <- FALSE
+combined.spor$SporHitRelax <- ifelse(combined.spor$sporprot==TRUE | combined.spor$KEGG_spor_hit==TRUE | combined.spor$DRAM_spor_hit==TRUE, TRUE, FALSE)
+
+
+## FILT SPORULATION
+combined.spor$SporHit <- FALSE
+
+combined.spor$SporHit <- ifelse(combined.spor$sporprot==TRUE & combined.spor$KEGG_spor_hit==TRUE, TRUE, combined.spor$SporHit)
+combined.spor$SporHit <- ifelse(combined.spor$sporprot==TRUE & combined.spor$DRAM_spor_hit==TRUE, TRUE, combined.spor$SporHit)
+combined.spor$SporHit <- ifelse(combined.spor$KEGG_spor_hit==TRUE & combined.spor$DRAM_spor_hit==TRUE, TRUE, combined.spor$SporHit)
+
+##mark all spor hits as no db (no_hit)
+combined.spor$best_spor_db <- "NO_HIT"
+
+combined.spor$best_spor_db <- ifelse(combined.spor$SporHitRelax==TRUE & combined.spor$sporprot==TRUE, combined.spor$source, combined.spor$best_spor_db)
+
+combined.spor$best_spor_db <- ifelse(combined.spor$SporHitRelax==TRUE & combined.spor$KEGG_spor_hit==TRUE, "KEGG", combined.spor$best_spor_db)
+
+combined.spor$best_spor_db <- ifelse(combined.spor$SporHitRelax==TRUE & combined.spor$DRAM_spor_hit==TRUE, "DRAM", combined.spor$best_spor_db)
+
+combined.spor$best_spor_ID <- "NO_HIT"
+
+combined.spor$best_spor_ID <- ifelse(combined.spor$best_spor_db=="COG" | combined.spor$best_spor_db=="PHROG", combined.spor$best_hit, combined.spor$best_spor_ID)
+
+combined.spor$best_spor_ID <- ifelse(combined.spor$best_spor_db=="KEGG", combined.spor$kegg_best_hit, combined.spor$best_spor_ID)
+
+combined.spor$best_spor_ID <- ifelse(combined.spor$best_spor_db=="DRAM", combined.spor$dram_spor_db_id, combined.spor$best_spor_ID)
+
+```
+
+
+add in spor metadata
+```{r} 
+combined2 <- select(combined.spor, Accession, protein_id, COGlet, best_hit, gene_name, gene_desc, gene_cat, COG.broad, Cog.cat, Nog.abbrev, Nog.new, DetailedCat, source, sporprot, DRAM_spor_hit, KEGG_spor_hit, SporHitRelax, SporHit, best_spor_db, best_spor_ID )
+
+spor.hit.master <- read.csv(here("00_data", "03_func_data", "func_metadata", "all_sporProt_IDs.csv"), header=TRUE, row.name=1)
+colnames(spor.hit.master) <- paste0("spor_", colnames(spor.hit.master))
+spor.hit.master <- select(spor.hit.master, spor_ID, spor_gene_name, spor_gene_desc)
+
+
+combined2 <- merge(combined2, spor.hit.master, by.x="best_spor_ID", by.y="spor_ID", all.x=TRUE, all.y=FALSE)
+
+combined2[is.na(combined2)] <- "NO_HIT"
+
+combined2 <- select(combined2, Accession, protein_id, COGlet, best_hit, gene_name, gene_desc, gene_cat, COG.broad, Cog.cat, Nog.abbrev, Nog.new, DetailedCat, source, sporprot, DRAM_spor_hit, KEGG_spor_hit, SporHitRelax, SporHit, best_spor_ID, spor_gene_name, spor_gene_desc, best_spor_db )
+```
+
+
+```{r}
+ORFs2 <- select(ORFs, protein_id, gene_start, gene_end, gene_length, gene_strand, gene_gc)
+
+combined3 <- merge(combined2, ORFs2, by="protein_id", all.x=TRUE, all.y=FALSE)
+
+
+combined4 <- merge(combined3, df, by="Accession")
+
+write.csv(combined4, here("00_data", "03_func_data", "output", "inph_functional_data.csv"))
+
+```
