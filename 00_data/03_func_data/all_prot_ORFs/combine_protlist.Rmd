@@ -1,0 +1,58 @@
+---
+title: "R Notebook"
+output: html_notebook
+
+
+---
+```{r}
+inph <- read.delim2(here("00_data", "03_func_data", "all_prot_ORFs", "Apr152025_allORFprots.txt"), header=FALSE)
+
+inph$protein_id <- sub("^>([^ ]+).*", "\\1", inph$V1)
+inph$Accession <- sub("^([^_]+).*", "\\1", inph$protein_id)
+inph <- select(inph, Accession, protein_id)
+
+
+
+```
+
+
+```{r}
+gpdgvd <- read.delim2(here("00_data", "03_func_data", "all_prot_ORFs", "gpdgvd_allORFnames.txt"), header=FALSE)
+
+gpdgvd$protein_id <- sub("^>([^ ]+).*", "\\1", gpdgvd$V1)
+
+gpdgvd$Accession<- gsub('_[^_]*$', '', gpdgvd$protein_id)
+
+gpdgvd <- select(gpdgvd, Accession, protein_id)
+
+```
+
+
+```{r}
+gsv <- read.delim2(here("00_data", "03_func_data", "all_prot_ORFs", "GSV_allORFprots.txt"), header=FALSE)
+
+gsv$protein_id <- sub("^>([^ ]+).*", "\\1", gsv$V1)
+
+gsv$Accession<- gsub('_[^_]*$', '', gsv$protein_id)
+
+gsv <- select(gsv, Accession, protein_id)
+
+```
+
+```{r}
+UHGV <- read.delim2(here("00_data", "03_func_data",  "all_prot_ORFs", "uhgv_allORFnames.txt"), header=FALSE)
+
+UHGV$protein_id <- sub("^>([^ ]+).*", "\\1", UHGV$V1)
+
+UHGV$Accession<- gsub('_[^_]*$', '', UHGV$protein_id)
+
+UHGV <- select(UHGV, Accession, protein_id)
+
+```
+
+
+```{r}
+prot.list <- rbind(UHGV, gpdgvd, gsv, inph)
+write.csv(prot.list, here("00_data", "03_func_data", "all_prot_ORFs", "all_prot_ORFs.csv"))
+
+```
