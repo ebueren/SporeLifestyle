@@ -1,0 +1,72 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+
+library(tidyverse)
+library(here)
+library(dplyr)
+here()
+
+COG.master <- read.csv(here("00_data", "03_func_data", "func_metadata", "mastercog.csv"), header=TRUE)
+
+COG.meta <- read.delim2(here("00_data", "03_func_data", "func_metadata", "cog-20.def.tab"), header=FALSE)
+COG.meta <- COG.meta[,c(1,2,3,4,5)]
+colnames(COG.meta) <- c("ID", "COGlet", "gene_desc", "gene_name", "gene_cat")
+
+### deal with multi-letter cogs  by making them "unknown"
+COG.meta$COGlet <- ifelse(nchar(COG.meta$COGlet) > 1, "S", COG.meta$COGlet)
+
+## change virus COG to custom "Ph" category (phage)
+COG.meta$COGlet <- ifelse(COG.meta$COGlet=="X", "Ph", COG.meta$COGlet)
+
+### add in no hit category
+COG.meta<- COG.meta %>%
+  add_row(
+    ID = "NO_HIT",
+    COGlet = "0",
+    gene_desc = "NO_HIT",
+    gene_name = "NO_HIT",
+    gene_cat = "NO_HIT"
+  )
+
+
+COG.meta$source <- "COG"
+
+
+PHROG.meta <- read.delim2(here("00_data", "03_func_data", "func_metadata", "phrog_annot_v4.tsv"))
+PHROG.meta$phrog <- "phrog"
+PHROG.meta <- PHROG.meta %>% unite("phrog_id", c("phrog", "phrog_num"), sep = "_")
+PHROG.meta$COGlet <- "Ph"
+PHROG.meta$gene_name <- PHROG.meta$phrog_annot
+colnames(PHROG.meta) <- c("ID", "gene_desc", "gene_cat", "COGlet", "gene_name")
+PHROG.meta$source <- "PHROG"
+
+meta.func <- bind_rows(COG.meta, PHROG.meta)
+meta.func[is.na(meta.func)] <- "no data"
+
+meta.func <- merge(meta.func, COG.master, by="COGlet", all.x=TRUE, all.y=FALSE)
+
+meta.func$gene_cat <- ifelse(meta.func$gene_cat=="", "unknown function", meta.func$gene_cat)
+
+meta.func <- select(meta.func, COGlet, ID, gene_name, gene_desc, gene_cat, COG.broad, Cog.cat, Nog.abbrev, Nog.new, source)
+
+meta.func$DetailedCat <- ifelse(meta.func$COGlet=="Ph", meta.func$gene_cat, meta.func$Nog.abbrev)
+
+meta.func$gene_name <- ifelse(meta.func$gene_name=="", meta.func$gene_desc, meta.func$gene_name)
+
+
+### to remove weird utf 8 text formatting issues
+bad <- which(!validUTF8(meta.func$gene_desc))
+
+meta.func$gene_desc[bad]
+
+meta.func$gene_desc[bad] <- iconv(meta.func$gene_desc[bad], from = "", to = "UTF-8", sub = "")
+
+
+
+
+write.csv(meta.func, here("00_data", "03_func_data", "func_metadata", "mastercog_phrog.csv"))
+```
+

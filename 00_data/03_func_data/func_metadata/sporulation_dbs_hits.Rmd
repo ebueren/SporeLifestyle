@@ -1,0 +1,135 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(here)
+library(tidyverse)
+library(PNWColors)
+library(knitr)
+library(cowplot)
+
+
+
+
+kegg <- read.csv(here("00_data", "03_func_data", "func_metadata", "viral_sporGenes.csv"))
+kegg$source <- "KEGG"
+
+kegg$gene_name <- gsub(".*_(.*)$", "\\1", kegg$gene_name)
+kegg$gene_name <- ifelse(kegg$gene_id=="K03657", "pcrA", kegg$gene_name)
+kegg$description[is.na(kegg$description)] <- kegg$gene_name
+
+kegg <- select(kegg, gene_id, gene_name, description, source)
+
+colnames(kegg) <- c("ID", "gene_name", "gene_desc", "source")
+```
+```{r}
+COG <- read.csv(here("00_data", "03_func_data", "func_metadata", "COG", "COG_sporList.csv"),row.names=1) 
+COG$source <- "COG"
+
+###for some reaason, COG5928 is just not named in COG db
+COG$gene_name <- ifelse(COG$COG=="COG5928", "SpoIIT/YwmB", COG$gene_name)
+COG$gene_desc <- ifelse(COG$COG=="COG5928", "Sporulation protein SpoIIT/YwmB, DUF1779 family", COG$gene_desc)
+COG$Cat <- ifelse(COG$COG=="COG5928", "D", COG$Cat)
+
+COG <- na.omit(COG)
+COG$gene_name <- ifelse(COG$gene_name=="", COG$gene_desc, COG$gene_name)
+duplicate_rows <- COG[duplicated(COG$gene_name), ]
+COG <- select(COG, COG, gene_name, gene_desc, source)
+
+colnames(COG) <- c("ID", "gene_name", "gene_desc", "source")
+```
+
+
+```{r}
+#P29600
+DRAM <- read.csv(here("00_data", "03_func_data", "func_metadata",  "UniprotSporGerm_Master.csv"),row.names=1)
+DRAM$source <- "DRAM"
+
+
+DRAM <-select(DRAM, Entry, Gene.Names, Protein.names, gene_name, source, Pfam)
+DRAM[is.na(DRAM)] <- 0
+
+DRAM<- separate(DRAM, Gene.Names, into=c("FirstGene", "Extra"), sep=" ", remove=FALSE, extra="merge")
+DRAM$gene_name <- ifelse(DRAM$gene_name==0 | DRAM$gene_name=="", DRAM$FirstGene, DRAM$gene_name)
+
+DRAM$gene_name <- ifelse(DRAM$gene_name=="", DRAM$Protein.names, DRAM$gene_name)
+
+
+DRAM <- select(DRAM, Entry, gene_name, Protein.names, source)
+
+colnames(DRAM) <- c("ID", "gene_name", "gene_desc", "source")
+
+
+```
+
+
+###originally to clean phrogs
+
+library(here)
+library(dplyr)
+library(readr)
+
+# path to the folder (relative to project root)
+csv_dir <- here("00_data", "03_func_data", "func_metadata",  "PHROGS")
+
+# list all csv files
+csv_files <- list.files(
+  csv_dir,
+  pattern = "\\.csv$",
+  full.names = TRUE
+)
+
+# read and concatenate
+phrogs <- csv_files %>%
+  lapply(read_csv, show_col_types = FALSE) %>%
+  bind_rows()
+
+
+phrogs <- unique(phrogs)
+phrogs <- separate(phrogs, KEGG, into=c("KO", "KO_name", "KO_ignore"), sep="&", remove=FALSE, extra="merge")
+phrogs <- separate(phrogs, pfam, into=c("FirstPfam", "2ndPfam"), sep="\\.", remove=FALSE, extra="merge")
+phrogs <- phrogs[,c()]
+phrogs[is.na(phrogs)] <- "NA"
+
+phrogs$gene_name <- phrogs$KO_name
+phrogs$gene_name <- ifelse(phrogs$gene_name=="NA", phrogs$Phrog_annot, phrogs$gene_name)
+
+
+#write.csv(phrogs, here("00_data", "03_func_data", "func_metadata", "PHROGS", "manualCleaning_phrogs_IDs.csv"))
+
+```{r}
+
+phrogs.man <- read.csv(here("00_data", "03_func_data", "func_metadata", "PHROGS", "manualCleaning_phrogs_IDs_EB.csv"))
+
+phrogs.man <- subset(phrogs.man, phrogs.man$KEEP=="Y")
+phrogs.man <- select(phrogs.man, X.phrog, gene_name_final, KEGG)
+phrogs.man$source <- "PHROGS"
+
+colnames(phrogs.man) <- c("ID", "gene_name", "gene_desc", "source")
+
+
+```
+
+
+
+```{r}
+all.spor.prots <- rbind(kegg, COG, DRAM, phrogs.man)
+
+
+colnames(all.spor.prots) <- c("ID", "gene_name", "gene_desc", "best_db")
+all.spor.prots$sporprot <- "sporulation_prot"
+### to make gene_names consistent, lowercase the first lower (so clwJ and ClwJ both match)
+## this may be grammatically incorrect for some, but prevents duplicate categories 
+
+all.spor.prots$gene_name <- str_replace(
+  all.spor.prots$gene_name,
+  "^.",
+  tolower
+)
+
+write.csv(all.spor.prots, here("00_data", "03_func_data", "func_metadata", "all_sporProt_IDs.csv"))
+
+```
+

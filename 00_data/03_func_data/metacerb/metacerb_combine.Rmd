@@ -1,0 +1,49 @@
+
+
+```{r}
+library(tidyverse)
+library(here)
+here()
+
+dr_here()
+```
+
+```{r}
+inph.final <- read.delim2(here("00_data", "03_func_data", "metacerb", "final_metacerb", "14Apr25_INPHARED_metacerb_final.tsv"))
+gpdgvd.final <- read.delim2(here("00_data", "03_func_data", "metacerb", "final_metacerb", "GPDGVD_metacerb_final.tsv"))
+gsv.final <- read.delim2(here("00_data", "03_func_data", "metacerb","final_metacerb", "GSV_metacerb_final.tsv"))
+uhgv.final <- read.delim2(here("00_data", "03_func_data", "metacerb", "final_metacerb", "UHGV_metacerb_final.tsv"))
+
+inph.final$data.set <- "INPHARED"
+gpdgvd.final$data.set <- "GPDGVD"
+gsv.final$data.set <- "GSV"
+uhgv.final$data.set <- "UHGV"
+
+metacerb.final <- rbind(inph.final, gpdgvd.final, gsv.final, uhgv.final)
+
+### remove extra headers from combing multiple files prior to download
+metacerb.final <- subset(metacerb.final, metacerb.final$target!="target")
+write.csv(metacerb.final, (here("00_data", "03_func_data", "metacerb", "metacerb_all_final.csv")))
+
+```
+
+
+```{r}
+inph.filt <- read.delim2(here("00_data", "03_func_data", "metacerb", "final_metacerb", "14Apr25_INPHARED_metacerb_all_filtered.tsv"))
+gpdgvd.filt <- read.delim2(here("00_data", "03_func_data", "metacerb", "final_metacerb", "GPDGVD_metacerb_filtered.tsv"))
+gsv.filt <- read.delim2(here("00_data", "03_func_data", "metacerb", "final_metacerb", "GSV_metacerb_filtered.tsv"))
+uhgv.filt <- read.delim2(here("00_data", "03_func_data", "metacerb", "final_metacerb", "UHGV_metacerb_filtered.tsv"))
+
+inph.filt$data.set <- "INPHARED"
+gpdgvd.filt$data.set <- "GPDGVD"
+gsv.filt$data.set <- "GSV"
+uhgv.filt$data.set <- "UHGV"
+
+
+metacerb.filt <- rbind(inph.filt, gpdgvd.filt, gsv.filt, uhgv.filt)
+
+
+### remove extra headers from combing multiple files prior to download
+metacerb.filt <- subset(metacerb.filt, metacerb.filt$target!="target")
+write.csv(metacerb.filt, (here("00_data", "03_func_data", "metacerb", "metacerb_all_filt.csv")))
+```

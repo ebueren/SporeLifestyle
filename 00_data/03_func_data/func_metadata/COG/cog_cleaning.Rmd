@@ -1,0 +1,150 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+
+library(tidyverse)
+library(here)
+here()
+
+dr_here()
+
+
+## load uniprot datbase of spor prots, with associate COG  IDs
+spor.hits <- read.csv(here("00_data", "03_func_data", "func_metadata", "UniprotSporGerm_Master.csv"), row.names=1)
+
+## identify spor genes recognized by subti wiki
+spor.subti <- subset(spor.hits, spor.hits$subti_func=="germination" | spor.hits$subti_func=="sporulation")
+
+spor.genes <- unique(select(spor.subti, gene_name))
+spor.genes$subti <- "known_subti_spor"
+
+
+### spbeta genes: 
+### blyA COG5632
+
+### sus
+### cwlA --- has similarity to cwlJ which is sporulation gene,  but may not  be sporulation itself (associated also with prophages)
+
+### lytD --- no impact on sporulation https://subtiwiki.uni-goettingen.de/v5/gene/3779
+### nlpD ---- not sporulation related? in e coli etc. related to cell division though?
+
+
+
+
+
+```
+
+```{r}
+
+### load COG IDs with sporu / spore in the name
+
+cog1 <- read.delim2(here("00_data", "03_func_data", "func_metadata", "COG", "COG_spore_result.tsv"))
+cog2 <- read.delim2(here("00_data", "03_func_data", "func_metadata", "COG", "COG_sporu_result.tsv"))
+
+cog <- unique(rbind(cog1, cog2))
+cog$x <- "name_has_sporulation"
+
+## for now, just keep COGID and marker that it is bonafide sporulation COG
+cog.web <- select(cog, COG, x) ##have sporulation / spore in the name
+
+```
+
+
+```{r}
+
+##abbreviate uniprot master spor hits (loaded above to just get entry and COG ID)
+### break cogID category into indvidual columns to cover uniprot genes with multiple cog IDs
+
+spor.hits.cog <- select(spor.hits,Entry, eggNOG)
+spor.hits.cog <- separate(spor.hits.cog, eggNOG, into = c("cog1", "cog2", "cog3"), sep=";", remove=FALSE)
+
+### fix NA
+spor.hits.cog[is.na(spor.hits.cog)] <- "missing"
+
+### merge all cog IDs
+cogA <- select(spor.hits.cog, Entry, cog1)
+cogB <- select(spor.hits.cog, Entry, cog2)
+cogC <- select(spor.hits.cog, Entry, cog3)
+
+colnames(cogA) <- c("Entry", "COG")
+colnames(cogB) <- c("Entry", "COG")
+colnames(cogC) <- c("Entry", "COG")
+
+
+spor.cog <- unique(rbind(cogA, cogB, cogC))
+
+##get rid of any missing or empty COGs sticking around, then remove duplicates
+spor.cog <- subset(spor.cog, spor.cog$COG!="missing" & spor.cog$COG!="")
+
+spor.cog <- unique(select(spor.cog, COG))
+
+### match these unknown uniprot / sporulation associated cogs with known subtiwiki cogs
+
+cog.master <- merge(cog.web, spor.cog, by="COG", all.x=TRUE, all.y=TRUE)
+
+## anyone who doesn't match, is flagged as unknown
+cog.master$x[is.na(cog.master$x)] <- "unknown"
+
+```
+
+```{r}
+## Ssubset out known and unknown spor COGs
+spor.known <- subset(cog.master, cog.master$x!="unknown")
+spor.unknown <- subset(cog.master, cog.master$x=="unknown")
+
+###load additional cog metadata and add it to unknowns
+COG.meta <- read.delim2(here("00_data", "03_func_data", "func_metadata", "cog-20.def.tab"), header=FALSE)
+
+spor.unknown <- merge(spor.unknown, COG.meta, by.x="COG", by.y="V1", all.x=TRUE, all.y=FALSE)
+
+### any cogs which did not match to metadata (i.e. the enogs) will have empty V2s
+## identify and remove enogs
+spor.unknown$V2[is.na(spor.unknown$V2)] <- "missing"
+spor.unknown <- subset(spor.unknown, spor.unknown$V2!="missing")
+
+### make first letter of the gene associated with each COG lowercase, to match subti wiki style
+spor.unknown$V4 <- str_replace(
+  spor.unknown$V4,
+  "^.",
+  tolower
+)
+
+### see if known sporulation genes match and COG associated genes
+spor.unknown <- merge(spor.unknown, spor.genes, by.x="V4", by.y="gene_name", all.x=TRUE, all.y=FALSE)
+
+##remove no hits (likely not sporulation genes) -- eb did quick inspection to confirm.
+spor.unknown <- subset(spor.unknown, spor.unknown$V4!="")
+
+### create list of now known COG categories based on associated sporulation gene
+spor.nowKnown <- select(spor.unknown, COG, V2, V4, V3)
+```
+
+```{r}
+### for consistency, merge cog metadata into known cogs as well
+
+spor.known <- merge(spor.known, COG.meta, by.x="COG", by.y="V1", all.x=TRUE, all.y=FALSE)
+spor.known <- select(spor.known, COG, V2, V4, V3)
+
+### make first letter of the gene associated with each COG lowercase, to match subti wiki style
+spor.known$V4 <- str_replace(
+  spor.known$V4,
+  "^.",
+  tolower
+)
+
+
+##rename and rbind 
+
+colnames(spor.known) <- c("COG", "Cat", "gene_name", "gene_desc")
+colnames(spor.nowKnown) <- c("COG", "Cat", "gene_name", "gene_desc")
+
+spor.all <- unique(rbind(spor.known, spor.nowKnown))
+
+
+write.csv <- write.csv(spor.all, here("00_data", "03_func_data", "func_metadata", "COG", "COG_sporList.csv"))
+
+```
+

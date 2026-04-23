@@ -1,0 +1,86 @@
+
+```{r}
+library(tidyverse)
+library(here)
+here()
+
+dr_here()
+```
+
+```{r}
+inph.COG <- read.delim2(here("00_data", "03_func_data", "metacerb", "indiv_dbs", "COG", "INPHARED_metacerb)COG.tsv"))
+#gpdgvd.COG <-read.delim2(here("00_data", "03_func_data", "metacerb", "indiv_dbs", "COG", "GPDGVD_metacerbCOG.tsv"))
+gsv.COG <- read.delim2(here("00_data", "03_func_data", "metacerb", "indiv_dbs", "COG", "GSV_COG.tsv"))
+uhgv.COG <-read.delim2(here("00_data", "03_func_data", "metacerb", "indiv_dbs", "COG", "UHGV_COG.tsv"))
+
+inph.COG$data.set <- "INPHARED"
+#gpdgvd.COG$data.set <- "GPDGVD"
+gsv.COG$data.set <- "GSV"
+uhgv.COG$data.set <- "UHGV"
+
+COG <- rbind(inph.COG, gsv.COG, uhgv.COG)
+COG <- subset(COG, COG$target!="target")
+COG <- subset(COG, COG$best_hit!="")
+
+write.csv(COG, (here("00_data", "03_func_data", "metacerb", "indiv_dbs", "AllCog_metacerb.csv")))
+
+
+COG.hits <- read.csv(here("00_data", "03_func_data", "func_metadata", "COG", "COG_sporList.csv"))
+
+
+
+cog.spor.hits <- merge(COG, COG.hits, by.x="best_hit", by.y="COG", all.x=FALSE, all.y=FALSE )
+
+write.csv(cog.spor.hits, (here("00_data", "03_func_data", "metacerb", "indiv_dbs",  "AllCogSporHits_metacerb.csv")))
+```
+
+```{r}
+inph.PHROG <- read.delim2(here("00_data", "03_func_data", "metacerb", "indiv_dbs", "PHROG", "INPHARED_metacerb_PHROG.tsv"))
+
+gpdgvd.PHROG <-read.delim2(here("00_data", "03_func_data", "metacerb", "indiv_dbs", "PHROG", "GPDGVD_metacerb_PHROG.tsv"))
+gsv.PHROG <- read.delim2(here("00_data", "03_func_data", "metacerb", "indiv_dbs", "PHROG", "GSV_PHROG.tsv"))
+uhgv.PHROG <-read.delim2(here("00_data", "03_func_data", "metacerb", "indiv_dbs", "PHROG", "UHGV_PHROG.tsv"))
+
+inph.PHROG$data.set <- "INPHARED"
+gpdgvd.PHROG$data.set <- "GPDGVD"
+gsv.PHROG$data.set <- "GSV"
+uhgv.PHROG$data.set <- "UHGV"
+
+PHROG <- rbind(inph.PHROG, gpdgvd.PHROG, gsv.PHROG, uhgv.PHROG)
+PHROG <- subset(PHROG, PHROG$target!="target")
+PHROG <- subset(PHROG, PHROG$best_hit!="")
+
+
+write.csv(PHROG, (here("00_data", "03_func_data", "metacerb", "indiv_dbs", "AllPHROG_metacerb.csv")))
+
+
+```
+
+
+
+```{r}
+rm(list = ls())
+
+
+kegg.hits <- read.csv(here("00_data", "03_func_data", "func_metadata", "viral_sporGenes.csv"))
+
+
+inph.KEGG <- read.delim2(here("00_data", "03_func_data", "metacerb", "indiv_dbs", "KEGG", "INPHARED_metacerb_KEGG.tsv"))
+#gpdgvd.KEGG <-read.delim2(here("00_data", "03_func_data", "metacerb", "indiv_dbs", "KEGG", "GPDGVD_metacerb_KEGG.tsv"))
+gsv.KEGG <- read.delim2(here("00_data", "03_func_data", "metacerb", "indiv_dbs", "KEGG", "GSV_metacerb_KEGG.tsv"))
+uhgv.KEGG <-read.delim2(here("00_data", "03_func_data", "metacerb", "indiv_dbs", "KEGG", "UHGV_metacerb_KEGG.tsv"))
+
+inph.KEGG$data.set <- "INPHARED"
+#gpdgvd.KEGG$data.set <- "GPDGVD"
+gsv.KEGG$data.set <- "GSV"
+uhgv.KEGG$data.set <- "UHGV"
+
+KEGG <- rbind(inph.KEGG, gsv.KEGG, uhgv.KEGG)
+KEGG <- subset(KEGG, KEGG$target!="target")
+KEGG <- subset(KEGG, KEGG$best_hit!="")
+
+best.kegg.hits <- merge(KEGG, kegg.hits, by.x="best_hit", by.y="gene_id", all.x=FALSE, all.y=FALSE)
+
+write.csv(best.kegg.hits, (here("00_data", "03_func_data", "metacerb", "indiv_dbs", "SporulationKEGG_metacerb.csv")))
+
+```
