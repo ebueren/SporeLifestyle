@@ -1,0 +1,71 @@
+
+
+```{r}
+library(tidyverse)
+library(here)
+here()
+
+dr_here()
+```
+
+```{r}
+inph.final <- read.delim2(here("00_data", "03_func_data", "DRAM", "INPHARED_DRAM.tsv"))
+#gpdgvd.final <- read.delim2(here("00_data", "03_func_data", "DRAM", "GPDGVD_DRAM.tsv"))
+gsv.final <- read.delim2(here("00_data", "03_func_data",  "DRAM", "GSV_DRAM.tsv"))
+uhgv.final <- read.delim2(here("00_data", "03_func_data",  "DRAM", "UHGV_DRAM.tsv"))
+
+inph.final$data.set <- "INPHARED"
+#gpdgvd.final$data.set <- "GPDGVD"
+gsv.final$data.set <- "GSV"
+uhgv.final$data.set <- "UHGV"
+
+dram.final <- rbind(inph.final, gsv.final, uhgv.final)
+
+### remove extra headers from combing multiple files prior to download
+dram.final <- subset(dram.final, dram.final$rank!="rank")
+
+dram.spor <- subset(dram.final, dram.final$spor_db_id!="")
+dram.spor <- dram.spor[,c(1,2, 18:25)]
+
+
+write.csv(dram.final, (here("00_data", "03_func_data", "DRAM", "DRAM_all.csv")))
+#write.csv(dram.spor, (here("00_data", "03_func_data", "DRAM_sporhits.csv")))
+
+```
+
+
+```{r}
+
+##fix UNIPROT ID of A0AAT9J3Y0
+dram.spor$spor_db_id <- ifelse(dram.spor$spor_db_id=="tr", "A0AAT9J3Y0", dram.spor$spor_db_id)
+
+spor.hits <- read.csv(here("00_data", "03_func_data", "func_metadata", "UniprotSporGerm_Master.csv"), row.names=1)
+
+
+spor <- merge(dram.spor, spor.hits, by.x="spor_db_id", by.y="Entry", all.x=TRUE, all.y=FALSE)
+
+spor <- spor %>% rename(fasta_id = X, prefix=fasta)
+
+library(dplyr)
+
+escape_regex <- function(x) gsub("([][{}()+*^$|\\\\.?])", "\\\\\\1", x)
+
+spor$protein_id <- mapply(
+  function(id, pre) sub(paste0("^", escape_regex(pre), "_?"), "", id),
+  spor$fasta_id,
+  spor$prefix,
+  USE.NAMES = FALSE
+)
+
+spor.abbrev <- select(spor, spor_db_id, protein_id, spor_db_hit, spor_db_identity, spor_db_bitScore, spor_db_eVal, Protein.names, Gene.Names, data.set)
+
+spor.abbrev$spor_db_bitScore <- as.numeric(spor.abbrev$spor_db_bitScore)
+spor.abbrev$spor_db_identity <- as.numeric(spor.abbrev$spor_db_identity)
+spor.abbrev$spor_db_eVal <- as.numeric(spor.abbrev$spor_db_eVal)
+
+write.csv(spor.abbrev, (here("00_data", "03_func_data", "DRAM", "DRAM_sporhits_IDs.csv")))
+
+
+
+K02343```
+
